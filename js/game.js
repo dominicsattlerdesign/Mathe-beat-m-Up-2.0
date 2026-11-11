@@ -188,7 +188,7 @@ function showDet(i){selC=i;const c=CH[i],u=unlocked(c);document.querySelectorAll
     <div class="fn"><small>FINISHER</small>${c.fin}</div><button class="btn" data-a="go">Kämpfen!</button>`
    :`<div class="ti">Geheimer Kämpfer</div><h3>???</h3><p>Spiele die Story ${c.lock}× durch, um diesen Kämpfer freizuschalten. Bisher geschafft: ${SAVE.done}×.</p><button class="btn" disabled>Gesperrt</button>`)+`</div>`}
 const ACTIONS={
-  start(){auInit();try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
+  start(){auInit();try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
   story(){mode="s";lvl=1;startHp=null;selChar()},arcade(){mode="a";startHp=null;selChar()},
   cont(){const s=SAVE.story;mode="s";pickC=s.c;lvl=s.lvl;startHp=s.hp;startFight()},
   diff(b){SAVE.diff=+b.dataset.i;save();document.querySelectorAll("#dseg button").forEach((x,i)=>x.classList.toggle("on",i==SAVE.diff))},
@@ -206,7 +206,7 @@ sndBtn.addEventListener("click",()=>{auInit();SAVE.mute=!SAVE.mute;save();auMute
 document.addEventListener("visibilitychange",()=>{if(AU.ctx){if(document.hidden)AU.ctx.suspend();else AU.ctx.resume()}});
 
 /* ----- Hauptschleife ----- */
-function camFight(){const a=fx_(pl),b=fx_(en),mx=(a.x+b.x)/2,span=Math.abs(a.x-b.x)/2+2.9,tan=Math.tan(cam.fov*Math.PI/360),free=1-VOFF/innerHeight,top=Math.max(a.y,b.y,0);
+function camFight(){const a=fx_(pl),b=fx_(en),mx=(a.x+b.x)/2,span=Math.abs(a.x-b.x)/2+2.9,tan=Math.tan(cam.fov*Math.PI/360),free=1-VOFF/GH,top=Math.max(a.y,b.y,0);
   const z=clamp(Math.max(span/(tan*cam.aspect),(2.55+top*.55)/(tan*free)),9,34);CAM.tp.set(mx*.7,2.4+z*.07+top*.3,z);CAM.tl.set(mx*.7,2.05+top*.4,0)}
 function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000);last=n;
   if(paused){ren.render(sc,cam);return}

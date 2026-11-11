@@ -1,6 +1,6 @@
 # Mathe-Raufbold · Beat ’em Up 2.0
 
-Ein Mathe-Kampfspiel für das Tablet. Wer richtig rechnet, greift an.
+Ein Mathe-Kampfspiel für das Tablet im Querformat (hochkant gehalten dreht sich das Spielfeld mit). Wer richtig rechnet, greift an.
 
 - **Drei Attacken, drei Aufgabenarten:** Hieb (Plus & Minus), Kick (Mal & Geteilt), Wurf (Klammer-Aufgaben). Der Finisher mischt alles.
 - **15 Kämpfer:** 10 von Anfang an, 5 geheime. Jeder Story-Durchgang schaltet einen weiteren frei.

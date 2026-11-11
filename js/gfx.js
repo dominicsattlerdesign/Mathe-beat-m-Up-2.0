@@ -39,12 +39,16 @@ function stepTw(list,dt){for(let i=list.length-1;i>=0;i--){const w=list[i];w.t+=
 /* Kamera */
 const CAM={p:new THREE.Vector3(0,3.4,16),l:new THREE.Vector3(0,1.8,0),tp:new THREE.Vector3(0,3.4,16),tl:new THREE.Vector3(0,1.8,0),k:5,shake:0,mode:"menu"};
 let VOFF=0;
-function applyOff(){const w=innerWidth,h=innerHeight;if(VOFF)cam.setViewOffset(w,h,0,Math.round(VOFF/2),w,h);else cam.clearViewOffset();cam.updateProjectionMatrix()}
-function rs(){const w=innerWidth,h=innerHeight;ren.setPixelRatio(Math.min(2,devicePixelRatio||1));ren.setSize(w,h,false);cam.aspect=w/h;applyOff()}
+/* Spielfeldgröße GW×GH ist immer quer; im Hochformat wird die ganze Seite gedreht */
+let GW=innerWidth,GH=innerHeight;
+function applyOff(){const w=GW,h=GH;if(VOFF)cam.setViewOffset(w,h,0,Math.round(VOFF/2),w,h);else cam.clearViewOffset();cam.updateProjectionMatrix()}
+function rs(){const iw=innerWidth,ih=innerHeight,rot=ih>iw,b=document.body.style,r=document.documentElement.style;GW=rot?ih:iw;GH=rot?iw:ih;
+  b.width=rot?GW+"px":"";b.height=rot?GH+"px":"";b.transform=rot?`translateX(${iw}px) rotate(90deg)`:"";r.setProperty("--vw",GW/100+"px");r.setProperty("--vh",GH/100+"px");
+  const w=GW,h=GH;ren.setPixelRatio(Math.min(2,devicePixelRatio||1));ren.setSize(w,h,false);cam.aspect=w/h;applyOff()}
 addEventListener("resize",()=>{rs();if(typeof layout=="function")layout()});
 function camStep(dt){const k=1-Math.exp(-CAM.k*dt);CAM.p.lerp(CAM.tp,k);CAM.l.lerp(CAM.tl,k);CAM.shake*=Math.pow(.015,dt);
   cam.position.set(CAM.p.x+rnd(-1,1)*CAM.shake,CAM.p.y+rnd(-1,1)*CAM.shake,CAM.p.z);cam.lookAt(CAM.l)}
-function scr(x,y,z=0){const v=new THREE.Vector3(x,y,z).project(cam);return[(v.x*.5+.5)*innerWidth,(-v.y*.5+.5)*innerHeight]}
+function scr(x,y,z=0){const v=new THREE.Vector3(x,y,z).project(cam);return[(v.x*.5+.5)*GW,(-v.y*.5+.5)*GH]}
 
 /* ---------- Effekte ---------- */
 const fxs=[],debris=[];
