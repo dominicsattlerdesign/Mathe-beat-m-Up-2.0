@@ -164,6 +164,17 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 .sets input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:30px;margin-top:-12px;background:var(--gold);border:3px solid var(--line);box-shadow:2px 2px 0 var(--line);transform:skewX(-10deg)}
 .sets input[type=range]::-moz-range-thumb{width:22px;height:26px;background:var(--gold);border:3px solid var(--line);border-radius:0}
 .sets input[type=range]:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+/* Arena-Auswahl */
+.arenas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:min(96%,820px)}
+.ar{position:relative;min-height:clamp(64px,calc(var(--vh)*13),104px);border:3px solid var(--line);box-shadow:4px 4px 0 var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px;overflow:hidden;background:var(--panel)}
+.ar span{font:400 clamp(17px,calc(var(--vw)*2),24px)/1.05 var(--disp);letter-spacing:.05em;color:#fff;text-shadow:2px 2px 0 var(--line);text-align:center}
+.ar b{font:400 30px/1 var(--disp);color:var(--gold);text-shadow:2px 2px 0 var(--line)}
+.ar i{position:absolute;left:6px;top:5px;font:700 10px var(--ui);letter-spacing:.18em;color:var(--line);background:var(--gold);padding:2px 6px;font-style:normal}
+.ar small{font:700 10px var(--ui);letter-spacing:.06em;color:var(--dim)}
+.ar.on{outline:4px solid var(--gold);outline-offset:-2px}
+.ar.lk{background:repeating-linear-gradient(135deg,#191530 0 10px,#14112a 10px 20px)}.ar.lk b{color:var(--violet)}
+.ar.rnd{background:var(--panel2)}
+.stc{width:min(30vw,260px);aspect-ratio:16/10;max-width:100%;border:3px solid var(--line);box-shadow:4px 4px 0 var(--line),0 0 30px var(--gold);display:grid;place-items:center;font:400 28px var(--disp);color:#fff;text-shadow:2px 2px 0 var(--line);padding:8px;text-align:center}
 .unf{margin:0;display:flex;flex-direction:column;align-items:center}.unf figcaption{font:700 12px var(--ui);letter-spacing:.14em;text-transform:uppercase}.unf b{display:block;font:400 30px var(--disp);letter-spacing:.05em;color:var(--gold)}
 .vs figcaption small{display:block;font:500 14px var(--ui);letter-spacing:0;color:var(--dim);text-shadow:1px 1px 0 var(--line);max-width:30ch;margin:0 auto}
 .btn small{display:block;font:700 11px var(--ui);letter-spacing:.2em;margin-top:5px;opacity:.9;text-shadow:none}
