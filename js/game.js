@@ -39,6 +39,7 @@ function clearFighters(){for(const f of fighters){sc.remove(f.root);const h=f.J.
 function hud(){$("#ph").style.width=$("#pht").style.width=pl.hp/pl.max*100+"%";$("#eh").style.width=$("#eht").style.width=en.hp/en.max*100+"%";$("#pm").style.width=pl.mt+"%";
   const full=pl.mt>=100;$("#pmb").classList.toggle("full",full);const f=$("#fin");f.classList.toggle("rdy",full);f.classList.toggle("sel",sel=="sig");f.firstElementChild.style.width=pl.mt+"%";
   $("#fint").textContent=full?ATK.sig.n+" · "+pl.ch.sig.toUpperCase():ATK.sig.n+" "+Math.round(pl.mt)+" %";$("#finq").textContent=full?cards.sig.q[0]:"";
+  const er=en.mt>=100;$("#ecb").classList.toggle("full",er);$("#elbl").textContent=er?L("SPEZIAL BEREIT!","SPECIAL READY!"):L("GEGNER-ANGRIFF","ENEMY ATTACK");
   for(const[id,n]of[["#pw",wins.p],["#ew",wins.e]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<n))}
 const newCard=k=>({q:task(k,SAVE.diff),t0:0});
 function render(){const lb=LABELS[SAVE.diff?1:0];
@@ -102,7 +103,7 @@ function impact(a,b,dmg,o={}){
   if(!o.quiet)pop(P(WORDS[o.big?2:lv]),hex(a.ch.c),x-d*.3,y+1.7);pop("−"+dmg,"#fff",x+d*.5,y+.8,"dm");
   CAM.shake=Math.max(CAM.shake,.1+lv*.16+(o.big?.7:0));flashLight(a.ch.c,2+lv,x,2);sfx(o.s||"punch");hs=o.stop!=null?o.stop:.045+lv*.035;
   breakNear(x,o.r||1.25,d,1+lv*.3,o.max||2);if(lv||o.big)crack(x,o.big?5:1+lv,o.big?2:lv);
-  if(!o.nomt){if(a.isP)a.mt=Math.min(100,a.mt+dmg*1.05*a.mg);if(b.isP)b.mt=Math.min(100,b.mt+dmg*.75)}
+  if(!o.nomt){const ka=a.isP?1:.75,kb=b.isP?1:.75;a.mt=Math.min(100,a.mt+dmg*1.05*a.mg*ka);b.mt=Math.min(100,b.mt+dmg*.75*kb)}
   hud();if(b.hp<=0&&!over&&!o.noKO){over=true;koFx()}
   if(!o.noReact){pose(b,"hurt",30);const bx=x;tw(.22,p=>{fx_(b).x=clamp(bx+d*(Math.sin(p*Math.PI)*.3+p*(o.push||.12)),-7,7)})}
 }
@@ -180,7 +181,7 @@ async function runMove(k,a,b,dm){const ML=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=
 const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a,b,dm),wurf:(a,b,dm)=>runMove("wurf",a,b,dm)};
 async function attack(a,b,k,mu){if(over)return;
   if(k=="fin")await finMove(a,b);
-  else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*mu*a.dm)}
+  else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*a.dm*(a.isP?mu:.88))}
   else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 88 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP?mu:.88));
   if(b.hp>0){await recover(a,b);
     /* Finisher gibt es nur im Matchball: der Spieler führt 1 Runde und der Gegner hat höchstens 10 % Leben */
@@ -212,7 +213,7 @@ function startFight(){
     clearFighters();clearTemp();buildStage(stageI);
     pl=mkF(CH[pickC],-1,true,1,useAlt(pickC)?1:0);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
     round=1;wins={p:0,e:0};fo="none";cd={last:null,n:0,lock:null,left:0};$("#fo").hidden=true;
-    en.max=en.hp=44+LV*6+CH[oi].st[1]*3+(boss?14:0);en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Sonst im Freien Kampf höchstens 4,5 s. */en.timer=en.iv;
+    en.max=en.hp=Math.round((44+LV*6+CH[oi].st[1]*3+(boss?14:0))*(boss?(lvl==10?1.75:1.5):1));if(boss)en.dm*=1.03;/* Story-Bosse: Kampf 5 +50 % Leben, Kampf 10 +75 % Leben, beide +3 % Schaden */en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Sonst im Freien Kampf höchstens 4,5 s. */en.timer=en.iv;
     $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=pic(pickC,"bust");$("#ei").src=CH[oi].bust;
     $("#lv").innerHTML=`<b>${story?(lvl==10?L("ENDKAMPF","FINAL BATTLE"):L("KAMPF ","FIGHT ")+lvl+"/10"):L("FREIER KAMPF","FREE FIGHT")}</b>${STG[stageI].n}`;
     cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),sig:newCard("sig"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
@@ -312,8 +313,8 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
   if(pl&&!over){
     if(mode=="s")storyT+=dt;
     if(fo=="on"){const r=1-(performance.now()-cards.fin.t0)/1000/FIN_TIME;$("#fot").style.width=clamp(r,0,1)*100+"%";if(r<=0)endOffer(L("Zu langsam! Der Finisher ist futsch, jetzt normal zu Ende kämpfen.","Too slow! The finisher is gone, win the fight the normal way."))}
-    if(busy==0&&fo!="on"){en.timer-=dt;if(en.timer<=0){en.timer=en.iv*rnd(.85,1.15);const k=P(["hieb","hieb","kick","kick","wurf"]);
-      q(async()=>{sfx("warn");pop("!","#ff3b2f",fx_(en).x,4.4*en.sc);pose(en,"windup",20);await wait(.4);await attack(en,pl,k,1)})}}
+    if(busy==0&&fo!="on"){en.timer-=dt;if(en.timer<=0){en.timer=en.iv*rnd(.85,1.15);const k=en.mt>=100?"sig":P(["hieb","hieb","kick","kick","wurf"]);if(k=="sig")en.mt=0;
+      q(async()=>{sfx("warn");pop(k=="sig"?"!!":"!",k=="sig"?"#ffc21a":"#ff3b2f",fx_(en).x,4.4*en.sc);pose(en,"windup",20);await wait(.4);await attack(en,pl,k,1)})}}
     const w=clamp(1-en.timer/en.iv,0,1);$("#ec").style.width=w*100+"%";$("#ecb").classList.toggle("warn",w>.85);
     if(sel){const el=(performance.now()-cards[sel].t0)/1000,th=BONUS[sel],bl=$("#bl"),bo=$("#bon");if(bl){bl.textContent=el<=th[0]?L("BLITZ ×1,5","FLASH ×1.5"):el<=th[1]?L("SCHNELL ×1,25","QUICK ×1.25"):"";bo.style.width=clamp(1-el/th[1],0,1)*100+"%";bo.style.background=el<=th[0]?"var(--gold)":"var(--cyan)"}}
   }

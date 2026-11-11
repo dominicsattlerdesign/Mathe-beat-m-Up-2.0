@@ -195,7 +195,7 @@ const FIN={
 };
 /* Rahmen um die Spezial-Attacke: wie beim Finisher mit Kino-Balken, Nahaufnahme und Lichtshow,
    der Angriff selbst läuft dann in Zeitlupe ab */
-async function sigMove(a,b,dm){const c=a.ch.c,d=-a.side,ax=fx_(a).x;cine(true);banner(a.ch.sig+"!",L("Spezial-Attacke","Special attack"));sfx("charge");
+async function sigMove(a,b,dm){const c=a.ch.c,d=-a.side,ax=fx_(a).x;cine(true);banner(a.ch.sig+"!",(a.isP?"":a.ch.n+" · ")+L("Spezial-Attacke","Special attack"));sfx("charge");
   CAM.mode="cine";CAM.k=7;CAM.tp.set(ax+d*2.2,2.3*a.sc,5.4);CAM.tl.set(ax+d*.2,2.2*a.sc,0);
   pose(a,"charge",12);aura(a,c,.95);ring(ax,.06,0,c,3,.7);glow(ax,.4,c,3,.9,-.6);colorBurst(c,0xffffff,2.4);
   await rt(.95,p=>{flashLight(c,1+p*2,ax,2);CAM.shake=.02+p*.06});
