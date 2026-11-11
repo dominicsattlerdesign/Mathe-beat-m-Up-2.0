@@ -1,7 +1,7 @@
 /* ---------- Spielablauf: Menüs, Touch-Steuerung, Kampf, Finisher ---------- */
-const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[],lang:(navigator.language||"de").slice(0,2)=="en"?"en":"de",vol:{m:.8,s:.9},track:0,alts:[],of:{},bst:[],arena:-1};
+const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[],lang:(navigator.language||"de").slice(0,2)=="en"?"en":"de",vol:{m:.8,s:.9},track:0,alts:[],of:{},bst:[],arena:-1,ars:[]};
   try{const n=localStorage.getItem("mb3");if(n)Object.assign(s,JSON.parse(n));else{const o=JSON.parse(localStorage.getItem("mrb2")||"null");if(o){s.done=o.done||0;s.diff=Math.min(3,(o.diff||0)+1);s.mute=!!o.mute}}}catch(e){}
-  if(!Array.isArray(s.lb))s.lb=[];if(!s.vol)s.vol={m:.8,s:.9};if(!Array.isArray(s.alts))s.alts=[];if(!s.of)s.of={};if(!Array.isArray(s.bst))s.bst=[];if(s.arena==null)s.arena=-1;LANG=s.lang;return s})();
+  if(!Array.isArray(s.lb))s.lb=[];if(!s.vol)s.vol={m:.8,s:.9};if(!Array.isArray(s.alts))s.alts=[];if(!s.of)s.of={};if(!Array.isArray(s.bst))s.bst=[];if(s.arena==null)s.arena=-1;if(!Array.isArray(s.ars))s.ars=[];LANG=s.lang;return s})();
 const save=()=>{try{localStorage.setItem("mb3",JSON.stringify(SAVE))}catch(e){}};
 const esc=t=>String(t).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";"),fmtT=t=>Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0");
 /* Freigespielte Kämpfer stehen in SAVE.unl. Alte Spielstände (Freischalten nach Anzahl Durchgänge) werden übernommen. */
@@ -14,8 +14,10 @@ const nextUnl=d=>{const free=CH.filter(c=>c.lock&&!unlocked(c)&&(d==2||!c.boss))
 const altOk=c=>SAVE.alts.includes(c.id),useAlt=i=>!!(SAVE.of[CH[i].id]&&altOk(CH[i]));
 const pic=(i,k,o=useAlt(i))=>o?(altPics(CH[i]),CH[i][k+"2"]):CH[i][k];
 let lastUnl={c:[],o:null,s:null};
-/* Bonus-Stages: frei über Story-Siege auf "Schwer", eine pro Sieg in fester Reihenfolge */
-const stageOk=i=>!STG[i].bonus||SAVE.bst.includes(i),okStages=()=>STG.map((s,i)=>i).filter(stageOk);
+/* Arenen: jede Figur hat ihre eigene (own). Die der fünf Start-Figuren sind frei, die anderen kommen über die Story mit der Figur.
+   Bonus-Arenen: frei über Story-Siege auf "Schwer", eine pro Sieg in fester Reihenfolge. */
+const owner=i=>CH.find(c=>c.id==STG[i].own),arenaOf=c=>STG.findIndex(x=>x.own==c.id);
+const stageOk=i=>{const x=STG[i];if(x.bonus)return SAVE.bst.includes(i);if(x.own)return CH.indexOf(owner(i))<5||SAVE.ars.includes(x.own);return true},okStages=()=>STG.map((s,i)=>i).filter(stageOk);
 const ATK={hieb:{n:"HIEB",kj:"拳",dm:6,c:0xff5a1a},kick:{n:"KICK",kj:"蹴",dm:10,c:0x25d4ff},wurf:{n:"WURF",kj:"投",dm:15,c:0x9a6bff},sig:{n:"SPEZIAL",dm:30}};
 bi(ATK.hieb,"n","HIEB","PUNCH");bi(ATK.wurf,"n","WURF","THROW");bi(ATK.sig,"n","SPEZIAL","SPECIAL");
 const QUIPS={};bi(QUIPS,"ko",["Das gibt Kopfweh.","Gute Nacht!","Autsch.","Sternchen zählen …","Der steht so schnell nicht auf."],["That’ll leave a mark.","Good night!","Ouch.","Counting stars …","Not getting up anytime soon."]);
@@ -208,7 +210,7 @@ function layout(){const p=$("#panel"),r=document.documentElement.style;
 function startFight(){
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
   const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i]))),LV=story?lvl:[2,3,5,8][SAVE.diff];
-  stageI=story?Math.floor((lvl-1)/2):SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:P(okStages());
+  stageI=story?arenaOf(CH[oi]):SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:P(okStages());
   menu(`<div class="vs"><figure><img src="${pic(pickC,"full")}" alt=""><figcaption>${CH[pickC].n}<small>${qt(CH[pickC].q)}</small></figcaption></figure><div class="v">VS</div><figure><img src="${CH[oi].full}" alt=""><figcaption>${CH[oi].n}<small>${qt(CH[oi].q)}</small></figcaption></figure></div>
     <p class="tag">${story?(lvl==10?L("Endkampf","Final battle"):lvl==5?L("Boss-Kampf","Boss battle"):L("Kampf "+lvl+" von 10","Fight "+lvl+" of 10"))+" · ":""}${STG[stageI].n}</p>`,1);sfx("vs");
   setTimeout(()=>{const id=fid;
@@ -231,10 +233,12 @@ function result(win){
   if(win&&s&&lvl<10){lvl++;SAVE.story={c:pickC,lvl,t:storyT};save();
     menu(`<h2>${L("Sieg","Victory")} ${sc_}</h2><p>${L(`Kampf ${lvl-1} von 10 geschafft. Kampfzeit bisher: ${fmtT(storyT)}`,`Fight ${lvl-1} of 10 done. Fight time so far: ${fmtT(storyT)}`)}</p><button class="btn" data-a="next">${L("Weiter zu Kampf ","On to fight ")+lvl}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button>`,1)}
   else if(win&&s){SAVE.done++;SAVE.story=null;const e={n:SAVE.name||HERO(),d:SAVE.diff,t:Math.round(storyT),c:pickC};SAVE.lb.push(e);SAVE.lb.sort((a,b)=>a.t-b.t);
-    const rank=SAVE.lb.filter(x=>x.d==e.d).indexOf(e)+1;SAVE.lb=SAVE.lb.filter(x=>SAVE.lb.filter(y=>y.d==x.d).indexOf(x)<20);const id=CH[pickC].id,no=!SAVE.alts.includes(id);if(no)SAVE.alts.push(id);
+    const rank=SAVE.lb.filter(x=>x.d==e.d).indexOf(e)+1;SAVE.lb=SAVE.lb.filter(x=>SAVE.lb.filter(y=>y.d==x.d).indexOf(x)<20);const pc=CH[pickC],hasO=SAVE.alts.includes(pc.id),ai=arenaOf(pc),hasA=stageOk(ai);let no=false,na=null;
+    if(!hasO&&!hasA){if(Math.random()<.5)no=true;else na=ai}else if(!hasO)no=true;else if(!hasA)na=ai;
+    if(no)SAVE.alts.push(pc.id);if(na!=null)SAVE.ars.push(pc.id);
     const nc=nextUnl(e.d);if(nc)SAVE.unl.push(nc.id);
     const ns=e.d==3?STG.findIndex((x,i)=>x.bonus&&!SAVE.bst.includes(i)):-1;if(ns>=0)SAVE.bst.push(ns);
-    lastUnl={c:nc?[nc]:[],o:no?CH[pickC]:null,s:ns>=0?ns:null};save();const nu=lastUnl.c.length||no||ns>=0;
+    lastUnl={c:nc?[nc]:[],o:no?CH[pickC]:null,s:ns>=0?ns:null,a:na};save();const nu=lastUnl.c.length||no||ns>=0||na!=null;
     menu(`<p class="tag">${L("Story geschafft","Story cleared")} · ${DIFFS[e.d][0]}</p><h1 class="logo"><span>${L("Du bist","You are the")}</span>Champion!</h1><p>${L(`${esc(e.n)} hat mit ${CH[pickC].n} alle zehn Gegner besiegt. Kampfzeit ${fmtT(e.t)}, das ist Platz ${rank} der Rangliste.`,`${esc(e.n)} beat all ten opponents with ${CH[pickC].n}. Fight time ${fmtT(e.t)}, that’s rank ${rank} on the leaderboard.`)}</p><div class="rowb">${nu?`<button class="btn gold" data-a="unlock">${L("Was ist das …?","What’s that …?")}</button>`:""}<button class="btn alt" data-a="lb" data-i="${e.d}">${L("Rangliste","Leaderboard")}</button>${nu?"":`<button class="btn" data-a="home">${L("Hauptmenü","Main menu")}</button>`}</div>`,1)}
   else if(win)menu(`<h2>${L("Gewonnen","You won")} ${sc_}</h2><div class="rowb"><button class="btn" data-a="again">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
   else menu(`<h2>${L("Niederlage","Defeat")} ${sc_}</h2><p>${P(L(["Das war knapp. Atme durch und hol dir die Revanche!","Auch Champions fallen mal um. Aufstehen, Krone richten.","Dein Gegner hatte Glück. Sagt er jedenfalls."],["That was close. Take a breath and go for the rematch!","Even champions fall over sometimes. Get up, fix your crown.","Your opponent got lucky. At least that’s what they say."]))}</p><div class="rowb"><button class="btn" data-a="again">${L("Revanche","Rematch")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
@@ -271,10 +275,11 @@ function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
 /* Arena-Auswahl im Freien Kampf. Gesperrte Bonus-Arenen zeigen, wie man sie bekommt. */
 const arStyle=i=>{const[c1,c2]=STG[i].cols;return`background:linear-gradient(150deg,${hex(STG[i].fog)} 0%,${hex(c1)} 120%),${hex(c2)}`};
 function arenaScreen(){const cur=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:-1;
+  const tile=(x,i)=>{const o=owner(i);if(stageOk(i))return`<button type="button" class="ar${cur==i?" on":""}" data-a="arena" data-i="${i}" style="${arStyle(i)}">${x.bonus?`<i>BONUS</i>`:o?`<img src="${o.bust}" alt="">`:""}<span>${x.n}</span></button>`;
+    return`<div class="ar lk"><b>?</b><span>${x.bonus?L("Bonus-Arena","Bonus arena"):(unlocked(o)?L("Arena von ","Arena of ")+o.n:"???")}</span><small>${x.bonus?L("Story auf „Schwer“ schaffen","Clear the story on “Hard”"):unlocked(o)?L(`Story mit ${o.n} schaffen`,`Clear the story with ${o.n}`):L("Kämpfer noch gesperrt","Fighter still locked")}</small></div>`};
+  const order=STG.map((x,i)=>i).sort((a,b)=>(STG[a].bonus?1:0)-(STG[b].bonus?1:0)||(owner(a)?CH.indexOf(owner(a)):0)-(owner(b)?CH.indexOf(owner(b)):0));
   menu(`<h2>${L("Wähle die Arena","Choose the arena")}</h2><div class="arenas">
-   <button type="button" class="ar rnd${cur<0?" on":""}" data-a="arena" data-i="-1"><b>?</b><span>${L("Zufall","Random")}</span></button>
-   ${STG.map((x,i)=>stageOk(i)?`<button type="button" class="ar${cur==i?" on":""}" data-a="arena" data-i="${i}" style="${arStyle(i)}">${x.bonus?`<i>BONUS</i>`:""}<span>${x.n}</span></button>`
-     :`<div class="ar lk"><b>?</b><span>${L("Bonus-Arena","Bonus arena")}</span><small>${L("Story auf „Schwer“ schaffen","Clear the story on “Hard”")}</small></div>`).join("")}</div>
+   <button type="button" class="ar rnd${cur<0?" on":""}" data-a="arena" data-i="-1"><b>?</b><span>${L("Zufall","Random")}</span></button>${order.map(i=>tile(STG[i],i)).join("")}</div>
    <button class="btn alt sm" data-a="pickBack">${L("Zurück","Back")}</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
   menu(`<h2>${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
@@ -297,8 +302,8 @@ const ACTIONS={
   tile(b){showDet(+b.dataset.i)},go(){pickC=selC;if(mode=="s"){SAVE.story=null;storyT=0;save();startFight()}else arenaScreen()},
   arena(b){SAVE.arena=+b.dataset.i;save();startFight()},pickBack(){selChar()},
   next(){startFight()},again(){startFight()},home(){home()},
-  unlock(){const{c:cs,o,s:ns}=lastUnl;sfx("unlock");flash("#fff");if(o)altPics(o);if(ns!=null)attract(ns);
-    menu(`<p class="tag">${L("Freigeschaltet","Unlocked")}</p><div class="rowb">${cs.map(c=>`<figure class="unf"><img class="unl" src="${c.full}" alt=""><figcaption><b>${c.n}</b>${L("Neuer Kämpfer","New fighter")}</figcaption></figure>`).join("")}${o?`<figure class="unf"><img class="unl" src="${o.full2}" alt=""><figcaption><b>${L(o.alt.on[0],o.alt.on[1])}</b>${L("Neues Outfit für ","New outfit for ")+o.n}</figcaption></figure>`:""}${ns!=null?`<figure class="unf"><div class="stc" style="${arStyle(ns)}">${STG[ns].n}</div><figcaption><b>${STG[ns].n}</b>${L("Neue Bonus-Arena","New bonus arena")}</figcaption></figure>`:""}</div><button class="btn" data-a="home">${L("Weiter","Continue")}</button>`,1)},
+  unlock(){const{c:cs,o,s:ns,a:na}=lastUnl;sfx("unlock");flash("#fff");if(o)altPics(o);if(na!=null||ns!=null)attract(na!=null?na:ns);
+    menu(`<p class="tag">${L("Freigeschaltet","Unlocked")}</p><div class="rowb">${cs.map(c=>`<figure class="unf"><img class="unl" src="${c.full}" alt=""><figcaption><b>${c.n}</b>${L("Neuer Kämpfer","New fighter")}</figcaption></figure>`).join("")}${o?`<figure class="unf"><img class="unl" src="${o.full2}" alt=""><figcaption><b>${L(o.alt.on[0],o.alt.on[1])}</b>${L("Neues Outfit für ","New outfit for ")+o.n}</figcaption></figure>`:""}${ns!=null?`<figure class="unf"><div class="stc" style="${arStyle(ns)}">${STG[ns].n}</div><figcaption><b>${STG[ns].n}</b>${L("Neue Bonus-Arena","New bonus arena")}</figcaption></figure>`:""}${na!=null?`<figure class="unf"><div class="stc" style="${arStyle(na)}">${STG[na].n}</div><figcaption><b>${STG[na].n}</b>${L("Arena von ","Arena of ")+owner(na).n}</figcaption></figure>`:""}</div><button class="btn" data-a="home">${L("Weiter","Continue")}</button>`,1)},
   outfit(b){const c=CH[selC],o=+b.dataset.o;if(!o||altOk(c)){SAVE.of[c.id]=o;save()}showDet(selC,o)},
   track(b){SAVE.track=+b.dataset.i;save();musicTrack(SAVE.track);settings()},
   resume(){paused=false;const d=performance.now()-pauseAt;for(const k in cards)if(cards[k].t0)cards[k].t0+=d;last=performance.now();menuHide()},
