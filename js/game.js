@@ -230,7 +230,7 @@ function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=n
 function startScreen(){menu(LOGO+`<p>Rechne richtig, dann schlägt dein Kämpfer zu.</p><label class="nmf" for="pname">Dein Kämpfername<input id="pname" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Name" value="${esc(SAVE.name)}"></label><button class="btn blink" data-a="start">Start</button>`)}
 function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
   menu(`<h2>Rangliste</h2><p>Schnellste Kampfzeit für die ganze Story. Gespeichert auf diesem Gerät.</p><div class="seg">${DIFFS.map((x,i)=>`<button type="button" data-a="lb" data-i="${i}" class="${d==i?"on":""}">${x[0]}</button>`).join("")}</div>
-   ${rows.length?`<table class="lb"><thead><tr><th>Platz</th><th>Name</th><th>Kämpfer</th><th>Zeit</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.n==SAVE.name?' class="me"':""}><td>${i+1}.</td><td>${esc(r.n)}</td><td>${CH[r.c].n}</td><td>${fmtT(r.t)}</td></tr>`).join("")}</tbody></table>`
+   ${rows.length?`<table class="rank"><thead><tr><th>Platz</th><th>Name</th><th>Kämpfer</th><th>Zeit</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.n==SAVE.name?' class="me"':""}><td>${i+1}.</td><td>${esc(r.n)}</td><td>${CH[r.c].n}</td><td>${fmtT(r.t)}</td></tr>`).join("")}</tbody></table>`
     :`<p class="tag">Noch kein Eintrag. Schaff die Story in „${DIFFS[d][0]}“, dann stehst du hier ganz oben.</p>`}
    <button class="btn alt sm" data-a="home">Zurück</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;

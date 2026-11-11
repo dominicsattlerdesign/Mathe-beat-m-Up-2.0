@@ -53,7 +53,7 @@ const TASKS={
   wurf:[
     /* 1.–2. Klasse: Plus & Minus gemischt, drei Zahlen */
     [()=>{const a=rI(20,60),b=rI(11,30),c=rI(5,25);return[`${a} + ${b} − ${c}`,a+b-c]},
-     ()=>{const a=rI(50,99),b=rI(11,30),c=rI(5,19);return[`${a} − ${b} + ${c}`,a-b+c]},
+     ()=>{const a=rI(50,99),b=rI(11,30),c=rI(5,Math.min(19,100-a+b));return[`${a} − ${b} + ${c}`,a-b+c]},
      ()=>{const a=rI(11,40),b=rI(11,30),c=rI(5,25);return[`${a} + ${b} + ${c}`,a+b+c]},
      ()=>{const a=rI(60,99),b=rI(11,25),c=rI(5,20);return[`${a} − ${b} − ${c}`,a-b-c]},
      ()=>{const a=rI(2,6)*10,b=rI(1,3)*10,c=rI(1,4)*10;return[`${a} + ${b} − ${c}`,a+b-c]},
