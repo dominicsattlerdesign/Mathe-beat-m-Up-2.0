@@ -7,9 +7,9 @@ const esc=t=>String(t).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";"),fmtT=t=>M
 /* Freigespielte Kämpfer stehen in SAVE.unl. Alte Spielstände (Freischalten nach Anzahl Durchgänge) werden übernommen. */
 if(!Array.isArray(SAVE.unl)){SAVE.unl=CH.filter((c,i)=>i>=5&&SAVE.done>=i-4).map(c=>c.id)}
 const unlocked=ch=>!ch.lock||SAVE.unl.includes(ch.id);
-/* Nächster Kämpfer nach einem Story-Sieg: in "Mittel" zufällig aus allen gesperrten (Bosse inklusive),
-   in den anderen Stufen der nächste normale Kämpfer der Reihe nach */
-const nextUnl=d=>{const free=CH.filter(c=>c.lock&&!unlocked(c));return d==2?(free.length?P(free):null):free.find(c=>!c.boss)||null};
+/* Nächster Kämpfer nach einem Story-Sieg, immer zufällig aus den gesperrten:
+   in "Mittel" aus allen (Bosse inklusive), in den anderen Stufen nur aus den normalen Kämpfern */
+const nextUnl=d=>{const free=CH.filter(c=>c.lock&&!unlocked(c)&&(d==2||!c.boss));return free.length?P(free):null};
 /* Zweites Outfit: frei, wenn die Story mit dieser Figur geschafft wurde. useAlt = Spieler hat es gewählt. */
 const altOk=c=>SAVE.alts.includes(c.id),useAlt=i=>!!(SAVE.of[CH[i].id]&&altOk(CH[i]));
 const pic=(i,k,o=useAlt(i))=>o?(altPics(CH[i]),CH[i][k+"2"]):CH[i][k];
