@@ -1,10 +1,14 @@
 /* ---------- Spielablauf: Menüs, Touch-Steuerung, Kampf, Finisher ---------- */
-const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[],lang:(navigator.language||"de").slice(0,2)=="en"?"en":"de",vol:{m:.8,s:.9}};
+const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[],lang:(navigator.language||"de").slice(0,2)=="en"?"en":"de",vol:{m:.8,s:.9},track:0,alts:[],of:{}};
   try{const n=localStorage.getItem("mb3");if(n)Object.assign(s,JSON.parse(n));else{const o=JSON.parse(localStorage.getItem("mrb2")||"null");if(o){s.done=o.done||0;s.diff=Math.min(3,(o.diff||0)+1);s.mute=!!o.mute}}}catch(e){}
-  if(!Array.isArray(s.lb))s.lb=[];if(!s.vol)s.vol={m:.8,s:.9};LANG=s.lang;return s})();
+  if(!Array.isArray(s.lb))s.lb=[];if(!s.vol)s.vol={m:.8,s:.9};if(!Array.isArray(s.alts))s.alts=[];if(!s.of)s.of={};LANG=s.lang;return s})();
 const save=()=>{try{localStorage.setItem("mb3",JSON.stringify(SAVE))}catch(e){}};
 const esc=t=>String(t).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";"),fmtT=t=>Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0");
 const unlocked=ch=>!ch.lock||SAVE.done>=ch.lock;
+/* Zweites Outfit: frei, wenn die Story mit dieser Figur geschafft wurde. useAlt = Spieler hat es gewählt. */
+const altOk=c=>SAVE.alts.includes(c.id),useAlt=i=>!!(SAVE.of[CH[i].id]&&altOk(CH[i]));
+const pic=(i,k,o=useAlt(i))=>o?(altPics(CH[i]),CH[i][k+"2"]):CH[i][k];
+let lastUnl={c:[],o:null};
 const ATK={hieb:{n:"HIEB",kj:"拳",dm:6,c:0xff5a1a},kick:{n:"KICK",kj:"蹴",dm:10,c:0x25d4ff},wurf:{n:"WURF",kj:"投",dm:15,c:0x9a6bff},sig:{n:"SPEZIAL",dm:30}};
 bi(ATK.hieb,"n","HIEB","PUNCH");bi(ATK.wurf,"n","WURF","THROW");bi(ATK.sig,"n","SPEZIAL","SPECIAL");
 const QUIPS={};bi(QUIPS,"ko",["Das gibt Kopfweh.","Gute Nacht!","Autsch.","Sternchen zählen …","Der steht so schnell nicht auf."],["That’ll leave a mark.","Good night!","Ouch.","Counting stars …","Not getting up anytime soon."]);
@@ -24,7 +28,7 @@ const cine=on=>document.body.classList.toggle("cine",on),speed=on=>$("#speed").c
 function impactFrame(ms=90){cv.classList.add("impact");setTimeout(()=>cv.classList.remove("impact"),ms)}
 
 /* ----- Kämpfer im Kampf ----- */
-function mkF(ch,side,isP,scale=1){const f=buildFighter(ch);f.side=side;f.isP=isP;f.hx=side*2.1;f.root.position.x=f.hx;f.root.scale.set(side>0?-scale:scale,scale,scale);f.sc*=scale;f.rs=scale;sc.add(f.root);
+function mkF(ch,side,isP,scale=1,o=0){const f=buildFighter(ch,o);f.side=side;f.isP=isP;f.hx=side*2.1;f.root.position.x=f.hx;f.root.scale.set(side>0?-scale:scale,scale,scale);f.sc*=scale;f.rs=scale;sc.add(f.root);
   f.max=f.hp=86+ch.st[1]*7;f.dm=.82+ch.st[0]*.07;f.mg=.7+ch.st[2]*.12;f.mt=0;snapPose(f);return f}
 function clearFighters(){for(const f of fighters){sc.remove(f.root);const h=f.J.hd.children[0].material;h.map&&h.map.dispose();h.dispose()}fighters=[];pl=en=null}
 function hud(){$("#ph").style.width=$("#pht").style.width=pl.hp/pl.max*100+"%";$("#eh").style.width=$("#eht").style.width=en.hp/en.max*100+"%";$("#pm").style.width=pl.mt+"%";
@@ -197,14 +201,14 @@ function startFight(){
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
   const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i]))),LV=story?lvl:[2,3,5,8][SAVE.diff];
   stageI=story?Math.floor((lvl-1)/2):R(0,STG.length-1);
-  menu(`<div class="vs"><figure><img src="${CH[pickC].full}" alt=""><figcaption>${CH[pickC].n}<small>${qt(CH[pickC].q)}</small></figcaption></figure><div class="v">VS</div><figure><img src="${CH[oi].full}" alt=""><figcaption>${CH[oi].n}<small>${qt(CH[oi].q)}</small></figcaption></figure></div>
+  menu(`<div class="vs"><figure><img src="${pic(pickC,"full")}" alt=""><figcaption>${CH[pickC].n}<small>${qt(CH[pickC].q)}</small></figcaption></figure><div class="v">VS</div><figure><img src="${CH[oi].full}" alt=""><figcaption>${CH[oi].n}<small>${qt(CH[oi].q)}</small></figcaption></figure></div>
     <p class="tag">${story?(lvl==10?L("Endkampf","Final battle"):lvl==5?L("Boss-Kampf","Boss battle"):L("Kampf "+lvl+" von 10","Fight "+lvl+" of 10"))+" · ":""}${STG[stageI].n}</p>`,1);sfx("vs");
   setTimeout(()=>{const id=fid;
     clearFighters();clearTemp();buildStage(stageI);
-    pl=mkF(CH[pickC],-1,true);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
+    pl=mkF(CH[pickC],-1,true,1,useAlt(pickC)?1:0);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
     round=1;wins={p:0,e:0};fo="none";cd={last:null,n:0,lock:null,left:0};$("#fo").hidden=true;
     en.max=en.hp=44+LV*6+CH[oi].st[1]*3+(boss?14:0);en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Sonst im Freien Kampf höchstens 4,5 s. */en.timer=en.iv;
-    $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=CH[pickC].bust;$("#ei").src=CH[oi].bust;
+    $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=pic(pickC,"bust");$("#ei").src=CH[oi].bust;
     $("#lv").innerHTML=`<b>${story?(lvl==10?L("ENDKAMPF","FINAL BATTLE"):L("KAMPF ","FIGHT ")+lvl+"/10"):L("FREIER KAMPF","FREE FIGHT")}</b>${STG[stageI].n}`;
     cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),sig:newCard("sig"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
     $("#hud").hidden=false;$("#panel").hidden=false;msg(L("Löse eine Aufgabe, dann greift dein Kämpfer an!","Solve a problem and your fighter attacks!"));render();layout();
@@ -219,7 +223,8 @@ function result(win){
   if(win&&s&&lvl<10){lvl++;SAVE.story={c:pickC,lvl,t:storyT};save();
     menu(`<h2>${L("Sieg","Victory")} ${sc_}</h2><p>${L(`Kampf ${lvl-1} von 10 geschafft. Kampfzeit bisher: ${fmtT(storyT)}`,`Fight ${lvl-1} of 10 done. Fight time so far: ${fmtT(storyT)}`)}</p><button class="btn" data-a="next">${L("Weiter zu Kampf ","On to fight ")+lvl}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button>`,1)}
   else if(win&&s){SAVE.done++;SAVE.story=null;const e={n:SAVE.name||HERO(),d:SAVE.diff,t:Math.round(storyT),c:pickC};SAVE.lb.push(e);SAVE.lb.sort((a,b)=>a.t-b.t);
-    const rank=SAVE.lb.filter(x=>x.d==e.d).indexOf(e)+1;SAVE.lb=SAVE.lb.filter(x=>SAVE.lb.filter(y=>y.d==x.d).indexOf(x)<20);save();const nu=CH.some(c=>c.lock==SAVE.done);
+    const rank=SAVE.lb.filter(x=>x.d==e.d).indexOf(e)+1;SAVE.lb=SAVE.lb.filter(x=>SAVE.lb.filter(y=>y.d==x.d).indexOf(x)<20);const id=CH[pickC].id,no=!SAVE.alts.includes(id);if(no)SAVE.alts.push(id);
+    lastUnl={c:CH.filter(c=>c.lock==SAVE.done),o:no?CH[pickC]:null};save();const nu=lastUnl.c.length||no;
     menu(`<p class="tag">${L("Story geschafft","Story cleared")} · ${DIFFS[e.d][0]}</p><h1 class="logo"><span>${L("Du bist","You are the")}</span>Champion!</h1><p>${L(`${esc(e.n)} hat mit ${CH[pickC].n} alle zehn Gegner besiegt. Kampfzeit ${fmtT(e.t)}, das ist Platz ${rank} der Rangliste.`,`${esc(e.n)} beat all ten opponents with ${CH[pickC].n}. Fight time ${fmtT(e.t)}, that’s rank ${rank} on the leaderboard.`)}</p><div class="rowb">${nu?`<button class="btn gold" data-a="unlock">${L("Was ist das …?","What’s that …?")}</button>`:""}<button class="btn alt" data-a="lb" data-i="${e.d}">${L("Rangliste","Leaderboard")}</button>${nu?"":`<button class="btn" data-a="home">${L("Hauptmenü","Main menu")}</button>`}</div>`,1)}
   else if(win)menu(`<h2>${L("Gewonnen","You won")} ${sc_}</h2><div class="rowb"><button class="btn" data-a="again">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
   else menu(`<h2>${L("Niederlage","Defeat")} ${sc_}</h2><p>${P(L(["Das war knapp. Atme durch und hol dir die Revanche!","Auch Champions fallen mal um. Aufstehen, Krone richten.","Dein Gegner hatte Glück. Sagt er jedenfalls."],["That was close. Take a breath and go for the rematch!","Even champions fall over sometimes. Get up, fix your crown.","Your opponent got lucky. At least that’s what they say."]))}</p><div class="rowb"><button class="btn" data-a="again">${L("Revanche","Rematch")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
@@ -243,6 +248,7 @@ function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*
   menu(`<h2>${L("Einstellungen","Settings")}</h2><div class="sets">
    <label for="vm"><span>${L("Musik","Music")}</span><input id="vm" type="range" min="0" max="100" step="5" value="${v("m")}"><b id="vmv">${v("m")} %</b></label>
    <label for="vs"><span>${L("Effekte","Effects")}</span><input id="vs" type="range" min="0" max="100" step="5" value="${v("s")}"><b id="vsv">${v("s")} %</b></label>
+   <div class="srow wide"><span>${L("Musiktitel","Music track")}</span><div class="seg">${TRK.map((t,k)=>`<button type="button" data-a="track" data-i="${k}" class="${SAVE.track==k?"on":""}">${L(t.n[0],t.n[1])}</button>`).join("")}</div></div>
    <div class="srow"><span>${L("Sprache","Language")}</span>${langSeg()}</div></div>
    <button class="btn alt sm" data-a="back">${L("Zurück","Back")}</button>`,1)}
 function applyLang(){document.documentElement.lang=LANG;$("#plbl").textContent=ATK.sig.n;$("#elbl").textContent=L("GEGNER-ANGRIFF","ENEMY ATTACK");
@@ -253,12 +259,14 @@ function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
     :`<p class="tag">${L(`Noch kein Eintrag. Schaff die Story in „${DIFFS[d][0]}“, dann stehst du hier ganz oben.`,`No entries yet. Clear the story on “${DIFFS[d][0]}” and you’ll be on top.`)}</p>`}
    <button class="btn alt sm" data-a="home">${L("Zurück","Back")}</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
-  menu(`<h2>${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
-function showDet(i){selC=i;const c=CH[i],u=unlocked(c);document.querySelectorAll(".tile").forEach((t,j)=>t.classList.toggle("on",j==i));
-  $("#det").innerHTML=`<img src="${c.full}" alt="" class="${u?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3><p>${c.d}</p>
+  menu(`<h2>${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
+function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt(i)?1:0,o=pv==null?cur:pv,lockO=o==1&&!ao;
+  document.querySelectorAll(".tile").forEach((t,j)=>{t.classList.toggle("on",j==i);if(j==i&&u)t.querySelector("img").src=pic(i,"bust")});
+  const seg=`<div class="seg osel">${[L("Outfit 1","Outfit 1"),ao?L(c.alt.on[0],c.alt.on[1]):L("Outfit 2 · gesperrt","Outfit 2 · locked")].map((t,k)=>`<button type="button" data-a="outfit" data-o="${k}" class="${o==k?"on":""}">${t}</button>`).join("")}</div>`;
+  $("#det").innerHTML=`<img src="${u?pic(i,"full",o==1):c.full}" alt="" class="${u&&!lockO?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3>${seg}<p>${lockO?L(`Schaffe die Story mit ${c.n}, um dieses Outfit freizuschalten.`,`Clear the story with ${c.n} to unlock this outfit.`):c.d}</p>
     <div class="st">${L(["Kraft","Leben","Spezial"],["Power","Health","Special"]).map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>
     <div class="fn"><small>${L("SPEZIAL-ATTACKE","SPECIAL ATTACK")}</small>${c.sig}</div><div class="fn"><small>FINISHER</small>${c.fin}</div><button class="btn" data-a="go">${L("Kämpfen!","Fight!")}</button>`
-   :`<div class="ti">${L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${L(`Schaffe die Story ${c.lock}×, dann kommt dieser Kämpfer dazu. Bisher geschafft: ${SAVE.done}×. Pro Durchgang werden zwei Kämpfer frei.`,`Clear the story ${c.lock}× to unlock this fighter. Cleared so far: ${SAVE.done}×. Every clear unlocks two fighters.`)}</p><button class="btn" disabled>${L("Gesperrt","Locked")}</button>`)+`</div>`}
+   :`<div class="ti">${L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${L(`Schaffe die Story ${c.lock}×, dann kommt dieser Kämpfer dazu. Bisher geschafft: ${SAVE.done}×. Jeder Durchgang schaltet einen Kämpfer frei.`,`Clear the story ${c.lock}× to unlock this fighter. Cleared so far: ${SAVE.done}×. Every clear unlocks one fighter.`)}</p><button class="btn" disabled>${L("Gesperrt","Locked")}</button>`)+`</div>`}
 const ACTIONS={
   start(){const n=$("#pname");if(n){SAVE.name=n.value.trim().slice(0,12)||HERO();save()}auInit();try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
   name(){startScreen();const n=$("#pname");n&&n.focus()},lb(b){lbScreen(+b.dataset.i)},
@@ -269,11 +277,14 @@ const ACTIONS={
   diff(b){SAVE.diff=+b.dataset.i;save();document.querySelectorAll("#dseg button").forEach((x,i)=>x.classList.toggle("on",i==SAVE.diff))},
   tile(b){showDet(+b.dataset.i)},go(){pickC=selC;if(mode=="s"){SAVE.story=null;storyT=0;save()}startFight()},
   next(){startFight()},again(){startFight()},home(){home()},
-  unlock(){const cs=CH.filter(c=>c.lock==SAVE.done);sfx("unlock");flash("#fff");menu(`<p class="tag">${L("Neue Kämpfer freigeschaltet","New fighters unlocked")}</p><div class="rowb">${cs.map(c=>`<figure class="unf"><img class="unl" src="${c.full}" alt=""><figcaption><b>${c.n}</b>${c.ti}</figcaption></figure>`).join("")}</div><button class="btn" data-a="home">${L("Weiter","Continue")}</button>`,1)},
+  unlock(){const{c:cs,o}=lastUnl;sfx("unlock");flash("#fff");if(o)altPics(o);
+    menu(`<p class="tag">${L("Freigeschaltet","Unlocked")}</p><div class="rowb">${cs.map(c=>`<figure class="unf"><img class="unl" src="${c.full}" alt=""><figcaption><b>${c.n}</b>${L("Neuer Kämpfer","New fighter")}</figcaption></figure>`).join("")}${o?`<figure class="unf"><img class="unl" src="${o.full2}" alt=""><figcaption><b>${L(o.alt.on[0],o.alt.on[1])}</b>${L("Neues Outfit für ","New outfit for ")+o.n}</figcaption></figure>`:""}</div><button class="btn" data-a="home">${L("Weiter","Continue")}</button>`,1)},
+  outfit(b){const c=CH[selC],o=+b.dataset.o;if(!o||altOk(c)){SAVE.of[c.id]=o;save()}showDet(selC,o)},
+  track(b){SAVE.track=+b.dataset.i;save();musicTrack(SAVE.track);settings()},
   resume(){paused=false;const d=performance.now()-pauseAt;for(const k in cards)if(cards[k].t0)cards[k].t0+=d;last=performance.now();menuHide()},
   quit(){paused=false;home()},
 };
-$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(!["tile","diff","lb","lang"].includes(b.dataset.a))sfx("click");else sfx("pick");ACTIONS[b.dataset.a](b)});
+$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(!["tile","diff","lb","lang","outfit","track"].includes(b.dataset.a))sfx("click");else sfx("pick");ACTIONS[b.dataset.a](b)});
 function pauseMenu(){menu(`<h2>Pause</h2><div class="rowb"><button class="btn" data-a="resume">${L("Weiter","Resume")}</button><button class="btn alt" data-a="psets">${L("Einstellungen","Settings")}</button><button class="btn alt" data-a="quit">${L("Kampf aufgeben","Give up")}</button></div>`,1)}
 ACTIONS.psets=()=>settings("pause");
 $("#pz").addEventListener("click",()=>{if(over||paused||document.body.classList.contains("cine"))return;paused=true;pauseAt=performance.now();sfx("click");pauseMenu()});
@@ -306,6 +317,6 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
   camStep(dt);ren.render(sc,cam)}
 
 /* ----- Start ----- */
-AU.muted=SAVE.mute;AU.vol={m:SAVE.vol.m,s:SAVE.vol.s};applyLang();sndUi();rs();makePortraits();attract();
+AU.muted=SAVE.mute;AU.vol={m:SAVE.vol.m,s:SAVE.vol.s};AU.track=Math.min(SAVE.track||0,TRK.length-1);applyLang();sndUi();rs();makePortraits();attract();
 startScreen();
 requestAnimationFrame(loop);

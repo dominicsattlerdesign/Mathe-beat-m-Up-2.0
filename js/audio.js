@@ -64,27 +64,53 @@ const SFX={
 };
 function sfx(n){if(!AU.ctx||AU.muted)return;try{SFX[n]&&SFX[n]()}catch(e){}}
 
-/* Menümusik: schneller Arcade-Chiptune in a-Moll, 150 BPM, 8 Takte Schleife */
-const MU={bpm:150,
+/* Menümusik: drei Arcade-Titel, je 8 Takte à 16 Schritte als Schleife.
+   lead = Melodie (MIDI-Noten, 0 = Pause), bass = Grundton je Takt, arp = Akkord je Takt,
+   bs = Bass-Muster, dr = Schlagzeug-Muster, lw = Klang der Melodie, h = zweite Stimme im zweiten Durchgang (Halbtöne). */
+const TRK=[
+ {n:["Neon-Faust","Neon Fist"],bpm:150,lw:"square",h:7,bs:"oct",dr:"std",
   lead:[[81,0,0,76,0,0,72,0,76,0,81,0,79,0,76,0],[77,0,0,72,0,0,69,0,72,0,77,0,76,0,72,0],[76,0,0,72,0,0,67,0,72,0,76,0,79,0,76,0],[74,0,0,71,0,0,67,0,71,0,74,0,79,0,83,0],
         [81,0,81,0,84,0,81,0,79,0,76,0,79,0,81,0],[77,0,77,0,81,0,77,0,76,0,72,0,76,0,77,0],[79,0,79,0,83,0,79,0,77,0,74,0,77,0,79,0],[80,0,0,76,0,0,83,0,80,0,76,0,80,83,86,88]],
   bass:[45,41,48,43,45,41,43,40],
-  arp:[[57,60,64],[53,57,60],[55,60,64],[55,59,62],[57,60,64],[53,57,60],[55,59,62],[56,59,64]]};
+  arp:[[57,60,64],[53,57,60],[55,60,64],[55,59,62],[57,60,64],[53,57,60],[55,59,62],[56,59,64]]},
+ /* Drachenpfad: fernöstlich, a-Moll-Pentatonik, ruhiger Groove mit Taiko-Trommeln */
+ {n:["Drachenpfad","Dragon Path"],bpm:132,lw:"triangle",h:-12,bs:"half",dr:"taiko",
+  lead:[[81,0,0,79,0,76,0,0,74,0,76,0,79,0,0,0],[81,0,84,0,81,0,79,0,76,0,0,0,74,0,72,0],[74,0,0,76,0,74,0,72,0,69,0,0,72,0,74,0],[76,0,0,0,0,0,79,0,76,0,74,0,72,0,0,0],
+        [69,0,72,0,74,0,76,0,79,0,0,76,0,79,81,0],[84,0,0,81,0,79,0,81,0,0,79,0,76,0,74,0],[76,0,0,74,0,72,0,74,0,0,72,0,69,0,72,0],[69,0,0,0,0,0,0,0,76,0,74,0,72,0,74,76]],
+  bass:[45,41,43,40,45,41,43,45],
+  arp:[[57,60,64],[53,57,60],[55,59,62],[52,55,59],[57,60,64],[53,57,60],[55,59,62],[57,60,64]]},
+ /* Turbo-Arena: e-Moll, schnell, durchgehende Bassdrum und treibender Bass */
+ {n:["Turbo-Arena","Turbo Arena"],bpm:168,lw:"square",h:-5,bs:"drive",dr:"four",
+  lead:[[88,0,86,0,83,0,79,0,83,0,86,0,88,0,0,0],[84,0,83,0,79,0,76,0,79,0,83,0,84,0,0,0],[86,0,83,0,78,0,74,0,78,0,83,0,86,0,88,0],[87,0,0,0,83,0,0,0,78,0,0,0,75,0,78,0],
+        [76,76,0,79,0,76,0,83,0,81,0,79,0,76,0,0],[76,76,0,79,0,76,0,84,0,83,0,79,0,76,0,0],[74,74,0,78,0,74,0,81,0,79,0,78,0,74,0,0],[75,0,78,0,83,0,87,0,90,0,87,0,83,0,78,0]],
+  bass:[40,36,38,35,40,36,38,35],
+  arp:[[52,55,59],[48,52,55],[50,54,57],[47,51,54],[52,55,59],[48,52,55],[50,54,57],[47,51,54]]}];
+AU.track=0;
 const mf=n=>440*Math.pow(2,(n-69)/12);
 function musTick(){
-  const c=AU.ctx,sd=60/MU.bpm/4;
+  const c=AU.ctx,M=TRK[AU.track]||TRK[0],sd=60/M.bpm/4;
   while(AU.next<c.currentTime+.18){
-    const s=AU.step%128,bar=s>>4,i=s&15,pass=(AU.step>>7)&1,at=AU.next,out=AU.mus;
-    const n=MU.lead[bar][i];
-    if(n){tone({at,f:mf(n),d:sd*1.9,v:.085,w:"square",out});if(pass)tone({at,f:mf(n+(bar==7?3:7)),d:sd*1.6,v:.035,w:"square",out})}
-    if(i%2==0)tone({at,f:mf(MU.bass[bar]+((i>>1)%2?12:0)),d:sd*1.7,v:.17,w:"sawtooth",out});
-    tone({at,f:mf(MU.arp[bar][i%3]+12),d:sd*.9,v:.035,w:"triangle",out});
-    if(i%4==0){tone({at,f:150,f2:42,d:.13,v:.45,w:"sine",out})}
-    if(i%8==4)nz({at,ft:"bandpass",f:1700,q:.7,d:.12,v:.3,out});
-    if(i%2==1||(bar%4==3&&i>11))nz({at,ft:"highpass",f:7000,d:.035,v:.09,out});
+    const s=AU.step%128,bar=s>>4,i=s&15,pass=(AU.step>>7)&1,at=AU.next,out=AU.mus,n=M.lead[bar][i],r=M.bass[bar];
+    if(n){tone({at,f:mf(n),d:sd*(M.lw=="triangle"?2.6:1.9),v:M.lw=="triangle"?.12:.085,w:M.lw,out});if(pass)tone({at,f:mf(n+(bar==7&&M.h==7?3:M.h)),d:sd*1.6,v:.035,w:"square",out})}
+    /* Bass */
+    if(M.bs=="oct"){if(i%2==0)tone({at,f:mf(r+((i>>1)%2?12:0)),d:sd*1.7,v:.17,w:"sawtooth",out})}
+    else if(M.bs=="half"){if(i==0||i==6||i==8||i==14)tone({at,f:mf(r+(i==14?7:0)),d:sd*(i==0||i==8?3.5:1.6),v:.2,w:"sawtooth",out})}
+    else tone({at,f:mf(r+(i%4==2?12:0)),d:sd*.85,v:.15,w:"sawtooth",out});
+    /* Begleitung */
+    tone({at,f:mf(M.arp[bar][i%3]+12),d:sd*.9,v:M.dr=="taiko"?.028:.035,w:"triangle",out});
+    /* Schlagzeug */
+    if(M.dr=="std"){if(i%4==0)tone({at,f:150,f2:42,d:.13,v:.45,w:"sine",out});if(i%8==4)nz({at,ft:"bandpass",f:1700,q:.7,d:.12,v:.3,out});
+      if(i%2==1||(bar%4==3&&i>11))nz({at,ft:"highpass",f:7000,d:.035,v:.09,out})}
+    else if(M.dr=="taiko"){if(i==0||i==10)tone({at,f:120,f2:45,d:.3,v:.55,w:"sine",out});if(i==6||i==14||(bar%2&&i==15))tone({at,f:190,f2:95,d:.18,v:.32,w:"sine",out});
+      if(i==8)nz({at,ft:"bandpass",f:900,q:1.2,d:.16,v:.28,out});if(i%2==0)nz({at,ft:"bandpass",f:6000,q:2,d:.05,v:.06,out})}
+    else{if(i%4==0)tone({at,f:160,f2:40,d:.14,v:.5,w:"sine",out});if(i==4||i==12)nz({at,ft:"bandpass",f:2000,q:.6,d:.14,v:.34,out});
+      if(i%4==2)nz({at,ft:"highpass",f:6000,d:.09,v:.12,out});else nz({at,ft:"highpass",f:8000,d:.025,v:.05,out});
+      if(bar==7&&i>11)tone({at,f:mf(r+24+(i-12)*3),d:sd,v:.06,w:"square",out})}
     AU.step++;AU.next+=sd;
   }
 }
+/* Titel wechseln: läuft gerade Musik, beginnt der neue Titel sofort von vorn */
+function musicTrack(i){AU.track=i;if(AU.timer){clearInterval(AU.timer);AU.timer=null;musicOn()}}
 function musicOn(){
   if(!AU.ctx||AU.timer)return;
   AU.step=0;AU.next=AU.ctx.currentTime+.08;AU.mus.gain.cancelScheduledValues(AU.ctx.currentTime);AU.mus.gain.setTargetAtTime(.6*AU.vol.m,AU.ctx.currentTime,.05);

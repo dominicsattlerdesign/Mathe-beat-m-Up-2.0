@@ -4,13 +4,14 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 
 - **Drei Attacken, drei Aufgabenarten:** Hieb, Kick und Wurf mit je eigener Aufgabenart und elf Varianten. Dreimal dieselbe Attacke am Stück sperrt sie, bis zwei andere geschafft sind.
 - **Spezial-Attacke und Finisher je Figur:** Die Spezial-Leiste lädt sich im Kampf auf. Den Finisher gibt es nur im Matchball, wenn der Gegner höchstens 10 % Leben hat, und nur 15 Sekunden lang.
-- **15 Kämpfer:** 5 von Anfang an, pro Story-Durchgang kommen zwei dazu.
+- **15 Kämpfer:** 5 von Anfang an, pro Story-Durchgang kommt einer dazu.
+- **Zweites Outfit je Figur:** wird frei, wenn man die Story mit dieser Figur schafft, und ist in der Kämpferwahl umschaltbar.
 - **5 Arenen** mit Objekten, die im Kampf zu Bruch gehen.
 - **Vier Stufen:** 1.–2. Klasse (Plus und Minus bis 20), Leicht, Mittel, Schwer.
 - **Story** (10 Kämpfe, jeder bis zwei Rundensiege) und **Freier Kampf**.
 - **Rangliste:** schnellste Kampfzeit für die Story je Stufe, gespeichert auf dem Gerät.
 - **Sprache:** Deutsch oder Englisch, umschaltbar auf dem Startbildschirm und in den Einstellungen.
-- **Einstellungen:** Lautstärke für Musik und für Effekte, auch im Pausenmenü.
+- **Einstellungen:** Lautstärke für Musik und für Effekte, Wahl zwischen drei Arcade-Musiktiteln, auch im Pausenmenü.
 - Soundeffekte und Menümusik werden live im Browser erzeugt, es gibt keine Audiodateien.
 
 ## Spielen

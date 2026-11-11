@@ -153,6 +153,9 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 .sets{display:flex;flex-direction:column;gap:14px;width:min(92%,520px);padding:18px 20px;background:rgba(14,12,28,.85);border:3px solid var(--line);box-shadow:4px 4px 0 var(--line)}
 .sets label,.srow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) 54px;align-items:center;gap:12px;text-align:left;font:700 14px var(--ui);letter-spacing:.06em}
 .srow{grid-template-columns:minmax(0,1fr) auto}.srow .seg{justify-self:start}
+.srow .seg button{padding:10px 12px}
+.osel{transform:skewX(-8deg) scale(.86);transform-origin:left;align-self:flex-start}.osel button{padding:7px 9px;min-height:38px;font-size:11px;letter-spacing:.06em;white-space:nowrap}
+.srow.wide{grid-template-columns:1fr;gap:6px}.srow.wide .seg{justify-self:stretch}.srow.wide .seg button{flex:1;white-space:nowrap}
 .sets b{font:700 15px var(--ui);text-align:right;font-variant-numeric:tabular-nums;color:var(--gold)}
 .sets input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;touch-action:none;margin:0}
 .sets input[type=range]::-webkit-slider-runnable-track{height:12px;background:#1b1830;border:3px solid var(--line);transform:skewX(-14deg)}

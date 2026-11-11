@@ -65,7 +65,7 @@ function faceTex(ch){const o=ch.face||{};return ctex(1024,512,g=>{g.scale(2,2);
 const HEADG=(()=>{const n=24,pts=[];for(let i=0;i<=n;i++){const th=i/n*Math.PI,t=Math.max(0,(Math.PI/2-th)/(Math.PI/2));pts.push(new THREE.Vector2(Math.max(.0005,.3*Math.sin(th)*(1-.3*Math.pow(t,1.4))),-.3*Math.cos(th)*(1.12+.16*t)))}
   const g=new THREE.LatheGeometry(pts,28);g.rotateY(-Math.PI/2);return g})();
 const limb=(r0,r1,r2,L)=>[[0,-L-r2*.55],[r2*.75,-L-r2*.3],[r2,-L],[lerp(r2,r1,.6),-L*.72],[r1,-L*.4],[lerp(r1,r0,.7),-L*.15],[r0,0],[r0*.8,r0*.45],[0,r0*.7]].map(p=>[+p[0].toFixed(4),+p[1].toFixed(4)]);
-function buildFighter(ch){
+function buildFighter(ch,o){if(o)ch=outfit(ch,1);
   const b=ch.b||{},W=b.w||1,S=b.h||1,CL="cloth",SK="skin",ME="metal",HA="hair";
   const root=new THREE.Group(),turn=new THREE.Group(),piv=new THREE.Group(),model=new THREE.Group();
   root.add(turn);turn.add(piv);piv.add(model);piv.position.y=1.6*S;model.position.y=-1.6*S;model.scale.setScalar(S);turn.rotation.y=FACE;
@@ -156,6 +156,8 @@ function buildFighter(ch){
       for(let i=0;i<5;i++){const m=sharp?M(gK(.13,1.2-i*.15,4),c,[s*(.42+i*.06),.4-i*.27,0],g,1,0,CL):M(gS(.3,10,8),c,[s*(.4+i*.05),.42-i*.24,0],g);
         m.rotation.z=-s*(1.1+i*.26);if(sharp)m.scale.z=.3;else m.scale.set(.42,1.6-i*.2,.2)}flaps.push({m:g,b:g.rotation.y,amp:.18*s,sp:3,ph:0,ax:"y"})}},
     tail(c){let p=grp(J.hp,0,-.02,-.16);p.rotation.x=-2;const r=p;for(let i=0;i<5;i++){M(gC(.1-i*.016,.08-i*.016,.3,10),c,[0,.15,0],p,1,0,CL);p=grp(p,0,.3,0);p.rotation.x=.3}const t=M(gK(.1,.26,4),c,[0,.1,0],p);t.scale.z=.4;flap(r,.2,3)},
+    tricorn(c,t){const g=grp(J.hd,0,hy+.3,0);const m=M(gC(.5,.46,.06,3),c,[0,0,0],g,1,0,CL);m.rotation.y=Math.PI;M(gC(.22,.27,.22,14),c,[0,.12,0],g,1,0,CL);M(gC(.275,.275,.05,14),t,[0,.04,0],g,0,0,ME);M(gO(.05),t,[0,.12,.26],g,0,0,ME)},
+    tophat(c,b){const g=grp(J.hd,0,hy+.27,0);g.rotation.z=-.12;M(gC(.37,.37,.035,20),c,[0,0,0],g,1,0,CL);M(gC(.21,.23,.46,20),c,[0,.24,0],g,1,0,CL);M(gC(.235,.235,.08,20),b,[0,.06,0],g,0,0,CL)},
     halo(c){const m=M(gT(.2,.03,8,24),c,[0,hy+.58,0],J.hd,0,c);m.rotation.x=Math.PI/2-.2;const h=new THREE.Mesh(gT(.2,.07,8,24),addMat(c,.35));h.position.copy(m.position);h.rotation.copy(m.rotation);J.hd.add(h)},
     crown(c){M(gC(.24,.22,.1,14),c,[0,hy+.3,0],J.hd,1,0x553300,ME);for(let i=0;i<5;i++){const a=i/5*6.28;M(gK(.05,.2,4),c,[Math.sin(a)*.22,hy+.44,Math.cos(a)*.22],J.hd,0,0x553300,ME)}M(gO(.05),0xff2a4a,[0,hy+.31,.24],J.hd,0,0xff2a4a)},
     bandana(c){const m=H.cap(c,{tilt:-.3});m.scale.set(1.06,1.17,1.09);M(gS(.07),c,[.2,hy+.1,-.3],J.hd);for(const s of[0,1]){const t=M(gB(.07,.02,.34),c,[.2,hy+.06-s*.06,-.48],J.hd,0);t.rotation.x=.5+s*.3;flap(t,.3,5)}M(gT(.07,.018,6,12),0xffc21a,[-.3,hy-.02,0],J.hd,0,0,ME).rotation.y=1.57},
@@ -236,19 +238,55 @@ const CH_EN={
  magus:{ti:"Lord of Numbers",d:"The final boss. Knows every formula and fears only one thing: the right answer.",q:"Show me your answer … if you dare!",sig:"Number Hail",fin:"Division by Zero"},
 };
 CH.forEach(c=>{const e=CH_EN[c.id];for(const k in e)bi(c,k,c[k],e[k])});
-/* Je Story-Durchgang werden zwei weitere Kämpfer frei: 5 am Start, 10 zum Freispielen */
-CH.forEach((c,i)=>c.lock=i<5?0:Math.ceil((i-4)/2));
-/* Porträts (Brustbild + Ganzkörper) direkt aus den 3D-Modellen fotografieren */
-function makePortraits(){
-  const ps=new THREE.Scene(),pc=new THREE.PerspectiveCamera(30,1,.1,50);
-  ps.add(new THREE.HemisphereLight(0xffffff,0x444466,.7));const d=new THREE.DirectionalLight(0xffffff,.8);d.position.set(3,6,8);ps.add(d);
-  ren.setPixelRatio(1);ren.setClearColor(0,0);
-  for(const ch of CH){const f=buildFighter(ch);f.turn.rotation.y=.45;snapPose(f);animFighter(f,1,0);ps.add(f.root);f.sh.visible=false;
-    const top=3.35*f.sc;
-    ren.setSize(300,375,false);pc.aspect=.8;pc.fov=26;pc.updateProjectionMatrix();pc.position.set(.5,top-.5,3.6);pc.lookAt(.02,top-.52,0);
-    ps.background=new THREE.Color(ch.c).multiplyScalar(.38);ren.render(ps,pc);ch.bust=cv.toDataURL("image/jpeg",.88);
-    ren.setSize(420,560,false);pc.aspect=.75;pc.fov=30;pc.updateProjectionMatrix();pc.position.set(1.2,2.3,7.6);pc.lookAt(0,1.8*f.sc,0);
-    ps.background=null;ren.render(ps,pc);ch.full=cv.toDataURL("image/png");
-    ps.remove(f.root);const hm=f.J.hd.children[0].material;hm.map.dispose();hm.dispose()}
-  rs();
-}
+/* Zweites Outfit je Figur. Wird frei, wenn man die Story mit dieser Figur schafft.
+   Überschreibt Aussehen und Ausrüstung, Namen und Attacken bleiben. on = Name des Outfits [de, en]. */
+const ALT={
+ raiko:{on:["Eis-Ninja","Ice Ninja"],hair:["spiky",0x1a2a4a],top:0xeef4ff,belly:0xbfe8ff,pants:0x2a3a6a,glove:0xeef4ff,shin:0x2a3a6a,boots:0x15131a,sleeve:"long",
+  acc(H){H.band(0xd6222c);H.scarf(0xd6222c,1.2);H.belt(0xd6222c,0xcfd8e8);H.pads(0xcfd8e8,.17);H.tanto(.9,0xd6222c);H.kunai("L",0x25d4ff)}},
+ akane:{on:["Schwarzer Lotus","Black Lotus"],hair:["long",0x8a1420],top:0x15131a,pants:0x15131a,boots:0x15131a,glove:0xffc21a,sleeve:"long",
+  acc(H){H.band(0xffc21a);H.sash(0xffc21a);H.belt(0xffc21a,0x15131a);H.flameFists();H.collar(0x15131a)}},
+ rokka:{on:["Admiral","Admiral"],top:0xf4f0e6,belly:0x18335c,pants:0x18335c,boots:0x15131a,shin:0x15131a,glove:0xf4f0e6,
+  acc(H){H.tricorn(0x15131a,0xffc21a);H.tails(0xf4f0e6,1.1);H.belt(0x15131a,0xffc21a);H.pads(0xffc21a,.17,0xffc21a);H.cutlass("L");H.sash(0xffc21a);H.emblem(0xffc21a)}},
+ zeno:{on:["Bühnenmagier","Stage Magician"],hair:["short",0x15131a],top:0x15131a,belly:0xf4f0e6,pants:0x15131a,glove:0xf4f0e6,
+  acc(H){H.tophat(0x15131a,0xcc2233);H.cape(0xcc2233,1.4,.9,0x15131a);H.tails(0x15131a,1.1);H.cards("L");H.emblem(0xcc2233,.42);H.collar(0xf4f0e6)}},
+ tetsu:{on:["Rote Rüstung","Red Armour"],top:0x8a1a22,belly:0x2a1c22,pants:0x15131a,boots:0x15131a,glove:0x2a1c22,
+  acc(H){H.horns(0xffc21a,.3,.9);H.plate(0x8a1a22);H.pads(0x2a1c22,.24,0xffc21a);H.belt(0xffc21a,0x8a1a22);H.katana("L");H.skirt(0x8a1a22,.42)}},
+ volt:{on:["Gold-Prototyp","Gold Prototype"],eye:0xff3b2f,face:{visor:0xff3b2f},top:0xd9a21a,belly:0x2a1c22,pants:0x2a1c22,glove:0xd9a21a,shin:0xd9a21a,boots:0xff3b2f,
+  acc(H){H.plate(0xb8860b);H.emblem(0xff3b2f);H.pads(0xd9a21a,.24,0xff3b2f);H.armCannon(0xff3b2f);H.antenna(0x25d4ff);H.ears(0xd9a21a);H.belt(0xd9a21a,0xff3b2f)}},
+ luna:{on:["Sonnenpriesterin","Sun Priestess"],hair:["buns",0xffd27a],face:{lash:1,gem:0xff7a1a},top:0xf4f0e6,pants:0xffc21a,
+  acc(H){H.moonStaff("L");H.cape(0xff7a1a,1.3,.8,0xffc21a);H.belt(0xff7a1a);H.skirt(0xf4f0e6,.7);H.emblem(0xff7a1a);H.halo(0xffc21a)}},
+ goro:{on:["Sumo-Champion","Sumo Champion"],hair:["topknot",0x15131a],face:{brow:0x15131a},pants:0xf4f0e6,boots:0xc98d5e,shin:0xc98d5e,
+  acc(H){H.belt(0xf4f0e6,0xf4f0e6);H.tails(0xf4f0e6,.6);H.stoneFists()}},
+ shade:{on:["Roter Schatten","Crimson Shadow"],face:{glow:0xffe14d,mask:0x2a0a10},top:0x5a0a14,pants:0x2a0a10,glove:0x2a0a10,
+  acc(H){H.hood(0x5a0a14);H.scarf(0x15131a,1.5);H.sai("L",0xffe14d);H.sai("R",0xffe14d);H.shuriken(0xffe14d);H.belt(0x15131a,0xffe14d);H.wraps(0x15131a)}},
+ mika:{on:["Drachentänzerin","Dragon Dancer"],top:0xd6222c,pants:0xd6222c,boots:0xffc21a,
+  acc(H){H.collar(0xffc21a);H.sash(0xffc21a);H.belt(0xffc21a,0xd6222c);H.skirt(0xffc21a,.4);H.fans(0xd6222c);H.scarf(0xffc21a,1)}},
+ drako:{on:["Eisdrache","Ice Dragon"],hair:["spiky",0xbfe8ff],eye:0x25d4ff,face:{marks:0x25d4ff,fang:1},top:0x1c2a44,pants:0x15202f,glove:0x2a6aa8,shin:0x2a6aa8,
+  acc(H){H.horns(0xffffff,.36,.35);H.wings(0x2a6aa8,1);H.tail(0x2a6aa8);H.plate(0x2a6aa8);H.pads(0x2a6aa8,.2,0xffffff);H.belt(0xbfe8ff);H.greatsword("L")}},
+ oni:{on:["Blauer Oni","Blue Oni"],skin:0x2a5fa8,hair:["wild",0x15131a],face:{fang:1,grin:1,brow:0xf0ece2},top:0x2a5fa8,boots:0x2a5fa8,pants:0x15131a,
+  acc(H){H.horns(0xffc21a,.46,.25);H.kanabo("L");H.belt(0xd9a21a,0x15131a);H.sash(0xd9a21a);H.skirt(0x15131a,.4);H.wraps(0xd9a21a)}},
+ seraph:{on:["Gefallener Engel","Fallen Angel"],hair:["long",0xcfd8e8],eye:0xff2a4a,top:0x15131a,belly:0x5a2ea6,pants:0x15131a,glove:0xcfd8e8,shin:0xcfd8e8,boots:0x15131a,
+  acc(H){H.wings(0x15131a,1);H.halo(0xff2a4a);H.plate(0xcfd8e8);H.pads(0xcfd8e8,.19,0xff2a4a);H.lightSword("L");H.belt(0xcfd8e8,0xff2a4a)}},
+ kaiser:{on:["Weisser Kaiser","White Emperor"],hair:["swept",0xf4f0e6],top:0xf4f0e6,belly:0xcfd8e8,pants:0xf4f0e6,glove:0xffc21a,shin:0xffc21a,
+  acc(H){H.crown(0xcfd8e8);H.cape(0xf4f0e6,1.7,1.1,0xffc21a);H.pads(0xffc21a,.24,0xf4f0e6);H.plate(0xffc21a);H.collar(0xf4f0e6);H.belt(0xffc21a,0x25d4ff);H.scythe("L")}},
+ magus:{on:["Professor Kreide","Professor Chalk"],face:{glow:0xf4f0e6,mask:0x1a1626},top:0x1f4a2a,belly:0x163420,pants:0x163420,glove:0x163420,
+  acc(H){H.hood(0x1f4a2a);H.horns(0xf4f0e6,.5,.75);H.formulaStaff("L",0xf4f0e6);H.cape(0x163420,1.7,1.05,0x6a4a2a);H.pads(0x6a4a2a,.2);H.belt(0x6a4a2a,0xf4f0e6);H.skirt(0x1f4a2a,.8);H.orbit(0xf4f0e6)}},
+};
+CH.forEach(c=>c.alt=ALT[c.id]);
+/* Figur im gewählten Outfit: erbt alles von der Figur und überschreibt nur das Aussehen */
+const outfit=(ch,o)=>o&&ch.alt?Object.assign(Object.create(ch),ch.alt,{o:1}):ch;
+/* Je Story-Durchgang wird ein weiterer Kämpfer frei: 5 am Start, 10 zum Freispielen */
+CH.forEach((c,i)=>c.lock=i<5?0:i-4);
+/* Porträts (Brustbild + Ganzkörper) direkt aus den 3D-Modellen fotografieren. Zweites Outfit erst bei Bedarf. */
+let PS=null;
+function shoot(ch,o){
+  if(!PS){const ps=new THREE.Scene(),pc=new THREE.PerspectiveCamera(30,1,.1,50);ps.add(new THREE.HemisphereLight(0xffffff,0x444466,.7));const d=new THREE.DirectionalLight(0xffffff,.8);d.position.set(3,6,8);ps.add(d);PS={ps,pc}}
+  const{ps,pc}=PS,f=buildFighter(ch,o),k=o?"2":"";ren.setPixelRatio(1);ren.setClearColor(0,0);
+  f.turn.rotation.y=.45;snapPose(f);animFighter(f,1,0);ps.add(f.root);f.sh.visible=false;const top=3.35*f.sc;
+  ren.setSize(300,375,false);pc.aspect=.8;pc.fov=26;pc.updateProjectionMatrix();pc.position.set(.5,top-.5,3.6);pc.lookAt(.02,top-.52,0);
+  ps.background=new THREE.Color(ch.c).multiplyScalar(.38);ren.render(ps,pc);ch["bust"+k]=cv.toDataURL("image/jpeg",.88);
+  ren.setSize(420,560,false);pc.aspect=.75;pc.fov=30;pc.updateProjectionMatrix();pc.position.set(1.2,2.3,7.6);pc.lookAt(0,1.8*f.sc,0);
+  ps.background=null;ren.render(ps,pc);ch["full"+k]=cv.toDataURL("image/png");
+  ps.remove(f.root);const hm=f.J.hd.children[0].material;hm.map.dispose();hm.dispose()}
+function makePortraits(){for(const ch of CH)shoot(ch,0);rs()}
+function altPics(ch){if(!ch.full2){shoot(ch,1);rs();if(typeof layout=="function")layout()}}
