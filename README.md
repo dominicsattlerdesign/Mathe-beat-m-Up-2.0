@@ -3,6 +3,8 @@
 Ein Mathe-Kampfspiel für das Tablet im Querformat (hochkant gehalten dreht sich das Spielfeld mit). Wer richtig rechnet, greift an.
 
 - **Drei Attacken, drei Aufgabenarten:** Hieb (Plus & Minus), Kick (Mal & Geteilt), Wurf (Klammer-Aufgaben). Der Finisher mischt alles.
+- **Elf Angriffs-Varianten:** je vier Hiebe und Tritte, drei Würfe, die abwechselnd drankommen.
+- **Jeder Kampf geht über Runden:** Es gewinnt, wer zuerst zwei Runden holt.
 - **15 Kämpfer:** 10 von Anfang an, 5 geheime. Jeder Story-Durchgang schaltet einen weiteren frei.
 - **5 Arenen** mit Objekten, die im Kampf zu Bruch gehen.
 - **Story** (10 Kämpfe bis zum Mathemagus) und **Freier Kampf**, drei Schwierigkeitsstufen.

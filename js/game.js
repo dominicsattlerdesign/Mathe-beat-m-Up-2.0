@@ -4,7 +4,7 @@ const save=()=>{try{localStorage.setItem("mrb2",JSON.stringify(SAVE))}catch(e){}
 const unlocked=ch=>!ch.lock||SAVE.done>=ch.lock;
 const ATK={hieb:{n:"HIEB",kj:"拳",s:"Plus & Minus",dm:9},kick:{n:"KICK",kj:"蹴",s:"Mal & Geteilt",dm:15},wurf:{n:"WURF",kj:"投",s:"Klammern",dm:22},fin:{n:"FINISHER",dm:46}};
 const WORDS=[["ZACK!","BAM!","PAFF!","TOK!"],["WUMMS!","KRACH!","DONG!","BÄMM!"],["KRAWUMM!","RUMMS!","KABOOM!"]];
-let mode="a",lvl=1,pickC=0,selC=0,pl=null,en=null,fighters=[],over=true,lock=false,sel=null,inp="",cards={},Q=Promise.resolve(),busy=0,fid=0,paused=false,pauseAt=0,startHp=null,stageI=0;
+let mode="a",lvl=1,pickC=0,selC=0,pl=null,en=null,fighters=[],over=true,lock=false,sel=null,inp="",cards={},Q=Promise.resolve(),busy=0,fid=0,paused=false,pauseAt=0,stageI=0,round=1,wins={p:0,e:0};
 let T=0,hs=0,TSb=1,last=performance.now();
 const q=fn=>{const id=fid;busy++;Q=Q.then(()=>id==fid&&fn()).catch(e=>console.error(e)).then(()=>{if(id==fid)busy--})};
 const msg=t=>$("#msg").textContent=t;
@@ -17,17 +17,18 @@ const cine=on=>document.body.classList.toggle("cine",on),speed=on=>$("#speed").c
 function impactFrame(ms=90){cv.classList.add("impact");setTimeout(()=>cv.classList.remove("impact"),ms)}
 
 /* ----- Kämpfer im Kampf ----- */
-function mkF(ch,side,isP,scale=1){const f=buildFighter(ch);f.side=side;f.isP=isP;f.hx=side*2.6;f.root.position.x=f.hx;f.root.scale.set(side>0?-scale:scale,scale,scale);f.sc*=scale;sc.add(f.root);
+function mkF(ch,side,isP,scale=1){const f=buildFighter(ch);f.side=side;f.isP=isP;f.hx=side*2.1;f.root.position.x=f.hx;f.root.scale.set(side>0?-scale:scale,scale,scale);f.sc*=scale;sc.add(f.root);
   f.max=f.hp=86+ch.st[1]*7;f.dm=.82+ch.st[0]*.07;f.mg=.7+ch.st[2]*.12;f.mt=0;snapPose(f);return f}
 function clearFighters(){for(const f of fighters){sc.remove(f.root);const h=f.J.hd.children[0].material;h.map&&h.map.dispose();h.dispose()}fighters=[];pl=en=null}
 function hud(){$("#ph").style.width=$("#pht").style.width=pl.hp/pl.max*100+"%";$("#eh").style.width=$("#eht").style.width=en.hp/en.max*100+"%";$("#pm").style.width=pl.mt+"%";
   const full=pl.mt>=100;$("#pmb").classList.toggle("full",full);const f=$("#fin");f.classList.toggle("rdy",full);f.classList.toggle("sel",sel=="fin");f.firstElementChild.style.width=pl.mt+"%";
-  $("#fint").textContent=full?"必殺 FINISHER":"SPEZIAL LÄDT "+Math.round(pl.mt)+" %";$("#finq").textContent=full?cards.fin.q[0]:""}
+  $("#fint").textContent=full?"必殺 FINISHER":"SPEZIAL "+Math.round(pl.mt)+" %";$("#finq").textContent=full?cards.fin.q[0]:"";
+  for(const[id,n]of[["#pw",wins.p],["#ew",wins.e]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<n))}
 const newCard=k=>({q:task(k,SAVE.diff),t0:0});
 function render(){
-  $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>`<button type="button" class="card ${k}${sel==k?" sel":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${ATK[k].s}</small><div class="q">${cards[k].q[0]}</div></button>`).join("");
+  $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>`<button type="button" class="card ${k}${sel==k?" sel":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${ATK[k].s}</small><div class="q${cards[k].q[0].length>13?" lg":""}">${cards[k].q[0]}</div></button>`).join("");
   document.body.classList.toggle("lock",lock);hud();renderAns()}
-function renderAns(){$("#ans").innerHTML=sel?`<span>${cards[sel].q[0]} = <em>${inp||"?"}</em></span><u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?"Dein Kämpfer greift an …":"Tippe auf eine Attacke und löse die Aufgabe."}</span>`}
+function renderAns(){$("#ans").innerHTML=sel?`<span>${cards[sel].q[0]} =</span><em>${inp||"?"}</em><u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?"Dein Kämpfer greift an …":"Tippe auf eine Attacke und löse die Aufgabe."}</span>`}
 function pick(k){if(over||lock||paused||(k=="fin"&&pl.mt<100))return;if(sel!=k)inp="";sel=k;if(!cards[k].t0)cards[k].t0=performance.now();sfx("pick");render()}
 function press(k){if(over||lock||paused||!sel)return;
   if(k=="del"){inp=inp.slice(0,-1);sfx("key")}else if(k=="ok")return submit();else if(inp.length<6){inp+=k;sfx("key")}renderAns()}
@@ -38,7 +39,7 @@ function submit(){if(!sel||inp===""||lock||over)return;
   else{sfx("wrong");msg(`Daneben! ${c.q[0]} = ${c.q[1]}`);en.timer-=en.iv*.15;
     q(async()=>{pose(pl,"stumble",20);pop("?!","#a79fc7",pl.root.position.x,4);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
   render()}
-$("#pad").innerHTML=["1","2","3","del","4","5","6","0","7","8","9","ok"].map(k=>`<button type="button" class="k${k=="ok"?" ok":k=="del"?" del":""}" data-k="${k}">${k=="del"?"⌫":k=="ok"?"OK":k}</button>`).join("");
+$("#pad").innerHTML=["1","2","3","4","5","6","7","8","9","del","0","ok"].map(k=>`<button type="button" class="k${k=="ok"?" ok":k=="del"?" del":""}" data-k="${k}">${k=="del"?"⌫":k=="ok"?"OK":k}</button>`).join("");
 $("#pad").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-k]");if(!b)return;e.preventDefault();b.classList.add("dn");setTimeout(()=>b.classList.remove("dn"),110);press(b.dataset.k)});
 $("#cards").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-k]");if(b){e.preventDefault();pick(b.dataset.k)}});
 $("#fin").addEventListener("pointerdown",e=>{e.preventDefault();pick("fin")});
@@ -50,8 +51,10 @@ const fx_=f=>f.root.position;
 async function dash(f,tx,dur=.2){const x0=fx_(f).x;if(Math.abs(tx-x0)<.1)return;f.run=true;pose(f,"run",30);sfx("swoosh");streak(tx,1.7*f.sc,Math.sign(tx-x0),f.ch.c,Math.min(4,Math.abs(tx-x0)));
   await tw(dur,p=>{fx_(f).x=lerp(x0,tx,ease(p))});f.run=false}
 async function backHop(f){const x0=fx_(f).x,y0=fx_(f).y;if(Math.abs(f.hx-x0)<.2&&y0<.1){pose(f,"idle",12);return}f.grounded=false;pose(f,"kickCh",22);sfx("jump");
-  await tw(.4,p=>{fx_(f).x=lerp(x0,f.hx,p);fx_(f).y=lerp(y0,0,p)+Math.sin(p*Math.PI)*1.7;f.piv.rotation.x=-Math.PI*2*ease(p)});
+  const hh=Math.abs(f.hx-x0)>3.4?3.3:1.7;
+  await tw(hh>2?.5:.4,p=>{fx_(f).x=lerp(x0,f.hx,p);fx_(f).y=lerp(y0,0,p)+Math.sin(p*Math.PI)*hh;f.piv.rotation.x=-Math.PI*2*ease(p)});
   f.piv.rotation.x=0;fx_(f).y=0;f.grounded=true;pose(f,"idle",16);dust(f.hx,0,3);sfx("land")}
+async function landA(a,dur=.16){const y0=fx_(a).y;await tw(dur,p=>{fx_(a).y=y0*(1-p)});fx_(a).y=0;a.piv.rotation.x=0;a.turn.rotation.y=FACE;a.grounded=true;pose(a,"idle",14);sfx("land")}
 async function launch(b,toX,h,dur,spins=1,o={}){b.grounded=false;b.downed=true;pose(b,"air",20);const x0=fx_(b).x,y0=fx_(b).y,r0=b.piv.rotation.x,yl=-1.32*b.sc,r1=-(spins*2*Math.PI+Math.PI/2);toX=clamp(toX,-7.1,7.1);
   await tw(dur,p=>{fx_(b).x=lerp(x0,toX,p);fx_(b).y=lerp(y0,yl,p*p)+Math.sin(p*Math.PI)*h;b.piv.rotation.x=lerp(r0,r1,p)});
   b.piv.rotation.x=-Math.PI/2;pose(b,"down",25);dust(toX,0,9);CAM.shake=Math.max(CAM.shake,.3);if(o.land)o.land();else{sfx("land");breakNear(toX,1.9,Math.sign(toX)||1,1,4);crack(toX,1.4,1)}
@@ -69,32 +72,76 @@ function impact(a,b,dmg,o={}){
   hud();if(b.hp<=0&&!over&&!o.noKO){over=true;koFx()}
   if(!o.noReact){pose(b,"hurt",30);const bx=x;tw(.22,p=>{fx_(b).x=clamp(bx+d*(Math.sin(p*Math.PI)*.3+p*(o.push||.12)),-7,7)})}
 }
-/* ----- Die drei Attacken: jede sieht anders aus und rechnet anders ----- */
-const ACT={
-  /* HIEB: heranstürmen, Dreier-Kombo aus Gerade, Haken und Aufwärtshaken */
-  async hieb(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*1.5,.2);
-    const seq=[["jab",.28],["cross",.3],["upper",.42]];
+/* ----- Attacken: jede Art hat mehrere Varianten, die abwechselnd drankommen ----- */
+const slamLand=(a,b,dm)=>()=>{impact(a,b,dm,{lv:2,s:"slam",y:.5,noReact:1,r:2.7,max:6,stop:.12});ring(fx_(b).x,.06,0,a.ch.c,4)};
+const MOVES={
+ hieb:[
+  {n:"Dreier-Kombo",async f(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*1.5,.2);const seq=[["jab",.28],["cross",.3],["upper",.42]];
     for(let i=0;i<3;i++){pose(a,i==2?"windup":"idle",30);await wait(i==2?.14:.07);pose(a,seq[i][0],45);sfx("swoosh");await wait(.075);
       impact(a,b,dm*seq[i][1],{lv:i==2?1:0,arc:1,s:i==2?"heavy":"punch",y:(i==2?2.6:2.1)*b.sc,push:i==2?.5:.1,quiet:i==1});
-      if(i==2&&b.hp>0){const y0=0;b.grounded=false;tw(.3,p=>{fx_(b).y=y0+Math.sin(p*Math.PI)*.7}).then(()=>{b.grounded=true})}
-      await wait(i==2?.3:.15)}
-    if(b.hp<=0)await launch(b,b.side*5.6,2,.75,1);else await recover(a,b)},
-  /* KICK: Sprung mit Drehung, Flugtritt, Gegner fliegt quer durch die Arena */
-  async kick(a,b,dm){const d=-a.side,x0=fx_(a).x,tx=fx_(b).x-d*1.55;
+      if(i==2&&b.hp>0){b.grounded=false;tw(.3,p=>{fx_(b).y=Math.sin(p*Math.PI)*.7}).then(()=>{b.grounded=true})}
+      await wait(i==2?.3:.15)}}},
+  {n:"Blitzschnitt",async f(a,b,dm){const d=-a.side,bx=fx_(b).x,x0=fx_(a).x,tx=clamp(bx+d*1.9,-6.8,6.8);pose(a,"windup",25);await wait(.24);sfx("whoosh");pose(a,"cross",50);streak(tx,1.8*a.sc,d,a.ch.c,6);
+    await tw(.08,p=>{fx_(a).x=lerp(x0,tx,p)});slashArc(bx,2.1*b.sc,0xffffff,.4,2.8);pose(a,"hurl",30);await wait(.36);
+    for(let i=0;i<3;i++)slashArc(bx+rnd(-.3,.3),2*b.sc+rnd(-.6,.6),i?a.ch.c:0xffffff,rnd(6),2.2);
+    impact(a,b,dm,{lv:1,s:"heavy",stop:.12,push:.01});await wait(.3)}},
+  {n:"Hammerfaust",async f(a,b,dm){const d=-a.side,x0=fx_(a).x,tx=fx_(b).x-d*1.15;pose(a,"crouch",25);await wait(.14);a.grounded=false;sfx("jump");pose(a,"skyfall",20);dust(x0,0,3);
+    await tw(.3,p=>{fx_(a).x=lerp(x0,tx,p);fx_(a).y=eOut(p)*3.1});await wait(.07);sfx("whoosh");pose(a,"hurl",45);await tw(.1,p=>{fx_(a).y=3.1*(1-p*p)});fx_(a).y=0;a.grounded=true;
+    impact(a,b,dm,{lv:2,s:"slam",y:3.1*b.sc,r:2,max:4,noReact:1,stop:.12});ring(fx_(b).x,.06,0,a.ch.c,3.5);dust(fx_(b).x,0,8);if(b.hp>0){pose(b,"crouch",35);await wait(.5)}}},
+  {n:"Trommelfeuer",async f(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*1.45,.18);
+    for(let i=0;i<6;i++){pose(a,i%2?"cross":"jab",55);if(i%2==0)sfx("swoosh");await wait(.065);impact(a,b,dm*.12,{arc:i%2,quiet:i%3!=0,push:.05,stop:.02,y:(1.8+(i%3)*.3)*b.sc})}
+    pose(a,"windup",30);await wait(.16);pose(a,"cross",50);sfx("swoosh");await wait(.07);impact(a,b,dm*.28,{lv:1,s:"heavy",arc:1,push:.7});await wait(.3)}},
+ ],
+ kick:[
+  {n:"Wirbeltritt",async f(a,b,dm){const d=-a.side,x0=fx_(a).x,tx=fx_(b).x-d*1.55;
     pose(a,"crouch",25);await wait(.15);a.grounded=false;sfx("jump");pose(a,"kickCh",25);dust(x0,0,3);
     await tw(.36,p=>{fx_(a).x=lerp(x0,tx,ease(p));fx_(a).y=Math.sin(p*Math.PI)*1.5*(1-p*.5)+.55*p;a.turn.rotation.y=FACE+p*Math.PI*2;if(p>.55&&a.tp!==POSE.kick){pose(a,"kick",40);sfx("swoosh")}});
     a.turn.rotation.y=FACE;impact(a,b,dm,{lv:1,s:"kick",y:2.3*b.sc,noReact:1,arc:1,stop:.11});streak(fx_(b).x+d*2,1.6,d,0xffffff,4);
-    await Promise.all([launch(b,b.side*6.3,1.4,.6,1),(async()=>{await wait(.12);const y0=fx_(a).y;await tw(.16,p=>{fx_(a).y=y0*(1-p)});a.grounded=true;pose(a,"idle",14);sfx("land")})()]);
-    if(b.hp>0)await recover(a,b)},
-  /* WURF: packen, über den Kopf stemmen, herumwirbeln und wegschleudern */
-  async wurf(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*.95,.2);pose(a,"grab",35);sfx("grab");await wait(.14);
+    await Promise.all([launch(b,b.side*6.3,1.4,.6,1),(async()=>{await wait(.12);await landA(a)})()])}},
+  {n:"Fegetritt",async f(a,b,dm){const d=-a.side,x0=fx_(a).x,bx=fx_(b).x;pose(a,"slide",25);sfx("whoosh");
+    await tw(.24,p=>{fx_(a).x=lerp(x0,bx-d*1.2,eOut(p));if(Math.random()<.4)dust(fx_(a).x,0,1)});
+    impact(a,b,dm*.4,{s:"kick",y:.5,noReact:1,stop:.06});b.grounded=false;b.downed=true;pose(b,"air",25);pose(a,"crouch",25);
+    await tw(.3,p=>{fx_(b).y=eOut(p)*1.5;b.piv.rotation.x=-eOut(p)*Math.PI/2});
+    a.grounded=false;pose(a,"kick",50);sfx("swoosh");a.piv.rotation.x=-.5;await tw(.1,p=>{fx_(a).y=p*.9});
+    impact(a,b,dm*.6,{lv:1,s:"kick",arc:1,noReact:1,y:fx_(b).y+1.6*b.sc,stop:.1});
+    await Promise.all([launch(b,b.side*6.3,1.6,.62,1),landA(a)])}},
+  {n:"Orkantritt",async f(a,b,dm){const d=-a.side,x0=fx_(a).x,tx=fx_(b).x-d*1.35;let h=0;pose(a,"crouch",25);await wait(.13);a.grounded=false;sfx("jump");pose(a,"kick",30);
+    await tw(.75,p=>{fx_(a).x=lerp(x0,tx+d*.4*p,Math.min(1,p*2.2));fx_(a).y=.75+Math.sin(p*Math.PI)*.35;a.turn.rotation.y=FACE+p*Math.PI*6;
+      const n=p>.86?3:p>.56?2:p>.28?1:0;if(n>h){h=n;sfx("swoosh");impact(a,b,dm*(h==3?.5:.25),{s:"kick",arc:1,lv:h==3?1:0,noReact:h==3,quiet:h==2,y:2.3*b.sc,push:.25,stop:h==3?.1:.03})}});
+    a.turn.rotation.y=FACE;await Promise.all([launch(b,b.side*6.3,1.2,.55,1),landA(a)])}},
+  {n:"Sturzflug-Tritt",async f(a,b,dm){const d=-a.side,x0=fx_(a).x,bx=fx_(b).x,ux=x0+d*.3,uy=4.2;pose(a,"crouch",25);await wait(.14);a.grounded=false;sfx("jump");pose(a,"kickCh",22);dust(x0,0,3);
+    await tw(.32,p=>{fx_(a).x=lerp(x0,ux,p);fx_(a).y=eOut(p)*uy;a.piv.rotation.x=-Math.PI*2*p});a.piv.rotation.x=.75;pose(a,"kick",50);await wait(.13);sfx("whoosh");
+    const tx=bx-d*1.2;streak(tx,2.2,d,a.ch.c,5);await tw(.13,p=>{fx_(a).x=lerp(ux,tx,p);fx_(a).y=lerp(uy,.5,p)});
+    impact(a,b,dm,{lv:2,s:"kick",arc:1,noReact:1,y:2*b.sc,stop:.13,r:1.6});ring(bx,.06,0,a.ch.c,3);
+    await Promise.all([launch(b,b.side*6.5,.5,.5,0),landA(a)])}},
+ ],
+ wurf:[
+  {n:"Schleuderwurf",async f(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*.95,.2);pose(a,"grab",35);sfx("grab");await wait(.14);
     b.grounded=false;b.downed=true;pose(b,"held",30);pose(a,"lift",16);const ax=fx_(a).x,bx=fx_(b).x,ly=3.72*a.sc-1.6*b.sc;
     await tw(.3,p=>{const e=ease(p);fx_(b).x=lerp(bx,ax,e);fx_(b).y=e*ly;b.piv.rotation.x=-e*Math.PI/2});
     sfx("whoosh");setTimeout(()=>sfx("whoosh"),230);
     await tw(.52,p=>{const r=FACE+ease(p)*Math.PI*4;a.turn.rotation.y=r;b.turn.rotation.y=r});
     a.turn.rotation.y=b.turn.rotation.y=FACE;pose(a,"hurl",45);sfx("whoosh");
-    await launch(b,b.side*6.4,2.4,.62,2,{land(){impact(a,b,dm,{lv:2,s:"slam",y:.5,noReact:1,r:2.7,max:6,stop:.12});ring(fx_(b).x,.06,0,a.ch.c,4)}});
-    if(b.hp>0)await recover(a,b)},
+    await launch(b,b.side*6.4,2.4,.62,2,{land:slamLand(a,b,dm)})}},
+  {n:"Himmelssturz",async f(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*.95,.2);pose(a,"grab",35);sfx("grab");await wait(.14);
+    b.grounded=false;b.downed=true;a.grounded=false;pose(b,"held",30);pose(a,"lift",20);const ax=fx_(a).x,bx=fx_(b).x,H=4.3,yl=-1.32*b.sc;sfx("jump");setTimeout(()=>sfx("whoosh"),200);
+    await tw(.5,p=>{const e=eOut(p),r=FACE+p*Math.PI*4;fx_(a).y=e*H;fx_(b).y=e*H+.3;fx_(b).x=lerp(bx,ax+d*.55,Math.min(1,p*3));b.piv.rotation.x=-Math.min(1,p*2)*Math.PI;a.turn.rotation.y=r;b.turn.rotation.y=r});
+    a.turn.rotation.y=b.turn.rotation.y=FACE;await wait(.1);sfx("whoosh");
+    await tw(.15,p=>{const e=p*p;fx_(a).y=H*(1-e);fx_(b).y=lerp(H+.3,yl+1.5,e)});
+    fx_(a).y=0;a.grounded=true;pose(a,"hurl",40);impact(a,b,dm,{lv:2,s:"slam",y:.6,noReact:1,r:2.7,max:6,stop:.14});ring(fx_(b).x,.06,0,a.ch.c,4.5);dust(fx_(b).x,0,10);
+    await tw(.32,p=>{b.piv.rotation.x=lerp(-Math.PI,-Math.PI/2,p);fx_(b).y=lerp(yl+1.5,yl,p)+Math.sin(p*Math.PI)*.4;fx_(b).x+=d*.02});pose(b,"down",25)}},
+  {n:"Riesenschwung",async f(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*.95,.2);pose(a,"grab",35);sfx("grab");await wait(.14);
+    b.grounded=false;b.downed=true;pose(b,"held",30);const ax=fx_(a).x,bx=fx_(b).x,R=1.8,by=1.3-1.6*b.sc;let n0=0;
+    await tw(.2,p=>{b.piv.rotation.x=-p*Math.PI/2;fx_(b).y=p*by;fx_(b).x=lerp(bx,ax+d*R,p)});
+    await tw(1.05,p=>{const th=p*p*Math.PI*6;fx_(b).x=ax+d*R*Math.cos(th);fx_(b).z=R*Math.sin(th);a.turn.rotation.y=FACE-th;b.turn.rotation.y=FACE-th;const n=Math.floor(th/6.2832+.5);if(n>n0){n0=n;sfx("whoosh")}});
+    fx_(b).z=0;a.turn.rotation.y=b.turn.rotation.y=FACE;pose(a,"hurl",45);breakNear(ax,2.2,d,1,3);
+    await launch(b,b.side*6.5,1.3,.5,1.5,{land:slamLand(a,b,dm)})}},
+ ],
+};
+async function runMove(k,a,b,dm){const L=MOVES[k],m=a.lastMv=a.lastMv||{};let i;do{i=R(0,L.length-1)}while(m[k]===i);m[k]=i;
+  pop(L[i].n+"!",null,fx_(a).x,4.6*a.sc,"mv");await L[i].f(a,b,dm)}
+const ACT={
+  hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a,b,dm),wurf:(a,b,dm)=>runMove("wurf",a,b,dm),
   /* FINISHER: Kino-Sequenz in Zeitlupe */
   async fin(a,b,dm){const d=-a.side,c=a.ch.c,ax=fx_(a).x,bx=fx_(b).x;
     cine(true);banner(a.ch.fin+"!","必殺 · FINISHER");sfx("charge");CAM.mode="cine";CAM.k=6;CAM.tp.set(ax+d*2.4,2.3*a.sc,5.6);CAM.tl.set(ax+d*.2,2.2*a.sc,0);
@@ -114,8 +161,7 @@ const ACT={
     TSb=1;impactFrame(110);flash(c);sfx("boom");ring(X,.06,0,c,9,.8);ring(X,.06,0,0xffffff,6,.5);
     impact(a,b,dm*.41,{big:1,lv:2,r:5.5,max:30,noReact:1,nomt:1,y:fx_(b).y+1.6*b.sc,stop:.16});
     cine(false);CAM.mode="fight";CAM.k=5;
-    await Promise.all([launch(b,b.side*6.4,1.2,.6,1.5),(async()=>{if(fx_(a).y>.1||!a.grounded){const y0=fx_(a).y;await tw(.25,p=>{fx_(a).y=y0*(1-p*p)});fx_(a).y=0;a.piv.rotation.x=0;a.grounded=true;pose(a,"idle",14)}})()]);
-    if(b.hp>0)await recover(a,b)},
+    await Promise.all([launch(b,b.side*6.4,1.2,.6,1.5),(async()=>{if(fx_(a).y>.1||!a.grounded){const y0=fx_(a).y;await tw(.25,p=>{fx_(a).y=y0*(1-p*p)});fx_(a).y=0;a.piv.rotation.x=0;a.grounded=true;pose(a,"idle",14)}})()])},
 };
 /* Element-Finale je Kämpfer */
 const FINFX={
@@ -136,11 +182,23 @@ const FINFX={
 };
 async function attack(a,b,k,mu){if(over)return;const dm=a.isP?ATK[k].dm*mu*a.dm:a.D*{hieb:.7,kick:1,wurf:1.4}[k];
   await ACT[k](a,b,dm);
-  if(b.hp<=0){pose(b,"down",20);await backHop(a);pose(a,"win",10);await rt(1.5);result(b!==pl)}}
+  if(b.hp>0)return recover(a,b);
+  /* Runde vorbei: gekämpft wird, bis jemand zwei Runden gewonnen hat */
+  if(!b.downed)await launch(b,b.side*5.6,2,.75,1);pose(b,"down",20);await backHop(a);a.turn.rotation.y=FACE;pose(a,"win",10);
+  const w=a.isP?"p":"e";wins[w]++;hud();await rt(1.5);
+  if(wins[w]>=2)return result(a.isP);
+  round++;banner("Runde "+round,`Stand ${wins.p} : ${wins.e}`);sfx("gong");
+  await Promise.all([getUp(b).then(()=>dash(b,b.hx,.3)),rt(1)]);
+  for(const f of[pl,en]){f.hp=f.max;pose(f,"idle",12);f.turn.rotation.y=FACE;fx_(f).z=0}
+  en.timer=en.iv;sel=null;inp="";msg("Neue Runde, volle Kraft für beide!");render();await rt(.5);over=false}
 
 /* ----- Kampf starten / beenden ----- */
 function storyOpp(n){if(n==10)return pickC==14?13:14;if(n==5)return pickC==13?10:13;const pool=[];for(let i=0;i<10;i++)if(i!=pickC)pool.push(i);return pool[((n<5?n-1:n-2)+pickC*3)%pool.length]}
-function layout(){const p=$("#panel");VOFF=p.hidden?0:Math.max(0,p.offsetHeight-44);applyOff()}
+function layout(){const p=$("#panel"),r=document.documentElement.style;
+  if(p.hidden){VO.x=VO.y=0;VO.fw=VO.fh=1}
+  else{const L=$("#left").offsetWidth,Rw=$("#side").offsetWidth;r.setProperty("--cl",L+"px");r.setProperty("--cr",Rw+"px");const hh=$("#hud").offsetHeight||70;
+    VO.x=(Rw-L)/2;VO.y=-hh*.45;VO.fw=(GW-L-Rw)/GW;VO.fh=(GH-hh)/GH}
+  applyOff()}
 function startFight(){
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
   const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i]))),L=story?lvl:[2,5,8][SAVE.diff];
@@ -150,25 +208,26 @@ function startFight(){
   setTimeout(()=>{const id=fid;
     clearFighters();buildStage(stageI);
     pl=mkF(CH[pickC],-1,true);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
-    if(story&&startHp!=null)pl.hp=Math.min(pl.max,startHp);
-    en.max=en.hp=52+L*8+CH[oi].st[1]*3+(boss?18:0);en.iv=12-L*.55;en.D=4+L*.7;en.timer=en.iv;
+    round=1;wins={p:0,e:0};
+    en.max=en.hp=44+L*6+CH[oi].st[1]*3+(boss?14:0);en.iv=12-L*.55;en.D=4+L*.7;en.timer=en.iv;
     $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=CH[pickC].bust;$("#ei").src=CH[oi].bust;
     $("#lv").innerHTML=`<b>${story?(lvl==10?"ENDKAMPF":"KAMPF "+lvl+"/10"):"FREIER KAMPF"}</b>${STG[stageI].n}`;
     cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
     $("#hud").hidden=false;$("#panel").hidden=false;msg("Löse eine Aufgabe, dann greift dein Kämpfer an!");render();layout();
     CAM.mode="fight";CAM.k=5;camFight();CAM.p.copy(CAM.tp).add(new THREE.Vector3(0,2,8));CAM.l.copy(CAM.tl);
-    setTimeout(()=>{if(id!=fid)return;menuHide();banner(story?(lvl==10?"ENDKAMPF!":"KAMPF "+lvl+"!"):"FIGHT!",STG[stageI].n);sfx("gong");setTimeout(()=>{if(id==fid){over=false}},900)},1500);
+    setTimeout(()=>{if(id!=fid)return;menuHide();banner("Runde 1",story?(lvl==10?"Endkampf":"Kampf "+lvl)+" · wer zuerst 2 Runden gewinnt":"Wer zuerst 2 Runden gewinnt");sfx("gong");setTimeout(()=>{if(id==fid){over=false}},900)},1500);
   },60);
 }
 function endFightUi(){$("#panel").hidden=true;$("#hud").hidden=true;cine(false);speed(false);layout();CAM.mode="menu"}
 function result(win){
   over=true;endFightUi();const s=mode=="s";sfx(win?"win":"lose");
-  if(win&&s&&lvl<10){startHp=Math.min(pl.max,pl.hp+30);lvl++;SAVE.story={c:pickC,lvl,hp:startHp};save();
-    menu(`<h2>Sieg!</h2><p>Kampf ${lvl-1} von 10 geschafft. Dein Kämpfer erholt sich ein Stück.</p><button class="btn" data-a="next">Weiter zu Kampf ${lvl}</button><button class="btn alt" data-a="home">Hauptmenü</button>`,1)}
+  const sc_=`${wins.p} : ${wins.e}`;
+  if(win&&s&&lvl<10){lvl++;SAVE.story={c:pickC,lvl};save();
+    menu(`<h2>Sieg ${sc_}</h2><p>Kampf ${lvl-1} von 10 geschafft.</p><button class="btn" data-a="next">Weiter zu Kampf ${lvl}</button><button class="btn alt" data-a="home">Hauptmenü</button>`,1)}
   else if(win&&s){SAVE.done++;SAVE.story=null;save();const nu=CH.find(c=>c.lock==SAVE.done);
     menu(`<p class="tag">Story geschafft · ${SAVE.done}×</p><h1 class="logo"><span>Du bist</span>Champion!</h1><p>${CH[pickC].n} hat alle zehn Gegner besiegt.</p>${nu?`<button class="btn gold" data-a="unlock">Was ist das …?</button>`:`<button class="btn" data-a="home">Hauptmenü</button>`}`,1)}
-  else if(win)menu(`<h2>Gewonnen!</h2><div class="rowb"><button class="btn" data-a="again">Nochmal</button><button class="btn alt" data-a="home">Hauptmenü</button></div>`,1);
-  else menu(`<h2>Niederlage</h2><p>Das war knapp. Atme durch und hol dir die Revanche!</p><div class="rowb"><button class="btn" data-a="again">Revanche</button><button class="btn alt" data-a="home">Hauptmenü</button></div>`,1)}
+  else if(win)menu(`<h2>Gewonnen ${sc_}</h2><div class="rowb"><button class="btn" data-a="again">Nochmal</button><button class="btn alt" data-a="home">Hauptmenü</button></div>`,1);
+  else menu(`<h2>Niederlage ${sc_}</h2><p>Das war knapp. Atme durch und hol dir die Revanche!</p><div class="rowb"><button class="btn" data-a="again">Revanche</button><button class="btn alt" data-a="home">Hauptmenü</button></div>`,1)}
 
 /* ----- Menüs ----- */
 function menu(h,solid){const m=$("#menu");m.hidden=false;m.classList.toggle("solid",!!solid);m.innerHTML=h;m.scrollTop=0;$("#snd").hidden=false}
@@ -189,8 +248,8 @@ function showDet(i){selC=i;const c=CH[i],u=unlocked(c);document.querySelectorAll
    :`<div class="ti">Geheimer Kämpfer</div><h3>???</h3><p>Spiele die Story ${c.lock}× durch, um diesen Kämpfer freizuschalten. Bisher geschafft: ${SAVE.done}×.</p><button class="btn" disabled>Gesperrt</button>`)+`</div>`}
 const ACTIONS={
   start(){auInit();try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
-  story(){mode="s";lvl=1;startHp=null;selChar()},arcade(){mode="a";startHp=null;selChar()},
-  cont(){const s=SAVE.story;mode="s";pickC=s.c;lvl=s.lvl;startHp=s.hp;startFight()},
+  story(){mode="s";lvl=1;selChar()},arcade(){mode="a";selChar()},
+  cont(){const s=SAVE.story;mode="s";pickC=s.c;lvl=s.lvl;startFight()},
   diff(b){SAVE.diff=+b.dataset.i;save();document.querySelectorAll("#dseg button").forEach((x,i)=>x.classList.toggle("on",i==SAVE.diff))},
   tile(b){showDet(+b.dataset.i)},go(){pickC=selC;if(mode=="s"){SAVE.story=null;save()}startFight()},
   next(){startFight()},again(){startFight()},home(){home()},
@@ -206,8 +265,8 @@ sndBtn.addEventListener("click",()=>{auInit();SAVE.mute=!SAVE.mute;save();auMute
 document.addEventListener("visibilitychange",()=>{if(AU.ctx){if(document.hidden)AU.ctx.suspend();else AU.ctx.resume()}});
 
 /* ----- Hauptschleife ----- */
-function camFight(){const a=fx_(pl),b=fx_(en),mx=(a.x+b.x)/2,span=Math.abs(a.x-b.x)/2+2.9,tan=Math.tan(cam.fov*Math.PI/360),free=1-VOFF/GH,top=Math.max(a.y,b.y,0);
-  const z=clamp(Math.max(span/(tan*cam.aspect),(2.55+top*.55)/(tan*free)),9,34);CAM.tp.set(mx*.7,2.4+z*.07+top*.3,z);CAM.tl.set(mx*.7,2.05+top*.4,0)}
+function camFight(){const a=fx_(pl),b=fx_(en),mx=(a.x+b.x)/2,span=Math.abs(a.x-b.x)/2+2.3,tan=Math.tan(cam.fov*Math.PI/360),top=Math.max(a.y,b.y,0);
+  const z=clamp(Math.max(span/(tan*cam.aspect*VO.fw),(2.7+top*.55)/(tan*VO.fh)),8,38);CAM.tp.set(mx*.7,2.4+z*.07+top*.3,z);CAM.tl.set(mx*.7,2.05+top*.4,0)}
 function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000);last=n;
   if(paused){ren.render(sc,cam);return}
   const wd=dt*(hs>0?.02:TSb);hs-=dt;T+=wd;

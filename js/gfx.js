@@ -38,10 +38,10 @@ function stepTw(list,dt){for(let i=list.length-1;i>=0;i--){const w=list[i];w.t+=
 
 /* Kamera */
 const CAM={p:new THREE.Vector3(0,3.4,16),l:new THREE.Vector3(0,1.8,0),tp:new THREE.Vector3(0,3.4,16),tl:new THREE.Vector3(0,1.8,0),k:5,shake:0,mode:"menu"};
-let VOFF=0;
+const VO={x:0,y:0,fw:1,fh:1};
 /* Spielfeldgröße GW×GH ist immer quer; im Hochformat wird die ganze Seite gedreht */
 let GW=innerWidth,GH=innerHeight;
-function applyOff(){const w=GW,h=GH;if(VOFF)cam.setViewOffset(w,h,0,Math.round(VOFF/2),w,h);else cam.clearViewOffset();cam.updateProjectionMatrix()}
+function applyOff(){const w=GW,h=GH;if(VO.x||VO.y)cam.setViewOffset(w,h,Math.round(VO.x),Math.round(VO.y),w,h);else cam.clearViewOffset();cam.updateProjectionMatrix()}
 function rs(){const iw=innerWidth,ih=innerHeight,rot=ih>iw,b=document.body.style,r=document.documentElement.style;GW=rot?ih:iw;GH=rot?iw:ih;
   b.width=rot?GW+"px":"";b.height=rot?GH+"px":"";b.transform=rot?`translateX(${iw}px) rotate(90deg)`:"";r.setProperty("--vw",GW/100+"px");r.setProperty("--vh",GH/100+"px");
   const w=GW,h=GH;ren.setPixelRatio(Math.min(2,devicePixelRatio||1));ren.setSize(w,h,false);cam.aspect=w/h;applyOff()}
