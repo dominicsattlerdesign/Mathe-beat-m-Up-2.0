@@ -43,7 +43,7 @@ const SIG={
     for(let i=0;i<6;i++){pose(a,i%2?"cross":"jab",50);sfx("swoosh");const m=new THREE.Group();M(gB(.5,.72,.03),i%2?0x5a2ea6:0xf4f0ff,[0,0,0],m);const y0=2.2+rnd(-.5,.6);
       fxAdd(m,.22,(m,p)=>{m.position.set(lerp(ax,bx,p),y0+Math.sin(p*Math.PI)*.4,rnd(-.05,.05));m.rotation.z+=.9;m.rotation.y+=.4});await wait(.11);if(i)impact(a,b,dm*.1,{arc:1,nomt:1,quiet:i%2,stop:.02,push:.08,y:y0})}
     await wait(.2);pose(a,"win",30);glow(bx,2,c,7,.5);for(let i=0;i<10;i++)slashArc(bx,2+rnd(-1,1),i%2?c:0xffc21a,rnd(6.3),1.6);impact(a,b,dm*.5,{lv:2,nomt:1,s:"heavy",noReact:1});await launch(b,b.side*6.2,1.6,.6,1)},
-  /* Tetsu: eine Mondsichel aus Schnittenergie fegt über den Boden */
+  /* Theo: eine Mondsichel aus Schnittenergie fegt über den Boden */
   async tetsu(a,b,dm,d,c){const ax=fx_(a).x,bx=fx_(b).x;pose(a,"windup",20);glow(ax,2.4,c,3,.4);await wait(.3);pose(a,"cross",60);sfx("whoosh");
     for(const[cc,s]of[[c,2.1],[0xffffff,1.7]]){const m=new THREE.Mesh(geo("cres",()=>new THREE.RingGeometry(1.1,1.5,28,1,-1.1,2.2)),addMat(cc,.95));m.rotation.z=d>0?0:Math.PI;fxAdd(m,.26,(m,p)=>{m.position.set(lerp(ax,bx+d*1.5,p),1.9,.4);m.scale.set(s*(1+p*.4),s*(1+p),1);m.material.opacity=.95*(1-p*p*.6)})}
     await wait(.2);for(let i=0;i<4;i++)slashArc(bx,rnd(1.2,3),i%2?c:0xffffff,rnd(6.3),2.2);impact(a,b,dm,{lv:2,nomt:1,s:"heavy",noReact:1,stop:.14});crack(bx,2.4,1);await launch(b,b.side*6.3,1.2,.55,1)},
@@ -51,7 +51,7 @@ const SIG={
   async volt(a,b,dm,d,c){const ax=fx_(a).x+d*1,bx=fx_(b).x;pose(a,"cross",50);sfx("whoosh");const g=new THREE.Group();M(gC(.2,.16,.6,12),0x55657f,[0,0,0],g,1,0,"metal").rotation.z=Math.PI/2;M(gS(.24),0x55657f,[d*.4,0,0],g,1,0,"metal");
     fxAdd(g,.32,(m,p)=>{m.position.set(lerp(ax,bx-d*.5,p*p),2.1+Math.sin(p*9)*.12,0);sparks(m.position.x-d*.5,2.1,0,2,[0xff8a00,0xffe14d,c],3);glow(m.position.x-d*.6,2.1,0xff8a00,1.6,.15)});
     await wait(.32);sfx("boom");glow(bx,2.1,c,9,.5);ring(bx,2.1,0,c,5,.5);sparks(bx,2.1,0,26,[c,0xffffff,0xff8a00],11);impact(a,b,dm,{lv:2,nomt:1,s:"heavy",noReact:1,stop:.14});await launch(b,b.side*6.3,1.8,.6,1.5)},
-  /* Luna: lässt Sternschnuppen regnen */
+  /* Ida: lässt Sternschnuppen regnen */
   async luna(a,b,dm,d,c){pose(a,"win",20);const bx=fx_(b).x;shaft(bx,c,1.4,2.4);
     for(let i=0;i<7;i++){const x0=bx+rnd(-4,4),x1=bx+rnd(-.5,.5),y1=rnd(1.4,2.8),m=new THREE.Mesh(gO(.26),bmat(i%2?0xffe98a:0xffffff));
       fxAdd(m,.26,(m,p)=>{m.position.set(lerp(x0,x1,p),lerp(13,y1,p),0);m.rotation.z+=.5;if(Math.random()<.7)glow(m.position.x,m.position.y,c,1.2,.2)});sfx("zap");await wait(.13);
@@ -123,7 +123,7 @@ const FIN={
     pose(a,"jab",30);await rt(.8,p=>{const e=ease(p),s=1-e*.85;card.rotation.y=p*Math.PI*6;b.turn.rotation.y=FACE+p*Math.PI*6;card.scale.setScalar(s);squash(b,s,s);b.root.scale.z*=.06;card.position.set(lerp(bx,ax+d*.7,e),lerp(2,2.5,e),0);fx_(b).x=card.position.x;fx_(b).y=card.position.y-1.6*s*b.sc});
     b.root.visible=false;pop(L("Und jetzt …","And now …"),"#fff",ax,4.8,"mv");await rt(.7);pose(a,"cross",50);sfx("paper");sfx("heavy");sc.remove(card);sparks(ax+d*.7,2.5,0,34,[0xffffff,0xffc21a,c],9);glow(ax+d*.7,2.5,c,7,.4);pop(L("… weg!","… gone!"),hex(c),ax,4.8,"mv");
     b.turn.rotation.y=FACE;b.root.position.z=0;squash(b,1,1);b.root.visible=true;fx_(b).x=bx;fx_(b).y=9;b.piv.rotation.x=0;await launch(b,bx,0,.5,1.5,{land(){kill(a,b,{s:"slam"})}})},
-  /* Tetsu: ein Schnitt. Dann lange nichts. Dann alles auf einmal. */
+  /* Theo: ein Schnitt. Dann lange nichts. Dann alles auf einmal. */
   async tetsu(a,b,d,c){const x0=fx_(a).x,bx=fx_(b).x,tx=clamp(bx+d*2.2,-6.8,6.8);pose(a,"windup",20);await rt(.5);sfx("whoosh");streak(tx,1.8,d,0xffffff,7);pose(a,"cross",60);await tw(.07,p=>{fx_(a).x=lerp(x0,tx,p)});slashArc(bx,2.1,0xffffff,.3,3);
     pose(a,"hurl",10);pop("…",null,bx,4.7,"mv");await rt(1.3);pop(L("Klick.","Click."),"#fff",tx,4.4,"mv");sfx("key");pose(a,"idle",20);await rt(.35);
     for(let i=0;i<16;i++){slashArc(bx+rnd(-.5,.5),rnd(1,3.2),i%3?c:0xffffff,rnd(6.3),rnd(1.6,3));if(i%2)sfx("swoosh");glow(bx,2,c,3,.2);await rt(.04)}
@@ -134,7 +134,7 @@ const FIN={
     sfx("boom");sfx("zap");impactFrame(100);pillar(bx,c,2.2,24,1);pillar(bx,0xffffff,1.2,24,1);shaft(bx,c,1,4);
     await rt(.75,p=>{CAM.shake=.4;flashLight(c,7,bx,3);if(Math.random()<.5)sparks(bx+rnd(-1,1),.3,0,3,[c,0xffffff],8)});
     tint(b,0x15131a);dust(bx,0,10,0x333340);kill(a,b,{s:"boom"});crack(bx,3,2);pop(L("Akku leer.","Battery empty."),"#fff",fx_(a).x,4.6,"mv");pose(a,"stumble",8)},
-  /* Luna: holt den Mond herunter. Den ganzen. */
+  /* Ida: holt den Mond herunter. Den ganzen. */
   async luna(a,b,d,c){const bx=fx_(b).x;pose(a,"win",20);const m=M(gS(2.3,28,20),0xe8e4d0,[bx,18,0],sc,1,0x55523c,"stone");TEMP.push(m);for(let i=0;i<7;i++){const k=M(gS(rnd(.3,.6),10,8),0xb8b4a0,null,m,0),an=rnd(6.3),el=rnd(-1,1);k.position.set(Math.cos(an)*Math.cos(el)*2.12,Math.sin(el)*2.12,Math.sin(an)*Math.cos(el)*2.12)}
     await rt(1.5,p=>{m.position.y=lerp(18,3.4*b.sc+2.5,p);m.rotation.z+=.01;if(p>.5&&p<.53)pop(L("Nanu?","Huh?"),"#fff",bx,4.6,"mv")});await rt(.35);
     await rt(.1,p=>{m.position.y=lerp(3.4*b.sc+2.5,2.55,p);squash(b,1+p*.6,1-p*.9)});b.grounded=false;b.downed=true;sfx("slam");CAM.shake=.9;impactFrame(90);ring(bx,.06,0,c,8,.7);dust(bx,0,12);crack(bx,3.5,2);kill(a,b,{s:"boom",y:1});pop(L("PLATT!","FLAT!"),hex(c),bx,6);
