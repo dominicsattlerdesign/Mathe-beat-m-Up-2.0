@@ -1,0 +1,227 @@
+/* ---------- Spielablauf: Menüs, Touch-Steuerung, Kampf, Finisher ---------- */
+const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null};try{Object.assign(s,JSON.parse(localStorage.getItem("mrb2")||"{}"))}catch(e){}return s})();
+const save=()=>{try{localStorage.setItem("mrb2",JSON.stringify(SAVE))}catch(e){}};
+const unlocked=ch=>!ch.lock||SAVE.done>=ch.lock;
+const ATK={hieb:{n:"HIEB",kj:"拳",s:"Plus & Minus",dm:9},kick:{n:"KICK",kj:"蹴",s:"Mal & Geteilt",dm:15},wurf:{n:"WURF",kj:"投",s:"Klammern",dm:22},fin:{n:"FINISHER",dm:46}};
+const WORDS=[["ZACK!","BAM!","PAFF!","TOK!"],["WUMMS!","KRACH!","DONG!","BÄMM!"],["KRAWUMM!","RUMMS!","KABOOM!"]];
+let mode="a",lvl=1,pickC=0,selC=0,pl=null,en=null,fighters=[],over=true,lock=false,sel=null,inp="",cards={},Q=Promise.resolve(),busy=0,fid=0,paused=false,pauseAt=0,startHp=null,stageI=0;
+let T=0,hs=0,TSb=1,last=performance.now();
+const q=fn=>{const id=fid;busy++;Q=Q.then(()=>id==fid&&fn()).catch(e=>console.error(e)).then(()=>{if(id==fid)busy--})};
+const msg=t=>$("#msg").textContent=t;
+
+/* ----- kleine Bildschirm-Effekte ----- */
+function pop(t,col,x,y=3.4,cls=""){const[px,py]=scr(x,y),d=document.createElement("div");d.className="pop "+cls;d.textContent=t;d.style.left=px+"px";d.style.top=py+"px";if(col)d.style.color=col;document.body.appendChild(d);setTimeout(()=>d.remove(),950)}
+function banner(t,sub){const b=$("#bn");b.innerHTML=(sub?`<small>${sub}</small>`:"")+t;b.classList.remove("go");void b.offsetWidth;b.classList.add("go")}
+function flash(c){const f=$("#fl");f.style.background=typeof c=="number"?hex(c):c;f.classList.remove("go");void f.offsetWidth;f.classList.add("go")}
+const cine=on=>document.body.classList.toggle("cine",on),speed=on=>$("#speed").classList.toggle("on",on);
+function impactFrame(ms=90){cv.classList.add("impact");setTimeout(()=>cv.classList.remove("impact"),ms)}
+
+/* ----- Kämpfer im Kampf ----- */
+function mkF(ch,side,isP,scale=1){const f=buildFighter(ch);f.side=side;f.isP=isP;f.hx=side*2.6;f.root.position.x=f.hx;f.root.scale.set(side>0?-scale:scale,scale,scale);f.sc*=scale;sc.add(f.root);
+  f.max=f.hp=86+ch.st[1]*7;f.dm=.82+ch.st[0]*.07;f.mg=.7+ch.st[2]*.12;f.mt=0;snapPose(f);return f}
+function clearFighters(){for(const f of fighters){sc.remove(f.root);const h=f.J.hd.children[0].material;h.map&&h.map.dispose();h.dispose()}fighters=[];pl=en=null}
+function hud(){$("#ph").style.width=$("#pht").style.width=pl.hp/pl.max*100+"%";$("#eh").style.width=$("#eht").style.width=en.hp/en.max*100+"%";$("#pm").style.width=pl.mt+"%";
+  const full=pl.mt>=100;$("#pmb").classList.toggle("full",full);const f=$("#fin");f.classList.toggle("rdy",full);f.classList.toggle("sel",sel=="fin");f.firstElementChild.style.width=pl.mt+"%";
+  $("#fint").textContent=full?"必殺 FINISHER":"SPEZIAL LÄDT "+Math.round(pl.mt)+" %";$("#finq").textContent=full?cards.fin.q[0]:""}
+const newCard=k=>({q:task(k,SAVE.diff),t0:0});
+function render(){
+  $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>`<button type="button" class="card ${k}${sel==k?" sel":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${ATK[k].s}</small><div class="q">${cards[k].q[0]}</div></button>`).join("");
+  document.body.classList.toggle("lock",lock);hud();renderAns()}
+function renderAns(){$("#ans").innerHTML=sel?`<span>${cards[sel].q[0]} = <em>${inp||"?"}</em></span><u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?"Dein Kämpfer greift an …":"Tippe auf eine Attacke und löse die Aufgabe."}</span>`}
+function pick(k){if(over||lock||paused||(k=="fin"&&pl.mt<100))return;if(sel!=k)inp="";sel=k;if(!cards[k].t0)cards[k].t0=performance.now();sfx("pick");render()}
+function press(k){if(over||lock||paused||!sel)return;
+  if(k=="del"){inp=inp.slice(0,-1);sfx("key")}else if(k=="ok")return submit();else if(inp.length<6){inp+=k;sfx("key")}renderAns()}
+function submit(){if(!sel||inp===""||lock||over)return;
+  const k=sel,c=cards[k],ok=+inp==c.q[1],el=(performance.now()-c.t0)/1000,th=BONUS[k];sel=null;inp="";lock=true;cards[k]=newCard(k);
+  if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");msg(mu>1.4?"Blitzschnell! Schaden ×1,5":mu>1?"Schnell gerechnet! Schaden ×1,25":"Richtig!");if(k=="fin")pl.mt=0;
+    q(async()=>{await attack(pl,en,k,mu);lock=false;if(!over)render()})}
+  else{sfx("wrong");msg(`Daneben! ${c.q[0]} = ${c.q[1]}`);en.timer-=en.iv*.15;
+    q(async()=>{pose(pl,"stumble",20);pop("?!","#a79fc7",pl.root.position.x,4);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
+  render()}
+$("#pad").innerHTML=["1","2","3","del","4","5","6","0","7","8","9","ok"].map(k=>`<button type="button" class="k${k=="ok"?" ok":k=="del"?" del":""}" data-k="${k}">${k=="del"?"⌫":k=="ok"?"OK":k}</button>`).join("");
+$("#pad").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-k]");if(!b)return;e.preventDefault();b.classList.add("dn");setTimeout(()=>b.classList.remove("dn"),110);press(b.dataset.k)});
+$("#cards").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-k]");if(b){e.preventDefault();pick(b.dataset.k)}});
+$("#fin").addEventListener("pointerdown",e=>{e.preventDefault();pick("fin")});
+addEventListener("keydown",e=>{if(e.key>="0"&&e.key<="9"&&e.key.length==1)press(e.key);else if(e.key=="Backspace")press("del");else if(e.key=="Enter")press("ok")});
+document.addEventListener("gesturestart",e=>e.preventDefault());document.addEventListener("contextmenu",e=>e.preventDefault());
+
+/* ----- Bewegungs-Bausteine ----- */
+const fx_=f=>f.root.position;
+async function dash(f,tx,dur=.2){const x0=fx_(f).x;if(Math.abs(tx-x0)<.1)return;f.run=true;pose(f,"run",30);sfx("swoosh");streak(tx,1.7*f.sc,Math.sign(tx-x0),f.ch.c,Math.min(4,Math.abs(tx-x0)));
+  await tw(dur,p=>{fx_(f).x=lerp(x0,tx,ease(p))});f.run=false}
+async function backHop(f){const x0=fx_(f).x,y0=fx_(f).y;if(Math.abs(f.hx-x0)<.2&&y0<.1){pose(f,"idle",12);return}f.grounded=false;pose(f,"kickCh",22);sfx("jump");
+  await tw(.4,p=>{fx_(f).x=lerp(x0,f.hx,p);fx_(f).y=lerp(y0,0,p)+Math.sin(p*Math.PI)*1.7;f.piv.rotation.x=-Math.PI*2*ease(p)});
+  f.piv.rotation.x=0;fx_(f).y=0;f.grounded=true;pose(f,"idle",16);dust(f.hx,0,3);sfx("land")}
+async function launch(b,toX,h,dur,spins=1,o={}){b.grounded=false;b.downed=true;pose(b,"air",20);const x0=fx_(b).x,y0=fx_(b).y,r0=b.piv.rotation.x,yl=-1.32*b.sc,r1=-(spins*2*Math.PI+Math.PI/2);toX=clamp(toX,-7.1,7.1);
+  await tw(dur,p=>{fx_(b).x=lerp(x0,toX,p);fx_(b).y=lerp(y0,yl,p*p)+Math.sin(p*Math.PI)*h;b.piv.rotation.x=lerp(r0,r1,p)});
+  b.piv.rotation.x=-Math.PI/2;pose(b,"down",25);dust(toX,0,9);CAM.shake=Math.max(CAM.shake,.3);if(o.land)o.land();else{sfx("land");breakNear(toX,1.9,Math.sign(toX)||1,1,4);crack(toX,1.4,1)}
+  const x1=toX,x2=clamp(toX+Math.sign(toX-x0)*.7,-7.3,7.3);await tw(.3,p=>{fx_(b).y=yl+Math.sin(p*Math.PI)*.4;fx_(b).x=lerp(x1,x2,p)})}
+async function getUp(b){await wait(.3);const y0=fx_(b).y;pose(b,"crouch",14);await tw(.28,p=>{b.piv.rotation.x=-Math.PI/2*(1-ease(p));fx_(b).y=y0*(1-p)});b.piv.rotation.x=0;fx_(b).y=0;b.grounded=true;b.downed=false;b.turn.rotation.y=FACE}
+async function recover(a,b){await Promise.all([backHop(a),(async()=>{if(b.downed)await getUp(b);await dash(b,b.hx,.28);pose(b,"idle",12)})()]);a.turn.rotation.y=b.turn.rotation.y=FACE}
+function koFx(){banner("K.O.!");sfx("ko");flash("#fff");TSb=.22;rt(1.2).then(()=>TSb=1)}
+function impact(a,b,dmg,o={}){
+  dmg=Math.max(1,Math.round(dmg));b.hp=Math.max(0,b.hp-dmg);const d=-a.side,x=fx_(b).x,lv=o.lv||0,y=o.y!=null?o.y:2.1*b.sc+fx_(b).y,cx=x-d*.45;
+  star(cx,y,a.ch.c,o.big?2.6:1.1+lv*.45);sparks(cx,y,.6,o.big?30:8+lv*6,[0xffffff,0xffe14d,a.ch.c],6+lv*2);if(o.arc)slashArc(cx,y,a.ch.c,rnd(6),1.4+lv*.4);
+  if(!o.quiet)pop(P(WORDS[o.big?2:lv]),hex(a.ch.c),x-d*.3,y+1.7);pop("−"+dmg,"#fff",x+d*.5,y+.8,"dm");
+  CAM.shake=Math.max(CAM.shake,.1+lv*.16+(o.big?.7:0));flashLight(a.ch.c,2+lv,x,2);sfx(o.s||"punch");hs=o.stop!=null?o.stop:.045+lv*.035;
+  breakNear(x,o.r||1.25,d,1+lv*.3,o.max||2);if(lv||o.big)crack(x,o.big?5:1+lv,o.big?2:lv);
+  if(!o.nomt){if(a.isP)a.mt=Math.min(100,a.mt+dmg*1.05*a.mg);if(b.isP)b.mt=Math.min(100,b.mt+dmg*.75)}
+  hud();if(b.hp<=0&&!over&&!o.noKO){over=true;koFx()}
+  if(!o.noReact){pose(b,"hurt",30);const bx=x;tw(.22,p=>{fx_(b).x=clamp(bx+d*(Math.sin(p*Math.PI)*.3+p*(o.push||.12)),-7,7)})}
+}
+/* ----- Die drei Attacken: jede sieht anders aus und rechnet anders ----- */
+const ACT={
+  /* HIEB: heranstürmen, Dreier-Kombo aus Gerade, Haken und Aufwärtshaken */
+  async hieb(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*1.5,.2);
+    const seq=[["jab",.28],["cross",.3],["upper",.42]];
+    for(let i=0;i<3;i++){pose(a,i==2?"windup":"idle",30);await wait(i==2?.14:.07);pose(a,seq[i][0],45);sfx("swoosh");await wait(.075);
+      impact(a,b,dm*seq[i][1],{lv:i==2?1:0,arc:1,s:i==2?"heavy":"punch",y:(i==2?2.6:2.1)*b.sc,push:i==2?.5:.1,quiet:i==1});
+      if(i==2&&b.hp>0){const y0=0;b.grounded=false;tw(.3,p=>{fx_(b).y=y0+Math.sin(p*Math.PI)*.7}).then(()=>{b.grounded=true})}
+      await wait(i==2?.3:.15)}
+    if(b.hp<=0)await launch(b,b.side*5.6,2,.75,1);else await recover(a,b)},
+  /* KICK: Sprung mit Drehung, Flugtritt, Gegner fliegt quer durch die Arena */
+  async kick(a,b,dm){const d=-a.side,x0=fx_(a).x,tx=fx_(b).x-d*1.55;
+    pose(a,"crouch",25);await wait(.15);a.grounded=false;sfx("jump");pose(a,"kickCh",25);dust(x0,0,3);
+    await tw(.36,p=>{fx_(a).x=lerp(x0,tx,ease(p));fx_(a).y=Math.sin(p*Math.PI)*1.5*(1-p*.5)+.55*p;a.turn.rotation.y=FACE+p*Math.PI*2;if(p>.55&&a.tp!==POSE.kick){pose(a,"kick",40);sfx("swoosh")}});
+    a.turn.rotation.y=FACE;impact(a,b,dm,{lv:1,s:"kick",y:2.3*b.sc,noReact:1,arc:1,stop:.11});streak(fx_(b).x+d*2,1.6,d,0xffffff,4);
+    await Promise.all([launch(b,b.side*6.3,1.4,.6,1),(async()=>{await wait(.12);const y0=fx_(a).y;await tw(.16,p=>{fx_(a).y=y0*(1-p)});a.grounded=true;pose(a,"idle",14);sfx("land")})()]);
+    if(b.hp>0)await recover(a,b)},
+  /* WURF: packen, über den Kopf stemmen, herumwirbeln und wegschleudern */
+  async wurf(a,b,dm){const d=-a.side;await dash(a,fx_(b).x-d*.95,.2);pose(a,"grab",35);sfx("grab");await wait(.14);
+    b.grounded=false;b.downed=true;pose(b,"held",30);pose(a,"lift",16);const ax=fx_(a).x,bx=fx_(b).x,ly=3.72*a.sc-1.6*b.sc;
+    await tw(.3,p=>{const e=ease(p);fx_(b).x=lerp(bx,ax,e);fx_(b).y=e*ly;b.piv.rotation.x=-e*Math.PI/2});
+    sfx("whoosh");setTimeout(()=>sfx("whoosh"),230);
+    await tw(.52,p=>{const r=FACE+ease(p)*Math.PI*4;a.turn.rotation.y=r;b.turn.rotation.y=r});
+    a.turn.rotation.y=b.turn.rotation.y=FACE;pose(a,"hurl",45);sfx("whoosh");
+    await launch(b,b.side*6.4,2.4,.62,2,{land(){impact(a,b,dm,{lv:2,s:"slam",y:.5,noReact:1,r:2.7,max:6,stop:.12});ring(fx_(b).x,.06,0,a.ch.c,4)}});
+    if(b.hp>0)await recover(a,b)},
+  /* FINISHER: Kino-Sequenz in Zeitlupe */
+  async fin(a,b,dm){const d=-a.side,c=a.ch.c,ax=fx_(a).x,bx=fx_(b).x;
+    cine(true);banner(a.ch.fin+"!","必殺 · FINISHER");sfx("charge");CAM.mode="cine";CAM.k=6;CAM.tp.set(ax+d*2.4,2.3*a.sc,5.6);CAM.tl.set(ax+d*.2,2.2*a.sc,0);
+    pose(a,"charge",10);aura(a,c,1.2);ring(ax,.06,0,c,3,.8);
+    await rt(1.2,p=>{flashLight(c,2+p*4,ax,2);CAM.shake=.03+p*.09});
+    speed(true);CAM.k=10;CAM.tp.set((ax+bx)/2,2.5,10);CAM.tl.set((ax+bx)/2,2,0);const tx=bx-d*1.5;
+    streak(tx,1.8,d,c,5);sfx("whoosh");a.run=true;pose(a,"run",30);await tw(.15,p=>{fx_(a).x=lerp(ax,tx,p)});a.run=false;
+    pose(a,"strike",50);impactFrame(120);sfx("slowmo");TSb=.1;impact(a,b,dm*.12,{lv:1,s:"heavy",nomt:1,noKO:1,stop:.14,push:.05});
+    CAM.k=2.5;CAM.tp.set(bx-d*2.6,2.6,6.4);CAM.tl.set(bx-d*.3,2.1,0);
+    const mv=["cross","jab","kick","cross"];
+    for(let i=0;i<4;i++){await rt(.27);pose(a,mv[i],50);await rt(.07);impact(a,b,dm*.09,{arc:1,nomt:1,noKO:1,stop:.03,push:.06,quiet:i%2,s:i==2?"kick":"punch",y:(1.7+i*.25)*b.sc})}
+    await rt(.3);pose(a,"upper",45);await rt(.06);impact(a,b,dm*.12,{lv:1,arc:1,s:"heavy",nomt:1,noKO:1,noReact:1,stop:.08});
+    b.grounded=false;b.downed=true;pose(b,"air",20);TSb=.3;speed(false);CAM.k=5;CAM.tp.set(bx,4.6,14);CAM.tl.set(bx,4,0);
+    const by=4.6;await rt(.6,p=>{fx_(b).y=eOut(p)*by;b.piv.rotation.x=-p*2.4;fx_(b).x=bx+d*p*.5});
+    const X=fx_(b).x,Y=by+1.6*b.sc;
+    await FINFX[a.ch.fx](a,b,c,d,X,Y);
+    TSb=1;impactFrame(110);flash(c);sfx("boom");ring(X,.06,0,c,9,.8);ring(X,.06,0,0xffffff,6,.5);
+    impact(a,b,dm*.41,{big:1,lv:2,r:5.5,max:30,noReact:1,nomt:1,y:fx_(b).y+1.6*b.sc,stop:.16});
+    cine(false);CAM.mode="fight";CAM.k=5;
+    await Promise.all([launch(b,b.side*6.4,1.2,.6,1.5),(async()=>{if(fx_(a).y>.1||!a.grounded){const y0=fx_(a).y;await tw(.25,p=>{fx_(a).y=y0*(1-p*p)});fx_(a).y=0;a.piv.rotation.x=0;a.grounded=true;pose(a,"idle",14)}})()]);
+    if(b.hp>0)await recover(a,b)},
+};
+/* Element-Finale je Kämpfer */
+const FINFX={
+  async bolt(a,b,c,d,X,Y){pose(a,"win",30);for(let i=0;i<5;i++){bolt(X+rnd(-.5,.5),i%2?c:0xffffff,16,i==4?0:Y-1);sfx("zap");flashLight(c,5,X,Y);CAM.shake=.25;await rt(.12)}pillar(X,c,1.1,16,.5)},
+  async fire(a,b,c,d,X,Y){pose(a,"strike",30);sfx("whoosh");pillar(X,c,1.6,16,.9);pillar(X,0xffe14d,.9,16,.7);for(let i=0;i<5;i++){sparks(X+rnd(-1,1),rnd(0,Y),0,8,[c,0xffe14d,0xffffff],9);await rt(.09)}},
+  async slash(a,b,c,d,X,Y){pose(a,"cross",40);for(let i=0;i<9;i++){slashArc(X+rnd(-.6,.6),Y+rnd(-.7,.7),i%3?c:0xffffff,rnd(6.3),2+rnd(1.4));streak(X+rnd(-2,2),Y+rnd(-1,1),i%2?1:-1,c,5);sfx("swoosh");if(i%3==0)sfx("punch");await rt(.06)}},
+  wave(a,b,c,d,X,Y){return FINFX.slash(a,b,c,d,X,Y)},wind(a,b,c,d,X,Y){return FINFX.slash(a,b,c,d,X,Y)},
+  async shadow(a,b,c,d,X,Y){const ax=fx_(a).x;for(let i=0;i<6;i++){const s=i%2?1:-1;fx_(a).x=X+s*2;a.grounded=false;fx_(a).y=Y-2.2+rnd(-.5,.8);streak(X-s*2.5,Y,-s,c,6);slashArc(X,Y+rnd(-.5,.5),i%2?c:0xffffff,rnd(6.3),2.6);sfx("swoosh");await rt(.08)}fx_(a).x=ax;fx_(a).y=0;a.grounded=true;pose(a,"win",30)},
+  async beam(a,b,c,d,X,Y){pose(a,"strike",30);const ax=fx_(a).x+d*.9,ay=2.1*a.sc,len=Math.hypot(X-ax,Y-ay),ang=Math.atan2(Y-ay,X-ax);sfx("zap");
+    for(const[w,cc]of[[1,c],[.45,0xffffff]]){const m=new THREE.Mesh(gC(1,1,1,14),addMat(cc,.9));m.position.set((ax+X)/2,(ay+Y)/2,0);m.rotation.z=ang-Math.PI/2;fxAdd(m,.75,(m,p)=>{const s=.7*w*(p<.2?p/.2:1-(p-.2)/.8)*(1+Math.sin(p*70)*.15);m.scale.set(s,len+2,s)})}
+    await rt(.2,p=>{CAM.shake=.2;flashLight(c,5,X,Y)});sparks(X,Y,0,20,[c,0xffffff],10)},
+  async meteor(a,b,c,d,X,Y){pose(a,"win",30);const m=new THREE.Mesh(gS(1.5,16,12),addMat(c,.9)),k=new THREE.Mesh(gS(1,12,10),addMat(0xffffff,.9));m.add(k);const sx=X-d*9,sy=19;sfx("whoosh");
+    fxAdd(m,.52,(m,p)=>{m.position.set(lerp(sx,X,p),lerp(sy,Y,p),0);m.scale.setScalar(.6+p*.6);if(Math.random()<.7)sparks(m.position.x,m.position.y,0,2,[c,0xffffff],3)});await rt(.5,p=>{flashLight(c,p*6,X,Y)})},
+  async quake(a,b,c,d,X,Y){const ax=fx_(a).x;a.grounded=false;pose(a,"skyfall",30);sfx("jump");await rt(.3,p=>{fx_(a).x=lerp(ax,X-d*.4,p);fx_(a).y=eOut(p)*(Y+.6)});
+    sfx("whoosh");const ay=fx_(a).y,by=fx_(b).y,yl=-1.32*b.sc;await rt(.16,p=>{fx_(a).y=lerp(ay,.2,p*p);fx_(b).y=lerp(by,yl,p*p);b.piv.rotation.x=lerp(-2.4,-Math.PI/2,p)});
+    for(let i=0;i<3;i++)ring(X,.06,0,i?c:0xffffff,6+i*3,.5+i*.15);for(let i=0;i<8;i++)pillar(X+rnd(-4,4),c,.3,rnd(2,5),.5)},
+  async light(a,b,c,d,X,Y){pose(a,"win",30);sfx("zap");pillar(X,0xffffff,2,20,.9);pillar(X,c,2.6,20,1);for(let i=0;i<4;i++){bolt(X+rnd(-2,2),c,18,0);ring(X,Y-i*1.4,0,c,3,.4);await rt(.1)}},
+};
+async function attack(a,b,k,mu){if(over)return;const dm=a.isP?ATK[k].dm*mu*a.dm:a.D*{hieb:.7,kick:1,wurf:1.4}[k];
+  await ACT[k](a,b,dm);
+  if(b.hp<=0){pose(b,"down",20);await backHop(a);pose(a,"win",10);await rt(1.5);result(b!==pl)}}
+
+/* ----- Kampf starten / beenden ----- */
+function storyOpp(n){if(n==10)return pickC==14?13:14;if(n==5)return pickC==13?10:13;const pool=[];for(let i=0;i<10;i++)if(i!=pickC)pool.push(i);return pool[((n<5?n-1:n-2)+pickC*3)%pool.length]}
+function layout(){const p=$("#panel");VOFF=p.hidden?0:Math.max(0,p.offsetHeight-44);applyOff()}
+function startFight(){
+  fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
+  const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i]))),L=story?lvl:[2,5,8][SAVE.diff];
+  stageI=story?Math.floor((lvl-1)/2):R(0,STG.length-1);
+  menu(`<div class="vs"><figure><img src="${CH[pickC].full}" alt=""><figcaption>${CH[pickC].n}</figcaption></figure><div class="v">VS</div><figure><img src="${CH[oi].full}" alt=""><figcaption>${CH[oi].n}</figcaption></figure></div>
+    <p class="tag">${story?(lvl==10?"Endkampf":lvl==5?"Boss-Kampf":"Kampf "+lvl+" von 10")+" · ":""}${STG[stageI].n}</p>`,1);sfx("vs");
+  setTimeout(()=>{const id=fid;
+    clearFighters();buildStage(stageI);
+    pl=mkF(CH[pickC],-1,true);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
+    if(story&&startHp!=null)pl.hp=Math.min(pl.max,startHp);
+    en.max=en.hp=52+L*8+CH[oi].st[1]*3+(boss?18:0);en.iv=12-L*.55;en.D=4+L*.7;en.timer=en.iv;
+    $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=CH[pickC].bust;$("#ei").src=CH[oi].bust;
+    $("#lv").innerHTML=`<b>${story?(lvl==10?"ENDKAMPF":"KAMPF "+lvl+"/10"):"FREIER KAMPF"}</b>${STG[stageI].n}`;
+    cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
+    $("#hud").hidden=false;$("#panel").hidden=false;msg("Löse eine Aufgabe, dann greift dein Kämpfer an!");render();layout();
+    CAM.mode="fight";CAM.k=5;camFight();CAM.p.copy(CAM.tp).add(new THREE.Vector3(0,2,8));CAM.l.copy(CAM.tl);
+    setTimeout(()=>{if(id!=fid)return;menuHide();banner(story?(lvl==10?"ENDKAMPF!":"KAMPF "+lvl+"!"):"FIGHT!",STG[stageI].n);sfx("gong");setTimeout(()=>{if(id==fid){over=false}},900)},1500);
+  },60);
+}
+function endFightUi(){$("#panel").hidden=true;$("#hud").hidden=true;cine(false);speed(false);layout();CAM.mode="menu"}
+function result(win){
+  over=true;endFightUi();const s=mode=="s";sfx(win?"win":"lose");
+  if(win&&s&&lvl<10){startHp=Math.min(pl.max,pl.hp+30);lvl++;SAVE.story={c:pickC,lvl,hp:startHp};save();
+    menu(`<h2>Sieg!</h2><p>Kampf ${lvl-1} von 10 geschafft. Dein Kämpfer erholt sich ein Stück.</p><button class="btn" data-a="next">Weiter zu Kampf ${lvl}</button><button class="btn alt" data-a="home">Hauptmenü</button>`,1)}
+  else if(win&&s){SAVE.done++;SAVE.story=null;save();const nu=CH.find(c=>c.lock==SAVE.done);
+    menu(`<p class="tag">Story geschafft · ${SAVE.done}×</p><h1 class="logo"><span>Du bist</span>Champion!</h1><p>${CH[pickC].n} hat alle zehn Gegner besiegt.</p>${nu?`<button class="btn gold" data-a="unlock">Was ist das …?</button>`:`<button class="btn" data-a="home">Hauptmenü</button>`}`,1)}
+  else if(win)menu(`<h2>Gewonnen!</h2><div class="rowb"><button class="btn" data-a="again">Nochmal</button><button class="btn alt" data-a="home">Hauptmenü</button></div>`,1);
+  else menu(`<h2>Niederlage</h2><p>Das war knapp. Atme durch und hol dir die Revanche!</p><div class="rowb"><button class="btn" data-a="again">Revanche</button><button class="btn alt" data-a="home">Hauptmenü</button></div>`,1)}
+
+/* ----- Menüs ----- */
+function menu(h,solid){const m=$("#menu");m.hidden=false;m.classList.toggle("solid",!!solid);m.innerHTML=h;m.scrollTop=0;$("#snd").hidden=false}
+function menuHide(){$("#menu").hidden=true;$("#snd").hidden=true}
+function attract(){fid++;tws.length=0;rtw.length=0;TSb=1;over=true;clearFighters();buildStage(R(0,STG.length-1));const ok=CH.map((c,i)=>i).filter(i=>unlocked(CH[i])),a=P(ok),b=P(ok.filter(i=>i!=a));
+  fighters=[mkF(CH[a],-1,true),mkF(CH[b],1,false)];CAM.mode="menu"}
+function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=null;const st=SAVE.story;
+  menu(`<p class="tag">Beat ’em Up · 2.0</p><h1 class="logo"><span>Mathe</span>Raufbold</h1>
+   <div class="rowb"><button class="btn" data-a="story">Story<small>10 KÄMPFE BIS ZUM MATHEMAGUS</small></button>${st?`<button class="btn gold" data-a="cont">Weiterkämpfen<small>${CH[st.c].n.toUpperCase()} · KAMPF ${st.lvl}/10</small></button>`:""}<button class="btn alt" data-a="arcade">Freier Kampf<small>EIN GEGNER, EINE ARENA</small></button></div>
+   <div class="seg" id="dseg">${[["Leicht","bis 20"],["Mittel","Einmaleins"],["Schwer","große Zahlen"]].map((d,i)=>`<button type="button" data-a="diff" data-i="${i}" class="${SAVE.diff==i?"on":""}">${d[0]}<small>${d[1]}</small></button>`).join("")}</div>
+   <p class="tag">Story geschafft: ${SAVE.done}× · Geheime Kämpfer: ${Math.min(5,SAVE.done)}/5</p>`)}
+function selChar(){if(!unlocked(CH[selC]))selC=0;
+  menu(`<h2>Wähle deinen Kämpfer</h2><div class="sel"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">Zurück</button>`,1);showDet(selC)}
+function showDet(i){selC=i;const c=CH[i],u=unlocked(c);document.querySelectorAll(".tile").forEach((t,j)=>t.classList.toggle("on",j==i));
+  $("#det").innerHTML=`<img src="${c.full}" alt="" class="${u?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3><p>${c.d}</p>
+    <div class="st">${["Kraft","Leben","Spezial"].map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>
+    <div class="fn"><small>FINISHER</small>${c.fin}</div><button class="btn" data-a="go">Kämpfen!</button>`
+   :`<div class="ti">Geheimer Kämpfer</div><h3>???</h3><p>Spiele die Story ${c.lock}× durch, um diesen Kämpfer freizuschalten. Bisher geschafft: ${SAVE.done}×.</p><button class="btn" disabled>Gesperrt</button>`)+`</div>`}
+const ACTIONS={
+  start(){auInit();try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
+  story(){mode="s";lvl=1;startHp=null;selChar()},arcade(){mode="a";startHp=null;selChar()},
+  cont(){const s=SAVE.story;mode="s";pickC=s.c;lvl=s.lvl;startHp=s.hp;startFight()},
+  diff(b){SAVE.diff=+b.dataset.i;save();document.querySelectorAll("#dseg button").forEach((x,i)=>x.classList.toggle("on",i==SAVE.diff))},
+  tile(b){showDet(+b.dataset.i)},go(){pickC=selC;if(mode=="s"){SAVE.story=null;save()}startFight()},
+  next(){startFight()},again(){startFight()},home(){home()},
+  unlock(){const c=CH.find(c=>c.lock==SAVE.done);sfx("unlock");flash("#fff");menu(`<p class="tag">Neuer Kämpfer freigeschaltet</p><img class="unl" src="${c.full}" alt=""><h2>${c.n}</h2><p>${c.ti}. ${c.d}</p><button class="btn" data-a="home">Weiter</button>`,1)},
+  resume(){paused=false;const d=performance.now()-pauseAt;for(const k in cards)if(cards[k].t0)cards[k].t0+=d;last=performance.now();menuHide()},
+  quit(){paused=false;home()},
+};
+$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(b.dataset.a!="tile"&&b.dataset.a!="diff")sfx("click");else sfx("pick");ACTIONS[b.dataset.a](b)});
+$("#pz").addEventListener("click",()=>{if(over||paused||document.body.classList.contains("cine"))return;paused=true;pauseAt=performance.now();sfx("click");
+  menu(`<h2>Pause</h2><div class="rowb"><button class="btn" data-a="resume">Weiter</button><button class="btn alt" data-a="quit">Kampf aufgeben</button></div>`,1)});
+const sndBtn=$("#snd");function sndUi(){sndBtn.classList.toggle("off",SAVE.mute);sndBtn.setAttribute("aria-pressed",!SAVE.mute)}
+sndBtn.addEventListener("click",()=>{auInit();SAVE.mute=!SAVE.mute;save();auMute(SAVE.mute);sndUi()});
+document.addEventListener("visibilitychange",()=>{if(AU.ctx){if(document.hidden)AU.ctx.suspend();else AU.ctx.resume()}});
+
+/* ----- Hauptschleife ----- */
+function camFight(){const a=fx_(pl),b=fx_(en),mx=(a.x+b.x)/2,span=Math.abs(a.x-b.x)/2+2.9,tan=Math.tan(cam.fov*Math.PI/360),free=1-VOFF/innerHeight,top=Math.max(a.y,b.y,0);
+  const z=clamp(Math.max(span/(tan*cam.aspect),(2.55+top*.55)/(tan*free)),9,34);CAM.tp.set(mx*.7,2.4+z*.07+top*.3,z);CAM.tl.set(mx*.7,2.05+top*.4,0)}
+function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000);last=n;
+  if(paused){ren.render(sc,cam);return}
+  const wd=dt*(hs>0?.02:TSb);hs-=dt;T+=wd;
+  stepTw(rtw,dt);stepTw(tws,wd);for(const f of fighters)animFighter(f,wd,T);stepFx(wd,dt);stepStage(dt,T);
+  if(pl&&!over){
+    if(busy==0){en.timer-=dt;if(en.timer<=0){en.timer=en.iv*rnd(.85,1.15);const k=P(["hieb","hieb","kick","kick","wurf"]);
+      q(async()=>{sfx("warn");pop("!","#ff3b2f",fx_(en).x,4.4*en.sc);pose(en,"windup",20);await wait(.4);await attack(en,pl,k,1)})}}
+    const w=clamp(1-en.timer/en.iv,0,1);$("#ec").style.width=w*100+"%";$("#ecb").classList.toggle("warn",w>.85);
+    if(sel){const el=(performance.now()-cards[sel].t0)/1000,th=BONUS[sel],bl=$("#bl"),bo=$("#bon");if(bl){bl.textContent=el<=th[0]?"BLITZ ×1,5":el<=th[1]?"SCHNELL ×1,25":"";bo.style.width=clamp(1-el/th[1],0,1)*100+"%";bo.style.background=el<=th[0]?"var(--gold)":"var(--cyan)"}}
+  }
+  if(CAM.mode=="fight"&&pl)camFight();else if(CAM.mode=="menu"){CAM.k=2;const z=clamp(6/(Math.tan(cam.fov*Math.PI/360)*cam.aspect),11,24);CAM.tp.set(Math.sin(T*.16)*5,3,z);CAM.tl.set(0,2.2,0)}
+  camStep(dt);ren.render(sc,cam)}
+
+/* ----- Start ----- */
+AU.muted=SAVE.mute;sndUi();rs();makePortraits();attract();
+menu(`<p class="tag">Beat ’em Up · 2.0</p><h1 class="logo"><span>Mathe</span>Raufbold</h1><p>Rechne richtig, dann schlägt dein Kämpfer zu.</p><button class="btn blink" data-a="start">Start</button>`);
+requestAnimationFrame(loop);
