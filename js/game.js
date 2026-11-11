@@ -1,13 +1,16 @@
 /* ---------- Spielablauf: Menüs, Touch-Steuerung, Kampf, Finisher ---------- */
-const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[]};
+const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[],lang:(navigator.language||"de").slice(0,2)=="en"?"en":"de",vol:{m:.8,s:.9}};
   try{const n=localStorage.getItem("mb3");if(n)Object.assign(s,JSON.parse(n));else{const o=JSON.parse(localStorage.getItem("mrb2")||"null");if(o){s.done=o.done||0;s.diff=Math.min(3,(o.diff||0)+1);s.mute=!!o.mute}}}catch(e){}
-  if(!Array.isArray(s.lb))s.lb=[];return s})();
+  if(!Array.isArray(s.lb))s.lb=[];if(!s.vol)s.vol={m:.8,s:.9};LANG=s.lang;return s})();
 const save=()=>{try{localStorage.setItem("mb3",JSON.stringify(SAVE))}catch(e){}};
 const esc=t=>String(t).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";"),fmtT=t=>Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0");
 const unlocked=ch=>!ch.lock||SAVE.done>=ch.lock;
 const ATK={hieb:{n:"HIEB",kj:"拳",dm:6,c:0xff5a1a},kick:{n:"KICK",kj:"蹴",dm:10,c:0x25d4ff},wurf:{n:"WURF",kj:"投",dm:15,c:0x9a6bff},sig:{n:"SPEZIAL",dm:30}};
-const QUIPS={ko:["Das gibt Kopfweh.","Gute Nacht!","Autsch.","Sternchen zählen …","Der steht so schnell nicht auf."],bad:["Knapp daneben ist auch vorbei.","Das Ergebnis hat sich versteckt.","Fast! Nochmal.","Kopf hoch, weiter."]};
-const WORDS=[["ZACK!","BAM!","PAFF!","TOK!"],["WUMMS!","KRACH!","DONG!","BÄMM!"],["KRAWUMM!","RUMMS!","KABOOM!"]];
+bi(ATK.hieb,"n","HIEB","PUNCH");bi(ATK.wurf,"n","WURF","THROW");bi(ATK.sig,"n","SPEZIAL","SPECIAL");
+const QUIPS={};bi(QUIPS,"ko",["Das gibt Kopfweh.","Gute Nacht!","Autsch.","Sternchen zählen …","Der steht so schnell nicht auf."],["That’ll leave a mark.","Good night!","Ouch.","Counting stars …","Not getting up anytime soon."]);
+bi(QUIPS,"bad",["Knapp daneben ist auch vorbei.","Das Ergebnis hat sich versteckt.","Fast! Nochmal.","Kopf hoch, weiter."],["Close isn’t quite right.","The answer went into hiding.","Almost! Try again.","Chin up, keep going."]);
+const WORDS=[];[[["ZACK!","BAM!","PAFF!","TOK!"],["WHAP!","BAM!","POW!","TOK!"]],[["WUMMS!","KRACH!","DONG!","BÄMM!"],["WHAM!","CRASH!","DONG!","BOOM!"]],[["KRAWUMM!","RUMMS!","KABOOM!"],["KABLAM!","KRAKOOM!","KABOOM!"]]].forEach((w,i)=>bi(WORDS,i,w[0],w[1]));
+const HERO=()=>L("Held","Hero"),qt=t=>L(`„${t}“`,`“${t}”`);
 let mode="a",lvl=1,pickC=0,selC=0,pl=null,en=null,fighters=[],over=true,lock=false,sel=null,inp="",cards={},Q=Promise.resolve(),busy=0,fid=0,paused=false,pauseAt=0,stageI=0,round=1,wins={p:0,e:0},storyT=0,fo="none",cd={last:null,n:0,lock:null,left:0};
 let T=0,hs=0,TSb=1,last=performance.now();
 const q=fn=>{const id=fid;busy++;Q=Q.then(()=>id==fid&&fn()).catch(e=>console.error(e)).then(()=>{if(id==fid)busy--})};
@@ -26,36 +29,36 @@ function mkF(ch,side,isP,scale=1){const f=buildFighter(ch);f.side=side;f.isP=isP
 function clearFighters(){for(const f of fighters){sc.remove(f.root);const h=f.J.hd.children[0].material;h.map&&h.map.dispose();h.dispose()}fighters=[];pl=en=null}
 function hud(){$("#ph").style.width=$("#pht").style.width=pl.hp/pl.max*100+"%";$("#eh").style.width=$("#eht").style.width=en.hp/en.max*100+"%";$("#pm").style.width=pl.mt+"%";
   const full=pl.mt>=100;$("#pmb").classList.toggle("full",full);const f=$("#fin");f.classList.toggle("rdy",full);f.classList.toggle("sel",sel=="sig");f.firstElementChild.style.width=pl.mt+"%";
-  $("#fint").textContent=full?"SPEZIAL · "+pl.ch.sig.toUpperCase():"SPEZIAL "+Math.round(pl.mt)+" %";$("#finq").textContent=full?cards.sig.q[0]:"";
+  $("#fint").textContent=full?ATK.sig.n+" · "+pl.ch.sig.toUpperCase():ATK.sig.n+" "+Math.round(pl.mt)+" %";$("#finq").textContent=full?cards.sig.q[0]:"";
   for(const[id,n]of[["#pw",wins.p],["#ew",wins.e]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<n))}
 const newCard=k=>({q:task(k,SAVE.diff),t0:0});
 function render(){const lb=LABELS[SAVE.diff?1:0];
-  $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>{const L=cd.lock==k;return`<button type="button" class="card ${k}${sel==k?" sel":""}${L?" cdl":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${L?"Pause · noch "+cd.left+" andere":lb[k]}</small><div class="q${cards[k].q[0].length>13?" lg":""}">${L?"gesperrt":cards[k].q[0]}</div></button>`}).join("");
+  $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>{const LK=cd.lock==k;return`<button type="button" class="card ${k}${sel==k?" sel":""}${LK?" cdl":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${LK?(LANG=="en"?"Resting · "+cd.left+" more":"Pause · noch "+cd.left+" andere"):lb[k]}</small><div class="q${cards[k].q[0].length>13?" lg":""}">${LK?(LANG=="en"?"locked":"gesperrt"):cards[k].q[0]}</div></button>`}).join("");
   document.body.classList.toggle("lock",lock);hud();renderAns()}
 function renderAns(){const t=sel&&cards[sel].q[0];const pt=t&&t.split("▢"),em=`<em>${inp||"?"}</em>`;
   /* Bei gesuchter Zahl steht die Eingabe direkt in der Lücke, sonst hinter dem Gleichheitszeichen */
-  $("#ans").innerHTML=sel?(pt.length>1?`<span>${pt[0]}</span>${em}<span>${pt[1]}</span>`:`<span>${t} =</span>${em}`)+`<u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?"Dein Kämpfer greift an …":"Attacke antippen, dann rechnen."}</span>`}
+  $("#ans").innerHTML=sel?(pt.length>1?`<span>${pt[0]}</span>${em}<span>${pt[1]}</span>`:`<span>${t} =</span>${em}`)+`<u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?L("Dein Kämpfer greift an …","Your fighter attacks …"):L("Attacke antippen, dann rechnen.","Tap an attack, then solve it.")}</span>`}
 function pick(k){if(over||lock||paused||(k=="sig"&&pl.mt<100)||(k=="fin"&&fo!="on"))return;
-  if(k==cd.lock){sfx("wrong");msg(`${ATK[k].n} macht Pause. Schaffe erst ${cd.left==1?"eine andere Attacke":cd.left+" andere Attacken"}!`);return}
+  if(k==cd.lock){sfx("wrong");msg(L(`${ATK[k].n} macht Pause. Schaffe erst ${cd.left==1?"eine andere Attacke":cd.left+" andere Attacken"}!`,`${ATK[k].n} needs a rest. Land ${cd.left==1?"one other attack":cd.left+" other attacks"} first!`));return}
   if(sel!=k)inp="";sel=k;if(!cards[k].t0)cards[k].t0=performance.now();sfx("pick");render()}
 function press(k){if(over||lock||paused||!sel)return;
   if(k=="del"){inp=inp.slice(0,-1);sfx("key")}else if(k=="ok")return submit();else if(inp.length<6){inp+=k;sfx("key")}renderAns()}
 /* Finisher-Angebot: Gegner taumelt, 15 Sekunden für eine schwere Aufgabe. Gibt es nur einmal pro Kampf. */
 function offerFin(){fo="on";en.dizzy=true;pose(en,"dizzy",8);dizzyStars(en);cards.fin={q:task("fin",SAVE.diff),t0:performance.now()};sel="fin";inp="";sfx("unlock");colorBurst(0xffc21a,0xff3b2f,3);
-  const f=$("#fo");f.hidden=false;f.querySelector("span").textContent="必殺 FINISHER · "+pl.ch.fin;f.querySelector("b").textContent=cards.fin.q[0];msg(`${en.ch.n} taumelt! Löse die Aufgabe in ${FIN_TIME} Sekunden.`);render()}
+  const f=$("#fo");f.hidden=false;f.querySelector("span").textContent="必殺 FINISHER · "+pl.ch.fin;f.querySelector("b").textContent=cards.fin.q[0];msg(L(`${en.ch.n} taumelt! Löse die Aufgabe in ${FIN_TIME} Sekunden.`,`${en.ch.n} is dizzy! Solve it within ${FIN_TIME} seconds.`));render()}
 function endOffer(t){fo="used";$("#fo").hidden=true;en.dizzy=false;if(busy==0&&en.hp>0)pose(en,"idle",10);if(sel=="fin"){sel=null;inp=""}if(t)msg(t);render()}
 function submit(){if(!sel||inp===""||lock||over)return;
   const k=sel,c=cards[k],ok=+inp==c.q[1],el=(performance.now()-c.t0)/1000,th=BONUS[k];sel=null;inp="";lock=true;
   if(k=="fin"){fo="used";$("#fo").hidden=true;
     if(ok){sfx("ok");msg("Finisher!");q(async()=>{await attack(pl,en,"fin",1);lock=false;if(!over)render()})}
-    else{sfx("wrong");endOffer(`Daneben! ${c.q[0].includes("▢")?"▢":c.q[0]} = ${c.q[1]}. Der Finisher ist futsch, jetzt normal zu Ende kämpfen.`);q(async()=>{pose(pl,"stumble",20);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
+    else{sfx("wrong");endOffer(L(`Daneben! ${c.q[0].includes("▢")?"▢":c.q[0]} = ${c.q[1]}. Der Finisher ist futsch, jetzt normal zu Ende kämpfen.`,`Missed! ${c.q[0].includes("▢")?"▢":c.q[0]} = ${c.q[1]}. The finisher is gone, win the fight the normal way.`));q(async()=>{pose(pl,"stumble",20);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
     return render()}
   cards[k]=newCard(k);let note="";
   if(k!="sig"){if(cd.last==k)cd.n++;else{cd.last=k;cd.n=1}
-    if(ok&&cd.lock&&k!=cd.lock&&--cd.left<=0){note=` ${ATK[cd.lock].n} ist wieder frei.`;cd.lock=null}
-    if(cd.n>=3){cd.lock=k;cd.left=2;cd.n=0;cd.last=null;note=` Dreimal ${ATK[k].n} am Stück: Der macht jetzt Pause, bis du 2 andere Attacken schaffst.`}}
-  else if(ok&&cd.lock&&--cd.left<=0){note=` ${ATK[cd.lock].n} ist wieder frei.`;cd.lock=null}
-  if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");msg((mu>1.4?"Blitzschnell! Schaden ×1,5.":mu>1?"Schnell gerechnet! Schaden ×1,25.":"Richtig!")+note);if(k=="sig")pl.mt=0;
+    if(ok&&cd.lock&&k!=cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`);cd.lock=null}
+    if(cd.n>=3){cd.lock=k;cd.left=2;cd.n=0;cd.last=null;note=L(` Dreimal ${ATK[k].n} am Stück: Der macht jetzt Pause, bis du 2 andere Attacken schaffst.`,` Three ${ATK[k].n}es in a row: it rests until you land 2 other attacks.`)}}
+  else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`);cd.lock=null}
+  if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");msg((mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")pl.mt=0;
     q(async()=>{await attack(pl,en,k,mu);lock=false;if(!over)render()})}
   else{sfx("wrong");msg(`${P(QUIPS.bad)} ${c.q[0].includes("▢")?"▢":c.q[0]} = ${c.q[1]}.`+note);en.timer-=en.iv*.15;
     q(async()=>{pose(pl,"stumble",20);pop("?!","#a79fc7",pl.root.position.x,4);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
@@ -83,6 +86,8 @@ async function launch(b,toX,h,dur,spins=1,o={}){b.grounded=false;b.downed=true;p
   const x1=toX,x2=clamp(toX+Math.sign(toX-x0)*.7,-7.3,7.3);await tw(.3,p=>{fx_(b).y=yl+Math.sin(p*Math.PI)*.4;fx_(b).x=lerp(x1,x2,p)})}
 async function getUp(b){await wait(.3);const y0=fx_(b).y;pose(b,"crouch",14);await tw(.28,p=>{b.piv.rotation.x=-Math.PI/2*(1-ease(p));fx_(b).y=y0*(1-p)});b.piv.rotation.x=0;fx_(b).y=0;b.grounded=true;b.downed=false;b.turn.rotation.y=FACE}
 async function recover(a,b){await Promise.all([backHop(a),(async()=>{if(b.downed)await getUp(b);await dash(b,b.hx,.28);pose(b,b.dizzy?"dizzy":"idle",12)})()]);a.turn.rotation.y=b.turn.rotation.y=FACE}
+/* Kampfschreie: jede Figur hat ihre eigene Stimme. Kurze Sperre, damit sich Schreie nicht stapeln. */
+function say(f,k){if(!f||!f.ch)return;const t=performance.now(),key=k=="hurt"?"ht":"vt";if(f[key]&&t-f[key]<(k=="hurt"?320:380))return;f[key]=t;voice(f.ch.vo,k)}
 function koFx(){banner("K.O.!",P(QUIPS.ko));sfx("ko");flash("#fff");TSb=.22;rt(1.2).then(()=>TSb=1)}
 function impact(a,b,dmg,o={}){
   dmg=Math.max(1,Math.round(dmg));b.hp=Math.max(0,b.hp-dmg);const d=-a.side,x=fx_(b).x,lv=o.lv||0,y=o.y!=null?o.y:2.1*b.sc+fx_(b).y,cx=x-d*.45;
@@ -91,7 +96,8 @@ function impact(a,b,dmg,o={}){
   CAM.shake=Math.max(CAM.shake,.1+lv*.16+(o.big?.7:0));flashLight(a.ch.c,2+lv,x,2);sfx(o.s||"punch");hs=o.stop!=null?o.stop:.045+lv*.035;
   breakNear(x,o.r||1.25,d,1+lv*.3,o.max||2);if(lv||o.big)crack(x,o.big?5:1+lv,o.big?2:lv);
   if(!o.nomt){if(a.isP)a.mt=Math.min(100,a.mt+dmg*1.05*a.mg);if(b.isP)b.mt=Math.min(100,b.mt+dmg*.75)}
-  hud();if(b.hp<=0&&!over&&!o.noKO){over=true;koFx()}
+  hud();if(b.hp<=0&&!over&&!o.noKO){over=true;say(b,"ko");koFx()}else if(b.hp>0&&(lv||Math.random()<.45))say(b,"hurt");
+  if(lv&&!o.quiet)say(a,"atk");
   if(!o.noReact){pose(b,"hurt",30);const bx=x;tw(.22,p=>{fx_(b).x=clamp(bx+d*(Math.sin(p*Math.PI)*.3+p*(o.push||.12)),-7,7)})}
 }
 /* ----- Attacken: jede Art hat mehrere Varianten, die abwechselnd drankommen ----- */
@@ -160,25 +166,28 @@ const MOVES={
     await launch(b,b.side*6.5,1.3,.5,1.5,{land:slamLand(a,b,dm)})}},
  ],
 };
-async function runMove(k,a,b,dm){const L=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,L.length-1)}while(m[k]===i);m[k]=i;
-  pop(L[i].n+"!",null,fx_(a).x,4.6*a.sc,"mv");await L[i].f(a,b,dm)}
+/* Englische Namen der Varianten */
+{const en={hieb:["Triple Combo","Flash Cut","Hammer Fist","Drum Roll"],kick:["Whirl Kick","Sweep Kick","Hurricane Kick","Dive Kick"],wurf:["Sling Throw","Sky Drop","Giant Swing"]};
+ for(const k in en)MOVES[k].forEach((m,i)=>bi(m,"n",m.n,en[k][i]))}
+async function runMove(k,a,b,dm){say(a,"atk");const ML=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,ML.length-1)}while(m[k]===i);m[k]=i;
+  pop(ML[i].n+"!",null,fx_(a).x,4.6*a.sc,"mv");await ML[i].f(a,b,dm)}
 const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a,b,dm),wurf:(a,b,dm)=>runMove("wurf",a,b,dm)};
 async function attack(a,b,k,mu){if(over)return;
   if(k=="fin")await finMove(a,b);
   else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*mu*a.dm)}
-  else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 80 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP?mu:.8));
+  else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 88 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP?mu:.88));
   if(b.hp>0){await recover(a,b);
     /* Finisher gibt es nur im Matchball: der Spieler führt 1 Runde und der Gegner hat höchstens 10 % Leben */
     if(a.isP&&fo=="none"&&wins.p==1&&b.hp<=b.max*.1&&!over)offerFin();return}
   /* Runde vorbei: gekämpft wird, bis jemand zwei Runden gewonnen hat */
   if(fo=="on")endOffer();
-  if(!b.downed)await launch(b,b.side*5.6,2,.75,1);pose(b,"down",20);await backHop(a);a.turn.rotation.y=FACE;pose(a,"win",10);
+  if(!b.downed)await launch(b,b.side*5.6,2,.75,1);pose(b,"down",20);await backHop(a);a.turn.rotation.y=FACE;pose(a,"win",10);say(a,"win");
   const w=a.isP?"p":"e";wins[w]++;hud();await rt(1.5);
   if(wins[w]>=2)return result(a.isP);
-  round++;banner("Runde "+round,`Stand ${wins.p} : ${wins.e}`);sfx("gong");clearTemp();untint(b);squash(b,1,1);b.root.visible=true;b.dizzy=false;
+  round++;banner(L("Runde ","Round ")+round,L("Stand ","Score ")+`${wins.p} : ${wins.e}`);sfx("gong");clearTemp();untint(b);squash(b,1,1);b.root.visible=true;b.dizzy=false;
   await Promise.all([getUp(b).then(()=>dash(b,b.hx,.3)),rt(1)]);
   for(const f of[pl,en]){f.hp=f.max;pose(f,"idle",12);f.turn.rotation.y=FACE;fx_(f).z=0}
-  en.timer=en.iv;sel=null;inp="";msg(wins.p==1?"Matchball! Bring den Gegner unter 10 % Leben für den Finisher.":"Neue Runde, volle Kraft für beide!");render();await rt(.5);over=false}
+  en.timer=en.iv;sel=null;inp="";msg(wins.p==1?L("Matchball! Bring den Gegner unter 10 % Leben für den Finisher.","Match point! Get your opponent below 10 % health for the finisher."):L("Neue Runde, volle Kraft für beide!","New round, full power for both!"));render();await rt(.5);over=false}
 
 /* ----- Kampf starten / beenden ----- */
 function storyOpp(n){if(n==10)return pickC==14?13:14;if(n==5)return pickC==13?10:13;const pool=[];for(let i=0;i<10;i++)if(i!=pickC)pool.push(i);return pool[((n<5?n-1:n-2)+pickC*3)%pool.length]}
@@ -189,21 +198,21 @@ function layout(){const p=$("#panel"),r=document.documentElement.style;
   applyOff()}
 function startFight(){
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
-  const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i]))),L=story?lvl:[2,3,5,8][SAVE.diff];
+  const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i]))),LV=story?lvl:[2,3,5,8][SAVE.diff];
   stageI=story?Math.floor((lvl-1)/2):R(0,STG.length-1);
-  menu(`<div class="vs"><figure><img src="${CH[pickC].full}" alt=""><figcaption>${CH[pickC].n}<small>„${CH[pickC].q}“</small></figcaption></figure><div class="v">VS</div><figure><img src="${CH[oi].full}" alt=""><figcaption>${CH[oi].n}<small>„${CH[oi].q}“</small></figcaption></figure></div>
-    <p class="tag">${story?(lvl==10?"Endkampf":lvl==5?"Boss-Kampf":"Kampf "+lvl+" von 10")+" · ":""}${STG[stageI].n}</p>`,1);sfx("vs");
+  menu(`<div class="vs"><figure><img src="${CH[pickC].full}" alt=""><figcaption>${CH[pickC].n}<small>${qt(CH[pickC].q)}</small></figcaption></figure><div class="v">VS</div><figure><img src="${CH[oi].full}" alt=""><figcaption>${CH[oi].n}<small>${qt(CH[oi].q)}</small></figcaption></figure></div>
+    <p class="tag">${story?(lvl==10?L("Endkampf","Final battle"):lvl==5?L("Boss-Kampf","Boss battle"):L("Kampf "+lvl+" von 10","Fight "+lvl+" of 10"))+" · ":""}${STG[stageI].n}</p>`,1);sfx("vs");
   setTimeout(()=>{const id=fid;
     clearFighters();clearTemp();buildStage(stageI);
     pl=mkF(CH[pickC],-1,true);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
     round=1;wins={p:0,e:0};fo="none";cd={last:null,n:0,lock:null,left:0};$("#fo").hidden=true;
-    en.max=en.hp=44+L*6+CH[oi].st[1]*3+(boss?14:0);en.iv=(12-L*.55)*.75*.7;en.timer=en.iv;
+    en.max=en.hp=44+LV*6+CH[oi].st[1]*3+(boss?14:0);en.iv=(12-LV*.55)*.75*.7*.9;en.timer=en.iv;
     $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=CH[pickC].bust;$("#ei").src=CH[oi].bust;
-    $("#lv").innerHTML=`<b>${story?(lvl==10?"ENDKAMPF":"KAMPF "+lvl+"/10"):"FREIER KAMPF"}</b>${STG[stageI].n}`;
+    $("#lv").innerHTML=`<b>${story?(lvl==10?L("ENDKAMPF","FINAL BATTLE"):L("KAMPF ","FIGHT ")+lvl+"/10"):L("FREIER KAMPF","FREE FIGHT")}</b>${STG[stageI].n}`;
     cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),sig:newCard("sig"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
-    $("#hud").hidden=false;$("#panel").hidden=false;msg("Löse eine Aufgabe, dann greift dein Kämpfer an!");render();layout();
+    $("#hud").hidden=false;$("#panel").hidden=false;msg(L("Löse eine Aufgabe, dann greift dein Kämpfer an!","Solve a problem and your fighter attacks!"));render();layout();
     CAM.mode="fight";CAM.k=5;camFight();CAM.p.copy(CAM.tp).add(new THREE.Vector3(0,2,8));CAM.l.copy(CAM.tl);
-    setTimeout(()=>{if(id!=fid)return;menuHide();banner("Runde 1",story?(lvl==10?"Endkampf":"Kampf "+lvl)+" · wer zuerst 2 Runden gewinnt":"Wer zuerst 2 Runden gewinnt");sfx("gong");setTimeout(()=>{if(id==fid){over=false}},900)},2100);
+    setTimeout(()=>{if(id!=fid)return;menuHide();banner(L("Runde 1","Round 1"),story?(lvl==10?L("Endkampf","Final battle"):L("Kampf ","Fight ")+lvl)+L(" · wer zuerst 2 Runden gewinnt"," · first to win 2 rounds"):L("Wer zuerst 2 Runden gewinnt","First to win 2 rounds"));sfx("gong");setTimeout(()=>{if(id==fid){over=false}},900)},2100);
   },60);
 }
 function endFightUi(){$("#panel").hidden=true;$("#hud").hidden=true;$("#fo").hidden=true;cine(false);speed(false);layout();CAM.mode="menu"}
@@ -211,52 +220,69 @@ function result(win){
   over=true;endFightUi();const s=mode=="s";sfx(win?"win":"lose");
   const sc_=`${wins.p} : ${wins.e}`;
   if(win&&s&&lvl<10){lvl++;SAVE.story={c:pickC,lvl,t:storyT};save();
-    menu(`<h2>Sieg ${sc_}</h2><p>Kampf ${lvl-1} von 10 geschafft. Kampfzeit bisher: ${fmtT(storyT)}</p><button class="btn" data-a="next">Weiter zu Kampf ${lvl}</button><button class="btn alt" data-a="home">Hauptmenü</button>`,1)}
-  else if(win&&s){SAVE.done++;SAVE.story=null;const e={n:SAVE.name||"Held",d:SAVE.diff,t:Math.round(storyT),c:pickC};SAVE.lb.push(e);SAVE.lb.sort((a,b)=>a.t-b.t);
+    menu(`<h2>${L("Sieg","Victory")} ${sc_}</h2><p>${L(`Kampf ${lvl-1} von 10 geschafft. Kampfzeit bisher: ${fmtT(storyT)}`,`Fight ${lvl-1} of 10 done. Fight time so far: ${fmtT(storyT)}`)}</p><button class="btn" data-a="next">${L("Weiter zu Kampf ","On to fight ")+lvl}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button>`,1)}
+  else if(win&&s){SAVE.done++;SAVE.story=null;const e={n:SAVE.name||HERO(),d:SAVE.diff,t:Math.round(storyT),c:pickC};SAVE.lb.push(e);SAVE.lb.sort((a,b)=>a.t-b.t);
     const rank=SAVE.lb.filter(x=>x.d==e.d).indexOf(e)+1;SAVE.lb=SAVE.lb.filter(x=>SAVE.lb.filter(y=>y.d==x.d).indexOf(x)<20);save();const nu=CH.some(c=>c.lock==SAVE.done);
-    menu(`<p class="tag">Story geschafft · ${DIFFS[e.d][0]}</p><h1 class="logo"><span>Du bist</span>Champion!</h1><p>${esc(e.n)} hat mit ${CH[pickC].n} alle zehn Gegner besiegt. Kampfzeit ${fmtT(e.t)}, das ist Platz ${rank} der Rangliste.</p><div class="rowb">${nu?`<button class="btn gold" data-a="unlock">Was ist das …?</button>`:""}<button class="btn alt" data-a="lb" data-i="${e.d}">Rangliste</button>${nu?"":`<button class="btn" data-a="home">Hauptmenü</button>`}</div>`,1)}
-  else if(win)menu(`<h2>Gewonnen ${sc_}</h2><div class="rowb"><button class="btn" data-a="again">Nochmal</button><button class="btn alt" data-a="home">Hauptmenü</button></div>`,1);
-  else menu(`<h2>Niederlage ${sc_}</h2><p>${P(["Das war knapp. Atme durch und hol dir die Revanche!","Auch Champions fallen mal um. Aufstehen, Krone richten.","Dein Gegner hatte Glück. Sagt er jedenfalls."])}</p><div class="rowb"><button class="btn" data-a="again">Revanche</button><button class="btn alt" data-a="home">Hauptmenü</button></div>`,1)}
+    menu(`<p class="tag">${L("Story geschafft","Story cleared")} · ${DIFFS[e.d][0]}</p><h1 class="logo"><span>${L("Du bist","You are the")}</span>Champion!</h1><p>${L(`${esc(e.n)} hat mit ${CH[pickC].n} alle zehn Gegner besiegt. Kampfzeit ${fmtT(e.t)}, das ist Platz ${rank} der Rangliste.`,`${esc(e.n)} beat all ten opponents with ${CH[pickC].n}. Fight time ${fmtT(e.t)}, that’s rank ${rank} on the leaderboard.`)}</p><div class="rowb">${nu?`<button class="btn gold" data-a="unlock">${L("Was ist das …?","What’s that …?")}</button>`:""}<button class="btn alt" data-a="lb" data-i="${e.d}">${L("Rangliste","Leaderboard")}</button>${nu?"":`<button class="btn" data-a="home">${L("Hauptmenü","Main menu")}</button>`}</div>`,1)}
+  else if(win)menu(`<h2>${L("Gewonnen","You won")} ${sc_}</h2><div class="rowb"><button class="btn" data-a="again">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
+  else menu(`<h2>${L("Niederlage","Defeat")} ${sc_}</h2><p>${P(L(["Das war knapp. Atme durch und hol dir die Revanche!","Auch Champions fallen mal um. Aufstehen, Krone richten.","Dein Gegner hatte Glück. Sagt er jedenfalls."],["That was close. Take a breath and go for the rematch!","Even champions fall over sometimes. Get up, fix your crown.","Your opponent got lucky. At least that’s what they say."]))}</p><div class="rowb"><button class="btn" data-a="again">${L("Revanche","Rematch")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
 
 /* ----- Menüs ----- */
 function menu(h,solid){const m=$("#menu");m.hidden=false;m.classList.toggle("solid",!!solid);m.innerHTML=h;m.scrollTop=0;$("#snd").hidden=false}
 function menuHide(){$("#menu").hidden=true;$("#snd").hidden=true}
 function attract(){fid++;tws.length=0;rtw.length=0;TSb=1;over=true;clearFighters();buildStage(R(0,STG.length-1));const ok=CH.map((c,i)=>i).filter(i=>unlocked(CH[i])),a=P(ok),b=P(ok.filter(i=>i!=a));
   fighters=[mkF(CH[a],-1,true),mkF(CH[b],1,false)];CAM.mode="menu"}
-const LOGO=`<h1 class="logo"><span>Math</span>brawl</h1><p class="tag">Rechnen · Kämpfen · Siegen</p>`;
+const logo=()=>`<h1 class="logo"><span>Math</span>brawl</h1><p class="tag">${L("Rechnen · Kämpfen · Siegen","Solve · Fight · Win")}</p>`;
 function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=null;const st=SAVE.story;
-  menu(LOGO+`<div class="rowb"><button class="btn" data-a="story">Story<small>10 KÄMPFE BIS ZUM MATHEMAGUS</small></button>${st?`<button class="btn gold" data-a="cont">Weiterkämpfen<small>${CH[st.c].n.toUpperCase()} · KAMPF ${st.lvl}/10</small></button>`:""}<button class="btn alt" data-a="arcade">Freier Kampf<small>EIN GEGNER, EINE ARENA</small></button></div>
+  menu(logo()+`<div class="rowb"><button class="btn" data-a="story">Story<small>${L("10 KÄMPFE BIS ZUM MATHEMAGUS","10 FIGHTS TO THE MATHEMAGUS")}</small></button>${st?`<button class="btn gold" data-a="cont">${L("Weiterkämpfen","Continue")}<small>${CH[st.c].n.toUpperCase()} · ${L("KAMPF","FIGHT")} ${st.lvl}/10</small></button>`:""}<button class="btn alt" data-a="arcade">${L("Freier Kampf","Free Fight")}<small>${L("EIN GEGNER, EINE ARENA","ONE OPPONENT, ONE ARENA")}</small></button></div>
    <div class="seg" id="dseg">${DIFFS.map((d,i)=>`<button type="button" data-a="diff" data-i="${i}" class="${SAVE.diff==i?"on":""}">${d[0]}<small>${d[1]}</small></button>`).join("")}</div>
-   <div class="rowb"><button class="btn alt sm" data-a="lb" data-i="${SAVE.diff}">Rangliste</button><button class="btn alt sm" data-a="name">Spieler: ${esc(SAVE.name||"Held")}</button></div>
-   <p class="tag">Story geschafft: ${SAVE.done}× · Kämpfer frei: ${CH.filter(unlocked).length}/15</p>`)}
-function startScreen(){menu(LOGO+`<label class="nmf" for="pname"><input id="pname" aria-label="Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Name" value="${esc(SAVE.name)}"></label><button class="btn blink" data-a="start">Start</button>`)}
+   <div class="rowb"><button class="btn alt sm" data-a="lb" data-i="${SAVE.diff}">${L("Rangliste","Leaderboard")}</button><button class="btn alt sm" data-a="name">${L("Spieler","Player")}: ${esc(SAVE.name||HERO())}</button><button class="btn alt sm" data-a="settings">${L("Einstellungen","Settings")}</button></div>
+   <p class="tag">${L("Story geschafft","Story cleared")}: ${SAVE.done}× · ${L("Kämpfer frei","Fighters unlocked")}: ${CH.filter(unlocked).length}/15</p>`)}
+const langSeg=()=>`<div class="seg" role="group" aria-label="Sprache / Language">${[["de","Deutsch"],["en","English"]].map(([k,t])=>`<button type="button" data-a="lang" data-l="${k}" class="${LANG==k?"on":""}">${t}</button>`).join("")}</div>`;
+function startScreen(){const v=$("#pname")?$("#pname").value:SAVE.name;menu(logo()+`<label class="nmf" for="pname"><input id="pname" aria-label="Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Name" value="${esc(v)}"></label><button class="btn blink" data-a="start">Start</button>${langSeg()}`)}
+/* Einstellungen: Lautstärke für Musik und Effekte (inkl. Stimmen), Sprache. back = wohin "Zurück" führt */
+let setBack="home";
+function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*100);
+  menu(`<h2>${L("Einstellungen","Settings")}</h2><div class="sets">
+   <label for="vm"><span>${L("Musik","Music")}</span><input id="vm" type="range" min="0" max="100" step="5" value="${v("m")}"><b id="vmv">${v("m")} %</b></label>
+   <label for="vs"><span>${L("Effekte & Stimmen","Effects & voices")}</span><input id="vs" type="range" min="0" max="100" step="5" value="${v("s")}"><b id="vsv">${v("s")} %</b></label>
+   <div class="srow"><span>${L("Sprache","Language")}</span>${langSeg()}</div></div>
+   <button class="btn alt sm" data-a="back">${L("Zurück","Back")}</button>`,1)}
+function applyLang(){document.documentElement.lang=LANG;$("#plbl").textContent=ATK.sig.n;$("#elbl").textContent=L("GEGNER-ANGRIFF","ENEMY ATTACK");
+  $("#snd").textContent=L("TON","SOUND");$("#snd").setAttribute("aria-label",L("Ton an oder aus","Sound on or off"))}
 function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
-  menu(`<h2>Rangliste</h2><p>Schnellste Kampfzeit für die ganze Story. Gespeichert auf diesem Gerät.</p><div class="seg">${DIFFS.map((x,i)=>`<button type="button" data-a="lb" data-i="${i}" class="${d==i?"on":""}">${x[0]}</button>`).join("")}</div>
-   ${rows.length?`<table class="rank"><thead><tr><th>Platz</th><th>Name</th><th>Kämpfer</th><th>Zeit</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.n==SAVE.name?' class="me"':""}><td>${i+1}.</td><td>${esc(r.n)}</td><td>${CH[r.c].n}</td><td>${fmtT(r.t)}</td></tr>`).join("")}</tbody></table>`
-    :`<p class="tag">Noch kein Eintrag. Schaff die Story in „${DIFFS[d][0]}“, dann stehst du hier ganz oben.</p>`}
-   <button class="btn alt sm" data-a="home">Zurück</button>`,1)}
+  menu(`<h2>${L("Rangliste","Leaderboard")}</h2><p>${L("Schnellste Kampfzeit für die ganze Story. Gespeichert auf diesem Gerät.","Fastest fight time for the whole story. Saved on this device.")}</p><div class="seg">${DIFFS.map((x,i)=>`<button type="button" data-a="lb" data-i="${i}" class="${d==i?"on":""}">${x[0]}</button>`).join("")}</div>
+   ${rows.length?`<table class="rank"><thead><tr><th>${L("Platz","Rank")}</th><th>Name</th><th>${L("Kämpfer","Fighter")}</th><th>${L("Zeit","Time")}</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.n==SAVE.name?' class="me"':""}><td>${i+1}.</td><td>${esc(r.n)}</td><td>${CH[r.c].n}</td><td>${fmtT(r.t)}</td></tr>`).join("")}</tbody></table>`
+    :`<p class="tag">${L(`Noch kein Eintrag. Schaff die Story in „${DIFFS[d][0]}“, dann stehst du hier ganz oben.`,`No entries yet. Clear the story on “${DIFFS[d][0]}” and you’ll be on top.`)}</p>`}
+   <button class="btn alt sm" data-a="home">${L("Zurück","Back")}</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
-  menu(`<h2>Wähle deinen Kämpfer</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">Zurück</button>`,1);showDet(selC)}
+  menu(`<h2>${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
 function showDet(i){selC=i;const c=CH[i],u=unlocked(c);document.querySelectorAll(".tile").forEach((t,j)=>t.classList.toggle("on",j==i));
   $("#det").innerHTML=`<img src="${c.full}" alt="" class="${u?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3><p>${c.d}</p>
-    <div class="st">${["Kraft","Leben","Spezial"].map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>
-    <div class="fn"><small>SPEZIAL-ATTACKE</small>${c.sig}</div><div class="fn"><small>FINISHER</small>${c.fin}</div><button class="btn" data-a="go">Kämpfen!</button>`
-   :`<div class="ti">Noch gesperrt</div><h3>???</h3><p>Schaffe die Story ${c.lock}×, dann kommt dieser Kämpfer dazu. Bisher geschafft: ${SAVE.done}×. Pro Durchgang werden zwei Kämpfer frei.</p><button class="btn" disabled>Gesperrt</button>`)+`</div>`}
+    <div class="st">${L(["Kraft","Leben","Spezial"],["Power","Health","Special"]).map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>
+    <div class="fn"><small>${L("SPEZIAL-ATTACKE","SPECIAL ATTACK")}</small>${c.sig}</div><div class="fn"><small>FINISHER</small>${c.fin}</div><button class="btn" data-a="go">${L("Kämpfen!","Fight!")}</button>`
+   :`<div class="ti">${L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${L(`Schaffe die Story ${c.lock}×, dann kommt dieser Kämpfer dazu. Bisher geschafft: ${SAVE.done}×. Pro Durchgang werden zwei Kämpfer frei.`,`Clear the story ${c.lock}× to unlock this fighter. Cleared so far: ${SAVE.done}×. Every clear unlocks two fighters.`)}</p><button class="btn" disabled>${L("Gesperrt","Locked")}</button>`)+`</div>`}
 const ACTIONS={
-  start(){const n=$("#pname");if(n){SAVE.name=n.value.trim().slice(0,12)||"Held";save()}auInit();try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
+  start(){const n=$("#pname");if(n){SAVE.name=n.value.trim().slice(0,12)||HERO();save()}auInit();try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
   name(){startScreen();const n=$("#pname");n&&n.focus()},lb(b){lbScreen(+b.dataset.i)},
+  settings(){settings("home")},back(){setBack=="pause"?pauseMenu():home()},
+  lang(b){LANG=SAVE.lang=b.dataset.l;save();applyLang();if($("#pname"))startScreen();else settings()},
   story(){mode="s";lvl=1;selChar()},arcade(){mode="a";selChar()},
   cont(){const s=SAVE.story;mode="s";pickC=s.c;lvl=s.lvl;storyT=s.t||0;startFight()},
   diff(b){SAVE.diff=+b.dataset.i;save();document.querySelectorAll("#dseg button").forEach((x,i)=>x.classList.toggle("on",i==SAVE.diff))},
   tile(b){showDet(+b.dataset.i)},go(){pickC=selC;if(mode=="s"){SAVE.story=null;storyT=0;save()}startFight()},
   next(){startFight()},again(){startFight()},home(){home()},
-  unlock(){const cs=CH.filter(c=>c.lock==SAVE.done);sfx("unlock");flash("#fff");menu(`<p class="tag">Neue Kämpfer freigeschaltet</p><div class="rowb">${cs.map(c=>`<figure class="unf"><img class="unl" src="${c.full}" alt=""><figcaption><b>${c.n}</b>${c.ti}</figcaption></figure>`).join("")}</div><button class="btn" data-a="home">Weiter</button>`,1)},
+  unlock(){const cs=CH.filter(c=>c.lock==SAVE.done);sfx("unlock");flash("#fff");menu(`<p class="tag">${L("Neue Kämpfer freigeschaltet","New fighters unlocked")}</p><div class="rowb">${cs.map(c=>`<figure class="unf"><img class="unl" src="${c.full}" alt=""><figcaption><b>${c.n}</b>${c.ti}</figcaption></figure>`).join("")}</div><button class="btn" data-a="home">${L("Weiter","Continue")}</button>`,1)},
   resume(){paused=false;const d=performance.now()-pauseAt;for(const k in cards)if(cards[k].t0)cards[k].t0+=d;last=performance.now();menuHide()},
   quit(){paused=false;home()},
 };
-$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(b.dataset.a!="tile"&&b.dataset.a!="diff"&&b.dataset.a!="lb")sfx("click");else sfx("pick");ACTIONS[b.dataset.a](b)});
-$("#pz").addEventListener("click",()=>{if(over||paused||document.body.classList.contains("cine"))return;paused=true;pauseAt=performance.now();sfx("click");
-  menu(`<h2>Pause</h2><div class="rowb"><button class="btn" data-a="resume">Weiter</button><button class="btn alt" data-a="quit">Kampf aufgeben</button></div>`,1)});
+$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(!["tile","diff","lb","lang"].includes(b.dataset.a))sfx("click");else sfx("pick");ACTIONS[b.dataset.a](b)});
+function pauseMenu(){menu(`<h2>Pause</h2><div class="rowb"><button class="btn" data-a="resume">${L("Weiter","Resume")}</button><button class="btn alt" data-a="psets">${L("Einstellungen","Settings")}</button><button class="btn alt" data-a="quit">${L("Kampf aufgeben","Give up")}</button></div>`,1)}
+ACTIONS.psets=()=>settings("pause");
+$("#pz").addEventListener("click",()=>{if(over||paused||document.body.classList.contains("cine"))return;paused=true;pauseAt=performance.now();sfx("click");pauseMenu()});
+/* Schieberegler: Lautstärke sofort anwenden, beim Loslassen eine Hörprobe */
+$("#menu").addEventListener("input",e=>{const t=e.target;if(t.id!="vm"&&t.id!="vs")return;auInit();SAVE.vol[t.id=="vm"?"m":"s"]=t.value/100;$("#"+t.id+"v").textContent=t.value+" %";auVol(SAVE.vol.m,SAVE.vol.s)});
+$("#menu").addEventListener("change",e=>{const t=e.target;if(t.id=="vs"){sfx("punch");voice(CH[pickC].vo,"atk")}if(t.id=="vm"||t.id=="vs")save()});
 const sndBtn=$("#snd");function sndUi(){sndBtn.classList.toggle("off",SAVE.mute);sndBtn.setAttribute("aria-pressed",!SAVE.mute)}
 sndBtn.addEventListener("click",()=>{auInit();SAVE.mute=!SAVE.mute;save();auMute(SAVE.mute);sndUi()});
 document.addEventListener("visibilitychange",()=>{if(AU.ctx){if(document.hidden)AU.ctx.suspend();else AU.ctx.resume()}});
@@ -270,11 +296,11 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
   stepTw(rtw,dt);stepTw(tws,wd);for(const f of fighters)animFighter(f,wd,T);stepFx(wd,dt);stepStage(dt,T);
   if(pl&&!over){
     if(mode=="s")storyT+=dt;
-    if(fo=="on"){const r=1-(performance.now()-cards.fin.t0)/1000/FIN_TIME;$("#fot").style.width=clamp(r,0,1)*100+"%";if(r<=0)endOffer("Zu langsam! Der Finisher ist futsch, jetzt normal zu Ende kämpfen.")}
+    if(fo=="on"){const r=1-(performance.now()-cards.fin.t0)/1000/FIN_TIME;$("#fot").style.width=clamp(r,0,1)*100+"%";if(r<=0)endOffer(L("Zu langsam! Der Finisher ist futsch, jetzt normal zu Ende kämpfen.","Too slow! The finisher is gone, win the fight the normal way."))}
     if(busy==0&&fo!="on"){en.timer-=dt;if(en.timer<=0){en.timer=en.iv*rnd(.85,1.15);const k=P(["hieb","hieb","kick","kick","wurf"]);
       q(async()=>{sfx("warn");pop("!","#ff3b2f",fx_(en).x,4.4*en.sc);pose(en,"windup",20);await wait(.4);await attack(en,pl,k,1)})}}
     const w=clamp(1-en.timer/en.iv,0,1);$("#ec").style.width=w*100+"%";$("#ecb").classList.toggle("warn",w>.85);
-    if(sel){const el=(performance.now()-cards[sel].t0)/1000,th=BONUS[sel],bl=$("#bl"),bo=$("#bon");if(bl){bl.textContent=el<=th[0]?"BLITZ ×1,5":el<=th[1]?"SCHNELL ×1,25":"";bo.style.width=clamp(1-el/th[1],0,1)*100+"%";bo.style.background=el<=th[0]?"var(--gold)":"var(--cyan)"}}
+    if(sel){const el=(performance.now()-cards[sel].t0)/1000,th=BONUS[sel],bl=$("#bl"),bo=$("#bon");if(bl){bl.textContent=el<=th[0]?L("BLITZ ×1,5","FLASH ×1.5"):el<=th[1]?L("SCHNELL ×1,25","QUICK ×1.25"):"";bo.style.width=clamp(1-el/th[1],0,1)*100+"%";bo.style.background=el<=th[0]?"var(--gold)":"var(--cyan)"}}
   }
   if(CAM.mode=="fight"&&pl)camFight();else if(CAM.mode=="menu"){CAM.k=2;const z=clamp(6/(Math.tan(cam.fov*Math.PI/360)*cam.aspect),11,24);CAM.tp.set(Math.sin(T*.16)*5,3,z);CAM.tl.set(0,2.2,0)}
   /* Lichtshow: beim Finisher wandern die Kampflichter durch alle Farben */
@@ -283,6 +309,6 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
   camStep(dt);ren.render(sc,cam)}
 
 /* ----- Start ----- */
-AU.muted=SAVE.mute;sndUi();rs();makePortraits();attract();
+AU.muted=SAVE.mute;AU.vol={m:SAVE.vol.m,s:SAVE.vol.s};applyLang();sndUi();rs();makePortraits();attract();
 startScreen();
 requestAnimationFrame(loop);

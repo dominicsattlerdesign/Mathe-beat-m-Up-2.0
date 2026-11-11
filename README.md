@@ -9,7 +9,10 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 - **Vier Stufen:** 1.–2. Klasse (Plus und Minus bis 20), Leicht, Mittel, Schwer.
 - **Story** (10 Kämpfe, jeder bis zwei Rundensiege) und **Freier Kampf**.
 - **Rangliste:** schnellste Kampfzeit für die Story je Stufe, gespeichert auf dem Gerät.
-- Soundeffekte und Menümusik werden live im Browser erzeugt, es gibt keine Audiodateien.
+- **Sprache:** Deutsch oder Englisch, umschaltbar auf dem Startbildschirm und in den Einstellungen.
+- **Einstellungen:** Lautstärke für Musik sowie für Effekte und Stimmen, auch im Pausenmenü.
+- **Kampfschreie:** Jede Figur hat ihre eigene Stimme (Tonlage, Klangfarbe, Roboter, Flüstern, Hall).
+- Soundeffekte, Stimmen und Menümusik werden live im Browser erzeugt, es gibt keine Audiodateien.
 
 ## Spielen
 

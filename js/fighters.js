@@ -217,6 +217,28 @@ const CH=[
  {id:"magus",n:"Mathemagus",ti:"Herr der Zahlen",d:"Der Endgegner. Kennt jede Formel und fürchtet nur eines: die richtige Antwort.",q:"Zeig mir dein Ergebnis … wenn du dich traust!",noEars:1,skin:0x1a1626,hair:["bald",0],eye:0x3dffd0,face:{glow:0x3dffd0,mask:0x1a1626},top:0x2a5f96,belly:0x163450,pants:0x163450,glove:0x163450,sleeve:"long",wide:1,b:{w:1.05,h:1.14},
   c:0x3dffd0,sig:"Zahlenhagel",fin:"Division durch Null",st:[4,4,4],acc(H){H.hood(0x2a5f96);H.horns(0xffc21a,.5,.75);H.formulaStaff("L",0x3dffd0);H.cape(0x163450,1.7,1.05,0x0f8f7a);H.pads(0xffc21a,.2);H.belt(0xffc21a,0x3dffd0);H.skirt(0x2a5f96,.8);H.orbit(0x3dffd0)}},
 ];
+/* Englische Texte je Figur. Die Felder schalten mit der Sprache um. */
+const CH_EN={
+ raiko:{ti:"Lightning Ninja",d:"Faster than thunder. Still oversleeps every Monday.",q:"Don’t blink, or you’ll miss me!",sig:"Lightning Chain",fin:"Thunder Grill"},
+ akane:{ti:"Flame Fist",d:"Her fists are on fire. So is her toast, sadly.",q:"Hope you like it hot!",sig:"Fire Wheel",fin:"Fire Tornado"},
+ rokka:{n:"Captain Rokka",ti:"Terror of the Bathtub",d:"A pirate without a ship. Gets seasick in puddles.",q:"Arrr! Maths is just a treasure hunt.",sig:"Broadside",fin:"Human Cannonball"},
+ zeno:{ti:"Card Master",d:"Always draws the right card. Keeps 37 up his sleeve.",q:"I play … the winning card!",sig:"Card Storm",fin:"The Great Card Trick"},
+ tetsu:{ti:"Masterless Samurai",d:"One cut, one win. Also slices sushi very neatly.",q:"…",sig:"Crescent Moon",fin:"A Thousand Cuts Later"},
+ volt:{ti:"Battle Cyborg",d:"Computes faster than his shadow. Battery: usually 3 %.",q:"Beep. Calculating victory. Beep.",sig:"Rocket Punch",fin:"Orbital Laser"},
+ luna:{ti:"Moon Priestess",d:"The sky listens to her. Her alarm clock doesn’t.",q:"The moon is on my side tonight.",sig:"Star Rain",fin:"Moon Landing"},
+ goro:{ti:"The Mountain",d:"Once hugged a boulder. The boulder apologised.",q:"Goro count to three. Mostly.",sig:"Rock Toss",fin:"Ten-Pin Takedown"},
+ shade:{ti:"Shadow Without a Name",d:"When you see him, it’s too late. He still can’t find his keys.",q:"…was someone just here?",sig:"Shadow Spikes",fin:"Clone Brawl"},
+ mika:{ti:"Jade Dragon",d:"Small, quick, and a kick like a hurricane in a teacup.",q:"Count along, this will be fast!",sig:"Hundred Kicks",fin:"Jade Ping-Pong"},
+ drako:{ti:"Dragon Knight",d:"Half human, half dragon. Best not sneeze in the library.",q:"Who ordered fire?",sig:"Dragon Breath",fin:"Dragon Express"},
+ oni:{ti:"Red Demon",d:"Laughs at every hit. Even at his own bruises.",q:"HA! HA! HA! … What were we doing?",sig:"Thunder Drum",fin:"Home Run"},
+ seraph:{ti:"Blade of Heaven",d:"His sword is pure light. So is his electricity bill.",q:"Fear not. Okay, maybe a little.",sig:"Light Lances",fin:"Heaven Elevator"},
+ kaiser:{ti:"Lord of the Void",d:"Swallowed a whole empire. Had a tummy ache afterwards.",q:"Bow down. Or just fall over.",sig:"Black Hole",fin:"Black Sun"},
+ magus:{ti:"Lord of Numbers",d:"The final boss. Knows every formula and fears only one thing: the right answer.",q:"Show me your answer … if you dare!",sig:"Number Hail",fin:"Division by Zero"},
+};
+/* Stimme je Figur: p = Tonhöhe in Hz, f = Klangfarbe (Formant-Faktor), g = Knurren, t = Art (robot, whisper), e = Hall */
+const VOX={raiko:{p:165,f:1.05},akane:{p:285,f:1.18},rokka:{p:118,f:.92,g:.35},zeno:{p:150,f:1},tetsu:{p:104,f:.9},volt:{p:132,f:1,t:"robot"},luna:{p:300,f:1.2},
+  goro:{p:84,f:.82,g:.6},shade:{p:150,f:1,t:"whisper"},mika:{p:350,f:1.28},drako:{p:100,f:.88,g:.5},oni:{p:78,f:.8,g:.85},seraph:{p:178,f:1.05,e:1},kaiser:{p:92,f:.86,g:.2,e:1},magus:{p:96,f:.9,g:.3,e:1}};
+CH.forEach(c=>{c.vo=VOX[c.id];const e=CH_EN[c.id];for(const k in e)bi(c,k,c[k],e[k])});
 /* Je Story-Durchgang werden zwei weitere Kämpfer frei: 5 am Start, 10 zum Freispielen */
 CH.forEach((c,i)=>c.lock=i<5?0:Math.ceil((i-4)/2));
 /* Porträts (Brustbild + Ganzkörper) direkt aus den 3D-Modellen fotografieren */

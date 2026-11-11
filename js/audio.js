@@ -1,16 +1,18 @@
 /* ---------- Ton: alle Effekte und die Menümusik werden live per WebAudio erzeugt ---------- */
-const AU={ctx:null,muted:false,timer:null,step:0,next:0};
+const AU={ctx:null,muted:false,timer:null,step:0,next:0,vol:{m:.8,s:.9}};
 function auInit(){
   if(AU.ctx){if(AU.ctx.state=="suspended")AU.ctx.resume();return}
   const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
   const c=AU.ctx=new C();
   AU.master=c.createGain();AU.master.gain.value=AU.muted?0:1;
   const comp=c.createDynamicsCompressor();AU.master.connect(comp);comp.connect(c.destination);
-  AU.sfx=c.createGain();AU.sfx.gain.value=.9;AU.sfx.connect(AU.master);
+  AU.sfx=c.createGain();AU.sfx.gain.value=AU.vol.s;AU.sfx.connect(AU.master);
   AU.mus=c.createGain();AU.mus.gain.value=0;AU.mus.connect(AU.master);
   const b=AU.nb=c.createBuffer(1,c.sampleRate,c.sampleRate),d=b.getChannelData(0);
   for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
 }
+/* Lautstärken 0…1 für Musik und Effekte, wirken sofort */
+function auVol(m,s){AU.vol={m,s};if(!AU.ctx)return;const t=AU.ctx.currentTime;AU.sfx.gain.setTargetAtTime(s,t,.03);if(AU.timer)AU.mus.gain.setTargetAtTime(.6*m,t,.05)}
 function auMute(m){AU.muted=m;if(AU.ctx)AU.master.gain.setTargetAtTime(m?0:1,AU.ctx.currentTime,.03)}
 function tone(o){
   const c=AU.ctx;if(!c)return;
@@ -85,10 +87,62 @@ function musTick(){
 }
 function musicOn(){
   if(!AU.ctx||AU.timer)return;
-  AU.step=0;AU.next=AU.ctx.currentTime+.08;AU.mus.gain.cancelScheduledValues(AU.ctx.currentTime);AU.mus.gain.setTargetAtTime(.55,AU.ctx.currentTime,.05);
+  AU.step=0;AU.next=AU.ctx.currentTime+.08;AU.mus.gain.cancelScheduledValues(AU.ctx.currentTime);AU.mus.gain.setTargetAtTime(.6*AU.vol.m,AU.ctx.currentTime,.05);
   AU.timer=setInterval(musTick,45);musTick();
 }
 function musicOff(){
   if(!AU.timer)return;clearInterval(AU.timer);AU.timer=null;
   AU.mus.gain.setTargetAtTime(0,AU.ctx.currentTime,.06);
+}
+
+/* ---------- Kampfschreie: Formant-Synthese ----------
+   Eine Stimmquelle (Sägezahn, bei Robotern Rechteck mit Ringmodulation, beim Flüstern Rauschen) läuft durch
+   drei Bandpässe, die die Vokale formen. Konsonanten sind kurze Rauschstösse. vo = Stimmprofil der Figur. */
+const VOW={a:[780,1180,2600],e:[480,1850,2500],i:[330,2250,2950],o:[520,860,2550],u:[360,720,2400]};
+const VLINE={atk:["ha","hya","toh","hu","sei","ya","he","kia","ho"],big:["hiyaaaa","haaaaa","oraaaa","seiyaaa","hoaaaa","kiaaaa"],
+  hurt:["uh","ah","oh","ugh"],ko:["waaaaah","noooooo","aaaauh","ooouaa"],win:["haha","heha","hoho","hahaha"]};
+const VKIND={atk:{u:.08,v:.78},big:{u:.13,v:.7},hurt:{u:.09,v:.55},ko:{u:.14,v:.6},win:{u:.07,v:.45}};
+let VCURVE=null;
+function voice(vo,kind){
+  const c=AU.ctx;if(!c||AU.muted||!vo||AU.vol.s<=0)return;
+  try{
+  const K=VKIND[kind],w=VLINE[kind][Math.random()*VLINE[kind].length|0],seg=[],t0=c.currentTime+.01;
+  w.replace(/([hktsnrwy]?)(g?)([aeiou]+)/g,(m,cn,g,v)=>{seg.push({c:cn||(g?"g":""),v:v[0],n:v.length})});
+  let t=t0;const gap=kind=="win"?.06:0;
+  for(const s of seg){const cd={h:.05,s:.07,k:.03,t:.03,g:.03}[s.c]||(s.c?.035:0);s.cs=t;s.vs=t+cd;t=s.vs+K.u*(1+(s.n-1)*.9)*(kind=="atk"?1.6:1);s.ve=t;t+=gap}
+  const T1=t,dur=T1-t0,p=vo.p*(.94+Math.random()*.12),f=vo.f||1;
+  /* Tonhöhenverlauf je Schrei-Art */
+  const src=c.createGain(),voiced=vo.t!="whisper";let osc=null,sub=null;
+  if(voiced){osc=c.createOscillator();osc.type=vo.t=="robot"?"square":"sawtooth";const F=osc.frequency;
+    if(kind=="atk"){F.setValueAtTime(p*1.1,t0);F.linearRampToValueAtTime(p*1.42,t0+dur*.25);F.exponentialRampToValueAtTime(p*.8,T1)}
+    else if(kind=="big"){F.setValueAtTime(p,t0);F.linearRampToValueAtTime(p*1.55,t0+dur*.18);F.linearRampToValueAtTime(p*1.45,t0+dur*.8);F.exponentialRampToValueAtTime(p*1.05,T1)}
+    else if(kind=="hurt"){F.setValueAtTime(p*1.5,t0);F.exponentialRampToValueAtTime(p*.85,T1)}
+    else if(kind=="ko"){F.setValueAtTime(p*1.6,t0);F.linearRampToValueAtTime(p*1.35,t0+dur*.3);F.exponentialRampToValueAtTime(p*.5,T1)}
+    else for(const s of seg){F.setValueAtTime(p*1.35,s.vs);F.exponentialRampToValueAtTime(p*1.02,s.ve)}
+    const vib=c.createOscillator(),vd=c.createGain();vib.frequency.value=kind=="big"?6.5:5.5;vd.gain.value=p*(kind=="big"?.045:.02);vib.connect(vd);vd.connect(osc.frequency);vib.start(t0);vib.stop(T1+.1);
+    let o=osc;
+    if(vo.t=="robot"){const rm=c.createGain(),l=c.createOscillator();rm.gain.value=0;l.frequency.value=58;l.connect(rm.gain);l.start(t0);l.stop(T1+.1);osc.connect(rm);o=rm}
+    if(vo.g){sub=c.createOscillator();sub.type="sawtooth";sub.frequency.value=p*.5;const sg=c.createGain();sg.gain.value=.5*vo.g;sub.connect(sg);sg.connect(src);sub.start(t0);sub.stop(T1+.1);
+      if(!VCURVE){VCURVE=new Float32Array(256);for(let i=0;i<256;i++){const x=i/128-1;VCURVE[i]=Math.tanh(x*3)}}
+      const sh=c.createWaveShaper();sh.curve=VCURVE;const pre=c.createGain();pre.gain.value=1+vo.g*2;o.connect(pre);pre.connect(sh);sh.connect(src)}
+    else o.connect(src);
+    osc.start(t0);osc.stop(T1+.1)}
+  /* Atemgeräusch: trägt die Konsonanten und beim Flüstern die ganze Stimme */
+  const nb=c.createBufferSource();nb.buffer=AU.nb;nb.loop=true;const ng=c.createGain();ng.gain.value=voiced?.0001:.9;nb.connect(ng);ng.connect(src);nb.start(t0,Math.random()*.5);nb.stop(T1+.1);
+  /* drei Formant-Filter */
+  const env=c.createGain();env.gain.value=0;const bands=[[1,6,1],[1,9,.55],[1,10,.28]].map(([_,q,g],i)=>{const bp=c.createBiquadFilter();bp.type="bandpass";bp.Q.value=q;const bg=c.createGain();bg.gain.value=g*(voiced?2.2:4);src.connect(bp);bp.connect(bg);bg.connect(env);return bp});
+  const setV=(v,at,k=.012)=>VOW[v].forEach((F,i)=>bands[i].frequency.setTargetAtTime(F*f,at,k));
+  VOW[seg[0].v].forEach((F,i)=>bands[i].frequency.setValueAtTime(F*f,t0));
+  const E=env.gain;E.setValueAtTime(0,t0);
+  seg.forEach((s,i)=>{
+    if(s.c=="y"){setV("i",s.cs,.005)}
+    /* stimmloser Anlaut: Rauschstoss; bei k/t/g vorher kurz Stille */
+    if(voiced&&s.c&&"hskt".includes(s.c)){ng.gain.setValueAtTime(.0001,s.cs);ng.gain.linearRampToValueAtTime(s.c=="s"?.8:.5,s.cs+.01);ng.gain.linearRampToValueAtTime(.04,s.vs+.03)}
+    if(s.c=="h"||s.c=="s")E.setTargetAtTime(.45,s.cs,.006);else if(s.c=="k"||s.c=="t"||s.c=="g")E.setTargetAtTime(.0001,s.cs,.004);
+    setV(s.v,s.vs);E.setTargetAtTime(1,s.vs,.01);
+    const last=i==seg.length-1;if(last||gap)E.setTargetAtTime(.0001,s.ve-(last?Math.min(.08,dur*.25):.015),last?(kind=="ko"||kind=="big"?.07:.035):.01)});
+  /* Lautstärke und optionaler Hall */
+  const out=c.createGain();out.gain.value=K.v*(vo.t=="whisper"?.55:.62);env.connect(out);out.connect(AU.sfx);
+  if(vo.e){const dl=c.createDelay(.5),fb=c.createGain(),wet=c.createGain();dl.delayTime.value=.13;fb.gain.value=.32;wet.gain.value=.45;out.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(wet);wet.connect(AU.sfx);setTimeout(()=>{try{fb.disconnect()}catch(e){}},(dur+1.5)*1000)}
+  }catch(e){}
 }

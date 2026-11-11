@@ -149,6 +149,17 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 .rank th{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);padding:8px 14px;text-align:left}
 .rank td{padding:7px 14px;text-align:left;border-top:2px solid var(--line)}.rank td:last-child,.rank th:last-child{text-align:right}
 .rank tr:first-child td{color:var(--gold);font-size:20px}.rank tr.me td{background:rgba(154,107,255,.22)}
+/* Einstellungen */
+.sets{display:flex;flex-direction:column;gap:14px;width:min(92%,520px);padding:18px 20px;background:rgba(14,12,28,.85);border:3px solid var(--line);box-shadow:4px 4px 0 var(--line)}
+.sets label,.srow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) 54px;align-items:center;gap:12px;text-align:left;font:700 14px var(--ui);letter-spacing:.06em}
+.srow{grid-template-columns:minmax(0,1fr) auto}.srow .seg{justify-self:start}
+.sets b{font:700 15px var(--ui);text-align:right;font-variant-numeric:tabular-nums;color:var(--gold)}
+.sets input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;touch-action:none;margin:0}
+.sets input[type=range]::-webkit-slider-runnable-track{height:12px;background:#1b1830;border:3px solid var(--line);transform:skewX(-14deg)}
+.sets input[type=range]::-moz-range-track{height:12px;background:#1b1830;border:3px solid var(--line)}
+.sets input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:30px;margin-top:-12px;background:var(--gold);border:3px solid var(--line);box-shadow:2px 2px 0 var(--line);transform:skewX(-10deg)}
+.sets input[type=range]::-moz-range-thumb{width:22px;height:26px;background:var(--gold);border:3px solid var(--line);border-radius:0}
+.sets input[type=range]:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
 .unf{margin:0;display:flex;flex-direction:column;align-items:center}.unf figcaption{font:700 12px var(--ui);letter-spacing:.14em;text-transform:uppercase}.unf b{display:block;font:400 30px var(--disp);letter-spacing:.05em;color:var(--gold)}
 .vs figcaption small{display:block;font:500 14px var(--ui);letter-spacing:0;color:var(--dim);text-shadow:1px 1px 0 var(--line);max-width:30ch;margin:0 auto}
 .btn small{display:block;font:700 11px var(--ui);letter-spacing:.2em;margin-top:5px;opacity:.9;text-shadow:none}
@@ -199,9 +210,9 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 <canvas id="c"></canvas>
 <div id="speed"></div><div id="lb1" class="lb"></div><div id="lb2" class="lb"></div><div id="fl"></div><div id="bn"></div>
 <div id="hud" hidden>
-  <div class="hb l"><img id="pi" alt=""><div class="hbx"><div class="nr"><div class="nm" id="pn"></div><div class="pips" id="pw"><i></i><i></i></div></div><div class="bar"><i class="trail" id="pht"></i><i id="ph"></i></div><div class="bar mt" id="pmb"><i id="pm"></i></div><div class="lbl">SPEZIAL</div></div></div>
+  <div class="hb l"><img id="pi" alt=""><div class="hbx"><div class="nr"><div class="nm" id="pn"></div><div class="pips" id="pw"><i></i><i></i></div></div><div class="bar"><i class="trail" id="pht"></i><i id="ph"></i></div><div class="bar mt" id="pmb"><i id="pm"></i></div><div class="lbl" id="plbl">SPEZIAL</div></div></div>
   <div id="mid"><button id="pz" type="button" aria-label="Pause">II</button><div id="lv"></div></div>
-  <div class="hb r"><img id="ei" alt=""><div class="hbx"><div class="nr"><div class="nm" id="en"></div><div class="pips" id="ew"><i></i><i></i></div></div><div class="bar"><i class="trail" id="eht"></i><i id="eh"></i></div><div class="bar mt" id="ecb"><i id="ec"></i></div><div class="lbl">GEGNER-ANGRIFF</div></div></div>
+  <div class="hb r"><img id="ei" alt=""><div class="hbx"><div class="nr"><div class="nm" id="en"></div><div class="pips" id="ew"><i></i><i></i></div></div><div class="bar"><i class="trail" id="eht"></i><i id="eh"></i></div><div class="bar mt" id="ecb"><i id="ec"></i></div><div class="lbl" id="elbl">GEGNER-ANGRIFF</div></div></div>
 </div>
 <div id="panel" hidden>
   <div id="left"><div id="cards"></div><button id="fin" type="button"><i></i><span id="fint">SPEZIAL LÄDT</span><b id="finq"></b></button></div>
