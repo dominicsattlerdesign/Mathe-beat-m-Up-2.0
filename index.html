@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Chakra+Petch:wght@500;700&display=swap">
 <style>
 /* Immer Querformat: hält man das Tablet hochkant, dreht sich das Spielfeld um 90 Grad.
-   Layout: Vollbild-3D-Arena; Angriffskarten und Zahlenfeld als zwei Spalten links, Kampf und Leisten rechts daneben */
+   Layout: Vollbild-3D-Arena; der Kampf füllt den ganzen Bildschirm; unten eine flache Leiste mit den Attacken und direkt darunter der Zahlenreihe */
 :root{
   --bg:#0b0a14; --panel:#191530; --panel2:#262046; --ink:#f4f0ff; --dim:#a79fc7; --line:#05040a;
   --hot:#ff3b2f; --gold:#ffc21a; --cyan:#25d4ff; --violet:#9a6bff; --hp:#3fe06b;
@@ -50,8 +50,8 @@ body.cine #hud,body.cine #panel{opacity:0;pointer-events:none}
 
 /* ---------- Kampfleisten ---------- */
 #hud{position:fixed;left:var(--cl);right:var(--cr);top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
-  padding:calc(8px + env(safe-area-inset-top,0px)) var(--gr) 0 12px;pointer-events:none;transition:opacity .2s;z-index:1}
-.hb{flex:1;max-width:420px;display:flex;gap:8px;align-items:flex-start;min-width:0}
+  padding:calc(8px + env(safe-area-inset-top,0px)) var(--gr) 0 var(--gl);pointer-events:none;transition:opacity .2s;z-index:1}
+.hb{flex:1;max-width:440px;display:flex;gap:8px;align-items:flex-start;min-width:0}
 .hb.r{flex-direction:row-reverse;text-align:right}
 .hb img{width:50px;height:50px;object-fit:cover;object-position:50% 12%;border:3px solid var(--line);background:var(--panel2);transform:skewX(-8deg);flex:none;box-shadow:3px 3px 0 var(--line)}
 .hb.r img{transform:skewX(8deg) scaleX(-1)}
@@ -77,46 +77,45 @@ body.cine #hud,body.cine #panel{opacity:0;pointer-events:none}
 #lv b{display:block;font:400 18px var(--disp);letter-spacing:.06em;color:var(--gold)}
 #pz{pointer-events:auto;width:48px;height:36px;background:var(--panel);border:3px solid var(--line);font:700 16px var(--ui);transform:skewX(-10deg);box-shadow:2px 2px 0 var(--line)}
 
-/* ---------- Steuerpult: Attacken und Zahlenfeld nebeneinander links, der Kampf läuft rechts ---------- */
-#panel{position:fixed;inset:0;display:flex;justify-content:flex-start;pointer-events:none;z-index:1;transition:opacity .2s}
-#left,#side{pointer-events:auto;display:flex;flex-direction:column;gap:8px;justify-content:center;min-height:0;
-  padding-block:calc(10px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-bottom,0px));background:rgba(8,6,18,.88)}
-#left{width:clamp(168px,calc(var(--vw)*17),220px);padding-left:var(--gl);padding-right:6px}
-#side{width:clamp(196px,calc(var(--vw)*21),264px);padding-right:12px;padding-left:6px;border-right:3px solid var(--line)}
-#msg{position:absolute;left:var(--cl);right:var(--cr);bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;padding:0 12px;
-  font:700 16px var(--ui);text-shadow:2px 2px 0 var(--line),-1px -1px 0 var(--line);letter-spacing:.02em}
-#cards{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;max-height:480px}
-.card{position:relative;overflow:hidden;text-align:left;padding:8px 10px 10px 14px;flex:1;min-height:0;border:3px solid var(--line);background:var(--panel);
-  box-shadow:4px 4px 0 var(--line);transition:transform .1s,background .1s;display:flex;flex-direction:column;justify-content:space-between;--k:var(--hot)}
+/* ---------- Steuerpult: flache Leiste unter dem Kampf. Oben die Attacken, direkt darunter Aufgabe und Zahlenreihe ---------- */
+#panel{position:fixed;left:0;right:0;bottom:0;display:flex;flex-direction:column;gap:7px;z-index:1;transition:opacity .2s;
+  padding:26px var(--gr) calc(8px + env(safe-area-inset-bottom,0px)) var(--gl);
+  background:linear-gradient(transparent,rgba(8,6,18,.82) 24px,rgba(8,6,18,.94))}
+#left,#side{display:flex;gap:7px;min-width:0}
+#msg{position:absolute;left:0;right:0;bottom:calc(100% - 20px);text-align:center;padding:0 16px;pointer-events:none;
+  font:700 15px var(--ui);text-shadow:2px 2px 0 var(--line),-1px -1px 0 var(--line);letter-spacing:.02em}
+#cards{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;flex:3;min-width:0}
+.card{position:relative;overflow:hidden;text-align:left;padding:0 10px 0 16px;height:clamp(50px,calc(var(--vh)*8.6),62px);border:3px solid var(--line);background:var(--panel);
+  box-shadow:3px 3px 0 var(--line);transition:transform .1s,background .1s;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;align-content:center;column-gap:12px;--k:var(--hot)}
 .card.kick{--k:var(--cyan)}.card.wurf{--k:var(--violet)}
 .card::before{content:"";position:absolute;inset:0 auto 0 0;width:7px;background:var(--k)}
-.card .kj{position:absolute;right:2px;top:-8px;font:900 64px/1 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--k);opacity:.2}
-.card b{font:400 26px/1 var(--disp);letter-spacing:.06em;color:var(--k)}
-.card small{font:700 10px var(--ui);letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
-.card .q{font:700 clamp(17px,calc(var(--vw)*2),23px)/1.1 var(--ui);font-variant-numeric:tabular-nums;white-space:nowrap}
-.card .q.lg{font-size:clamp(13px,calc(var(--vw)*1.5),17px)}
-.card.sel{transform:translateX(8px);background:var(--panel2);border-color:var(--k);box-shadow:0 0 0 2px var(--k),4px 4px 0 var(--line)}
+.card .kj{position:absolute;right:2px;top:-6px;font:900 56px/1 "Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;color:var(--k);opacity:.13}
+.card b{font:400 24px/1 var(--disp);letter-spacing:.06em;color:var(--k)}
+.card small{font:700 9px/1.2 var(--ui);letter-spacing:.12em;color:var(--dim);text-transform:uppercase;grid-row:2;white-space:nowrap}
+.card .q{grid-column:2;grid-row:1/3;align-self:center;justify-self:end;font:700 clamp(17px,calc(var(--vw)*2),24px)/1 var(--ui);font-variant-numeric:tabular-nums;white-space:nowrap;position:relative}
+.card .q.lg{font-size:clamp(13px,calc(var(--vw)*1.45),18px)}
+.card.sel{transform:translateY(-7px);background:var(--panel2);border-color:var(--k);box-shadow:0 0 0 2px var(--k),3px 6px 0 var(--line)}
 body.lock .card,body.lock #fin{opacity:.45}
-#fin{position:relative;height:clamp(58px,calc(var(--vh)*12),84px);flex:none;border:3px solid var(--line);background:var(--panel);overflow:hidden;box-shadow:3px 3px 0 var(--line);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;font:700 11px var(--ui);letter-spacing:.14em;color:var(--dim)}
+#fin{position:relative;flex:1;min-width:0;height:clamp(50px,calc(var(--vh)*8.6),62px);border:3px solid var(--line);background:var(--panel);overflow:hidden;box-shadow:3px 3px 0 var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font:700 11px var(--ui);letter-spacing:.14em;color:var(--dim)}
 #fin i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#7a3a00,#c96a00);width:0;transition:width .3s}
 #fin span,#fin b{position:relative}
-#fin b{font:700 clamp(13px,calc(var(--vw)*1.5),17px) var(--ui);letter-spacing:0;display:none;white-space:nowrap}
+#fin b{font:700 clamp(13px,calc(var(--vw)*1.45),17px) var(--ui);letter-spacing:0;display:none;white-space:nowrap}
 #fin.rdy{color:var(--line);animation:finp .45s infinite alternate}
 #fin.rdy i{background:linear-gradient(90deg,var(--gold),#fff3a8,var(--gold))}
 #fin.rdy b{display:block}
 #fin.sel{outline:4px solid #fff}
 @keyframes finp{to{box-shadow:0 0 22px 4px var(--gold),3px 3px 0 var(--line)}}
-#ans{min-height:92px;flex:none;border:3px solid var(--line);background:#0e0c1c;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:8px 10px 12px;
-  font:700 clamp(14px,calc(var(--vw)*1.6),18px) var(--ui);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;position:relative}
-#ans em{display:block;font-style:normal;font-size:clamp(26px,calc(var(--vw)*3),36px);line-height:1;color:var(--gold)}
-#ans .hint{font-size:14px;color:var(--dim);letter-spacing:.02em;white-space:normal;line-height:1.25}
-#ans u{position:absolute;right:8px;bottom:9px;text-decoration:none;font:400 16px var(--disp);letter-spacing:.05em;color:var(--gold)}
+#ans{flex:0 0 clamp(190px,calc(var(--vw)*25),320px);height:clamp(48px,calc(var(--vh)*8.6),62px);border:3px solid var(--line);background:#0e0c1c;display:flex;align-items:center;gap:8px;padding:0 10px 4px;
+  font:700 clamp(14px,calc(var(--vw)*1.6),19px) var(--ui);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;position:relative}
+#ans em{font-style:normal;font-size:clamp(24px,calc(var(--vw)*2.8),34px);line-height:1;color:var(--gold)}
+#ans .hint{font-size:13px;color:var(--dim);letter-spacing:.02em;white-space:normal;line-height:1.2}
+#ans u{position:absolute;right:6px;top:3px;text-decoration:none;font:400 13px var(--disp);letter-spacing:.05em;color:var(--gold)}
 #bon{position:absolute;left:0;bottom:0;height:5px;background:var(--gold);width:0}
-#pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.k{height:clamp(46px,calc(var(--vh)*11.5),84px);font:700 28px var(--ui);border:3px solid var(--line);background:var(--panel2);box-shadow:3px 3px 0 var(--line)}
+#pad{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;flex:1;min-width:0}
+.k{height:clamp(48px,calc(var(--vh)*8.6),62px);font:700 26px var(--ui);border:3px solid var(--line);background:var(--panel2);box-shadow:3px 3px 0 var(--line)}
 .k:active,.k.dn{background:var(--violet);transform:translate(2px,2px);box-shadow:1px 1px 0 var(--line)}
-.k.ok{background:var(--hp);color:var(--line);font:400 28px var(--disp);letter-spacing:.06em}
+.k.ok{background:var(--hp);color:var(--line);font:400 24px var(--disp);letter-spacing:.04em}
 .k.del{background:#3b2030}
 
 /* ---------- Menüs ---------- */
@@ -144,7 +143,7 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 .blink{animation:blink 1s steps(2) infinite}@keyframes blink{50%{opacity:.25}}
 
 /* Kämpferwahl */
-.sel{display:flex;gap:18px;width:100%;max-width:1120px;align-items:stretch;justify-content:center}
+.pick{display:flex;gap:18px;width:100%;max-width:1120px;align-items:stretch;justify-content:center}
 .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;flex:1.3;min-width:0;align-content:center}
 .tile{position:relative;aspect-ratio:4/5;border:3px solid var(--line);background:var(--panel);overflow:hidden;box-shadow:3px 3px 0 var(--line)}
 .tile img{width:100%;height:100%;object-fit:cover;display:block}

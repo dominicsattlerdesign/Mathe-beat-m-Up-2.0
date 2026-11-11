@@ -28,7 +28,7 @@ const newCard=k=>({q:task(k,SAVE.diff),t0:0});
 function render(){
   $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>`<button type="button" class="card ${k}${sel==k?" sel":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${ATK[k].s}</small><div class="q${cards[k].q[0].length>13?" lg":""}">${cards[k].q[0]}</div></button>`).join("");
   document.body.classList.toggle("lock",lock);hud();renderAns()}
-function renderAns(){$("#ans").innerHTML=sel?`<span>${cards[sel].q[0]} =</span><em>${inp||"?"}</em><u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?"Dein Kämpfer greift an …":"Tippe auf eine Attacke und löse die Aufgabe."}</span>`}
+function renderAns(){$("#ans").innerHTML=sel?`<span>${cards[sel].q[0]} =</span><em>${inp||"?"}</em><u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?"Dein Kämpfer greift an …":"Attacke antippen, dann rechnen."}</span>`}
 function pick(k){if(over||lock||paused||(k=="fin"&&pl.mt<100))return;if(sel!=k)inp="";sel=k;if(!cards[k].t0)cards[k].t0=performance.now();sfx("pick");render()}
 function press(k){if(over||lock||paused||!sel)return;
   if(k=="del"){inp=inp.slice(0,-1);sfx("key")}else if(k=="ok")return submit();else if(inp.length<6){inp+=k;sfx("key")}renderAns()}
@@ -39,7 +39,7 @@ function submit(){if(!sel||inp===""||lock||over)return;
   else{sfx("wrong");msg(`Daneben! ${c.q[0]} = ${c.q[1]}`);en.timer-=en.iv*.15;
     q(async()=>{pose(pl,"stumble",20);pop("?!","#a79fc7",pl.root.position.x,4);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
   render()}
-$("#pad").innerHTML=["1","2","3","4","5","6","7","8","9","del","0","ok"].map(k=>`<button type="button" class="k${k=="ok"?" ok":k=="del"?" del":""}" data-k="${k}">${k=="del"?"⌫":k=="ok"?"OK":k}</button>`).join("");
+$("#pad").innerHTML=["1","2","3","4","5","6","7","8","9","0","del","ok"].map(k=>`<button type="button" class="k${k=="ok"?" ok":k=="del"?" del":""}" data-k="${k}">${k=="del"?"⌫":k=="ok"?"OK":k}</button>`).join("");
 $("#pad").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-k]");if(!b)return;e.preventDefault();b.classList.add("dn");setTimeout(()=>b.classList.remove("dn"),110);press(b.dataset.k)});
 $("#cards").addEventListener("pointerdown",e=>{const b=e.target.closest("[data-k]");if(b){e.preventDefault();pick(b.dataset.k)}});
 $("#fin").addEventListener("pointerdown",e=>{e.preventDefault();pick("fin")});
@@ -196,8 +196,8 @@ async function attack(a,b,k,mu){if(over)return;const dm=a.isP?ATK[k].dm*mu*a.dm:
 function storyOpp(n){if(n==10)return pickC==14?13:14;if(n==5)return pickC==13?10:13;const pool=[];for(let i=0;i<10;i++)if(i!=pickC)pool.push(i);return pool[((n<5?n-1:n-2)+pickC*3)%pool.length]}
 function layout(){const p=$("#panel"),r=document.documentElement.style;
   if(p.hidden){VO.x=VO.y=0;VO.fw=VO.fh=1}
-  else{const L=$("#left").offsetWidth+$("#side").offsetWidth,Rw=0;r.setProperty("--cl",L+"px");r.setProperty("--cr","0px");const hh=$("#hud").offsetHeight||70;
-    VO.x=(Rw-L)/2;VO.y=-hh*.45;VO.fw=(GW-L-Rw)/GW;VO.fh=(GH-hh)/GH}
+  else{r.setProperty("--cl","0px");r.setProperty("--cr","0px");const hh=$("#hud").offsetHeight||70,dk=Math.max(0,p.offsetHeight-22);
+    VO.x=0;VO.y=(dk-hh*.9)/2;VO.fw=1;VO.fh=(GH-hh-dk)/GH}
   applyOff()}
 function startFight(){
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
@@ -240,7 +240,7 @@ function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=n
    <div class="seg" id="dseg">${[["Leicht","bis 20"],["Mittel","Einmaleins"],["Schwer","große Zahlen"]].map((d,i)=>`<button type="button" data-a="diff" data-i="${i}" class="${SAVE.diff==i?"on":""}">${d[0]}<small>${d[1]}</small></button>`).join("")}</div>
    <p class="tag">Story geschafft: ${SAVE.done}× · Geheime Kämpfer: ${Math.min(5,SAVE.done)}/5</p>`)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
-  menu(`<h2>Wähle deinen Kämpfer</h2><div class="sel"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">Zurück</button>`,1);showDet(selC)}
+  menu(`<h2>Wähle deinen Kämpfer</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">Zurück</button>`,1);showDet(selC)}
 function showDet(i){selC=i;const c=CH[i],u=unlocked(c);document.querySelectorAll(".tile").forEach((t,j)=>t.classList.toggle("on",j==i));
   $("#det").innerHTML=`<img src="${c.full}" alt="" class="${u?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3><p>${c.d}</p>
     <div class="st">${["Kraft","Leben","Spezial"].map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>
@@ -266,7 +266,7 @@ document.addEventListener("visibilitychange",()=>{if(AU.ctx){if(document.hidden)
 
 /* ----- Hauptschleife ----- */
 function camFight(){const a=fx_(pl),b=fx_(en),mx=(a.x+b.x)/2,span=Math.abs(a.x-b.x)/2+2.3,tan=Math.tan(cam.fov*Math.PI/360),top=Math.max(a.y,b.y,0);
-  const z=clamp(Math.max(span/(tan*cam.aspect*VO.fw),(2.7+top*.55)/(tan*VO.fh)),8,38);CAM.tp.set(mx*.7,2.4+z*.07+top*.3,z);CAM.tl.set(mx*.7,2.05+top*.4,0)}
+  const z=clamp(Math.max(span/(tan*cam.aspect*VO.fw),(2.7+top*.72)/(tan*VO.fh)),8,38);CAM.tp.set(mx*.7,2.4+z*.07+top*.3,z);CAM.tl.set(mx*.7,2.05+top*.4,0)}
 function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000);last=n;
   if(paused){ren.render(sc,cam);return}
   const wd=dt*(hs>0?.02:TSb);hs-=dt;T+=wd;
