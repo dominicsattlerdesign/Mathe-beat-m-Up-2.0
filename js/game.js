@@ -166,7 +166,7 @@ const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a
 async function attack(a,b,k,mu){if(over)return;
   if(k=="fin")await finMove(a,b);
   else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*mu*a.dm)}
-  else await ACT[k](a,b,a.isP?ATK[k].dm*mu*a.dm:a.D*{hieb:.7,kick:1,wurf:1.4}[k]);
+  else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 80 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP?mu:.8));
   if(b.hp>0){await recover(a,b);
     /* Finisher gibt es nur im Matchball: der Spieler führt 1 Runde und der Gegner hat höchstens 10 % Leben */
     if(a.isP&&fo=="none"&&wins.p==1&&b.hp<=b.max*.1&&!over)offerFin();return}
@@ -197,7 +197,7 @@ function startFight(){
     clearFighters();clearTemp();buildStage(stageI);
     pl=mkF(CH[pickC],-1,true);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
     round=1;wins={p:0,e:0};fo="none";cd={last:null,n:0,lock:null,left:0};$("#fo").hidden=true;
-    en.max=en.hp=44+L*6+CH[oi].st[1]*3+(boss?14:0);en.iv=(12-L*.55)*.75;en.D=4+L*.7;en.timer=en.iv;
+    en.max=en.hp=44+L*6+CH[oi].st[1]*3+(boss?14:0);en.iv=(12-L*.55)*.75*.7;en.timer=en.iv;
     $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=CH[pickC].bust;$("#ei").src=CH[oi].bust;
     $("#lv").innerHTML=`<b>${story?(lvl==10?"ENDKAMPF":"KAMPF "+lvl+"/10"):"FREIER KAMPF"}</b>${STG[stageI].n}`;
     cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),sig:newCard("sig"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
