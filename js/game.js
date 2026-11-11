@@ -32,7 +32,9 @@ const newCard=k=>({q:task(k,SAVE.diff),t0:0});
 function render(){const lb=LABELS[SAVE.diff?1:0];
   $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>{const L=cd.lock==k;return`<button type="button" class="card ${k}${sel==k?" sel":""}${L?" cdl":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${L?"Pause · noch "+cd.left+" andere":lb[k]}</small><div class="q${cards[k].q[0].length>13?" lg":""}">${L?"gesperrt":cards[k].q[0]}</div></button>`}).join("");
   document.body.classList.toggle("lock",lock);hud();renderAns()}
-function renderAns(){const t=sel&&cards[sel].q[0];$("#ans").innerHTML=sel?`<span>${t.includes("▢")?t+" · ▢":t} =</span><em>${inp||"?"}</em><u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?"Dein Kämpfer greift an …":"Attacke antippen, dann rechnen."}</span>`}
+function renderAns(){const t=sel&&cards[sel].q[0];const pt=t&&t.split("▢"),em=`<em>${inp||"?"}</em>`;
+  /* Bei gesuchter Zahl steht die Eingabe direkt in der Lücke, sonst hinter dem Gleichheitszeichen */
+  $("#ans").innerHTML=sel?(pt.length>1?`<span>${pt[0]}</span>${em}<span>${pt[1]}</span>`:`<span>${t} =</span>${em}`)+`<u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?"Dein Kämpfer greift an …":"Attacke antippen, dann rechnen."}</span>`}
 function pick(k){if(over||lock||paused||(k=="sig"&&pl.mt<100)||(k=="fin"&&fo!="on"))return;
   if(k==cd.lock){sfx("wrong");msg(`${ATK[k].n} macht Pause. Schaffe erst ${cd.left==1?"eine andere Attacke":cd.left+" andere Attacken"}!`);return}
   if(sel!=k)inp="";sel=k;if(!cards[k].t0)cards[k].t0=performance.now();sfx("pick");render()}
