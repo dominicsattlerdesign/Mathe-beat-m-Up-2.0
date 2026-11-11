@@ -7,8 +7,9 @@ const esc=t=>String(t).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";"),fmtT=t=>M
 /* Freigespielte Kämpfer stehen in SAVE.unl. Alte Spielstände (Freischalten nach Anzahl Durchgänge) werden übernommen. */
 if(!Array.isArray(SAVE.unl)){SAVE.unl=CH.filter((c,i)=>i>=5&&SAVE.done>=i-4).map(c=>c.id)}
 const unlocked=ch=>!ch.lock||SAVE.unl.includes(ch.id);
-/* Nächster Kämpfer nach einem Story-Sieg: in "Mittel" zuerst die Bosse, sonst nur normale Kämpfer */
-const nextUnl=d=>{const free=CH.filter(c=>c.lock&&!unlocked(c));return(d==2&&free.find(c=>c.boss))||free.find(c=>!c.boss)||null};
+/* Nächster Kämpfer nach einem Story-Sieg: in "Mittel" zufällig aus allen gesperrten (Bosse inklusive),
+   in den anderen Stufen der nächste normale Kämpfer der Reihe nach */
+const nextUnl=d=>{const free=CH.filter(c=>c.lock&&!unlocked(c));return d==2?(free.length?P(free):null):free.find(c=>!c.boss)||null};
 /* Zweites Outfit: frei, wenn die Story mit dieser Figur geschafft wurde. useAlt = Spieler hat es gewählt. */
 const altOk=c=>SAVE.alts.includes(c.id),useAlt=i=>!!(SAVE.of[CH[i].id]&&altOk(CH[i]));
 const pic=(i,k,o=useAlt(i))=>o?(altPics(CH[i]),CH[i][k+"2"]):CH[i][k];
@@ -271,7 +272,7 @@ function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt
   $("#det").innerHTML=`<img src="${u?pic(i,"full",o==1):c.full}" alt="" class="${u&&!lockO?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3>${seg}<p>${lockO?L(`Schaffe die Story mit ${c.n}, um dieses Outfit freizuschalten.`,`Clear the story with ${c.n} to unlock this outfit.`):c.d}</p>
     <div class="st">${L(["Kraft","Leben","Spezial"],["Power","Health","Special"]).map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>
     <div class="fn"><small>${L("SPEZIAL-ATTACKE","SPECIAL ATTACK")}</small>${c.sig}</div><div class="fn"><small>FINISHER</small>${c.fin}</div><button class="btn" data-a="go">${L("Kämpfen!","Fight!")}</button>`
-   :`<div class="ti">${c.boss?L("Boss · noch gesperrt","Boss · locked"):L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${c.boss?L(`Boss-Kämpfer: nur über die Story in der Stufe „${DIFFS[2][0]}“ freizuschalten. Jeder Durchgang dort schaltet einen Boss frei.`,`Boss fighter: unlocked only by clearing the story on “${DIFFS[2][0]}”. Each clear there unlocks one boss.`)
+   :`<div class="ti">${c.boss?L("Boss · noch gesperrt","Boss · locked"):L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${c.boss?L(`Boss-Kämpfer: nur über die Story in der Stufe „${DIFFS[2][0]}“ freizuschalten. Dort wird bei jedem Durchgang ein zufälliger gesperrter Kämpfer frei, die Bosse eingeschlossen.`,`Boss fighter: only unlockable through the story on “${DIFFS[2][0]}”. Each clear there unlocks a random locked fighter, bosses included.`)
       :L(`Schaffe die Story, dann kommt der nächste Kämpfer dazu. Jeder Durchgang schaltet einen Kämpfer frei. Bisher geschafft: ${SAVE.done}×.`,`Clear the story to unlock the next fighter. Every clear unlocks one fighter. Cleared so far: ${SAVE.done}×.`)}</p><button class="btn" disabled>${L("Gesperrt","Locked")}</button>`)+`</div>`}
 const ACTIONS={
   start(){const n=$("#pname");if(n){SAVE.name=n.value.trim().slice(0,12)||HERO();save()}auInit();try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},

@@ -4,7 +4,7 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 
 - **Drei Attacken, drei Aufgabenarten:** Hieb, Kick und Wurf mit je eigener Aufgabenart und elf Varianten. Dreimal dieselbe Attacke am Stück sperrt sie, bis zwei andere geschafft sind.
 - **Spezial-Attacke und Finisher je Figur:** Die Spezial-Leiste lädt sich im Kampf auf. Den Finisher gibt es nur im Matchball, wenn der Gegner höchstens 10 % Leben hat, und nur 15 Sekunden lang.
-- **15 Kämpfer:** 5 von Anfang an, pro Story-Durchgang kommt einer dazu. Die Bosse Kaiser Null und Mathemagus gibt es nur über die Story in der Stufe „Mittel“.
+- **15 Kämpfer:** 5 von Anfang an, pro Story-Durchgang kommt einer dazu. In der Stufe „Mittel“ ist es ein zufälliger gesperrter Kämpfer, nur dort können auch die Bosse Kaiser Null und Mathemagus frei werden.
 - **Zweites Outfit je Figur:** wird frei, wenn man die Story mit dieser Figur schafft, und ist in der Kämpferwahl umschaltbar.
 - **5 Arenen** mit Objekten, die im Kampf zu Bruch gehen.
 - **Vier Stufen:** 1.–2. Klasse (Plus und Minus bis 20), Leicht, Mittel, Schwer.
