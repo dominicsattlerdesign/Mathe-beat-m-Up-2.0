@@ -7,8 +7,8 @@
 let LANG="de";const L=(de,en)=>LANG=="en"?en:de;
 function bi(o,k,de,en){Object.defineProperty(o,k,{get:()=>LANG=="en"?en:de,configurable:true,enumerable:true})}
 const rI=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),rP=a=>a[rI(0,a.length-1)];
-const DIFFS=[["1.–2. Klasse","Plus & Minus bis 20"],["Leicht","kleines Einmaleins"],["Mittel","Einmaleins & Klammern"],["Schwer","grosse Zahlen"]];
-[["Grade 1–2","plus & minus to 20"],["Easy","small times tables"],["Medium","times tables & brackets"],["Hard","big numbers"]].forEach((e,i)=>{const d=DIFFS[i];bi(d,0,d[0],e[0]);bi(d,1,d[1],e[1])});
+const DIFFS=[["1.–2. Klasse","Plus & Minus bis 20"],["Leicht","kleines Einmaleins"],["Mittel","Einmaleins & Klammern"],["Schwer","gemischt, auch grosse Zahlen"]];
+[["Grade 1–2","plus & minus to 20"],["Easy","small times tables"],["Medium","times tables & brackets"],["Hard","mixed, incl. big numbers"]].forEach((e,i)=>{const d=DIFFS[i];bi(d,0,d[0],e[0]);bi(d,1,d[1],e[1])});
 const LABELS=[{},{}];
 [[["Plus bis 20","plus to 20"],["Minus bis 20","minus to 20"],["Plus & Minus","plus & minus"]],[["Plus & Minus","plus & minus"],["Mal & Geteilt","times & divide"],["Klammern","brackets"]]]
   .forEach((r,i)=>["hieb","kick","wurf"].forEach((k,j)=>bi(LABELS[i],k,r[j][0],r[j][1])));
@@ -106,7 +106,8 @@ const TASKS={
 };
 /* Spezial-Attacke: mittelschwer, bunt gemischt aus der Stufe */
 TASKS.sig=[0,1,2,3].map(d=>TASKS.wurf[d].concat(TASKS.kick[d].slice(-3),TASKS.hieb[d].slice(-2)));
-function task(type,d){for(let i=0;i<20;i++){const t=rP(TASKS[type][d])();if(t[1]>=0&&Number.isInteger(t[1]))return t}return["2 + 2",4]}
+/* Stufe Schwer: 75 % der Aufgaben aus Mittel, 25 % aus Schwer */
+function task(type,d){if(d==3&&Math.random()<.75)d=2;for(let i=0;i<20;i++){const t=rP(TASKS[type][d])();if(t[1]>=0&&Number.isInteger(t[1]))return t}return["2 + 2",4]}
 /* Sekunden für Tempo-Bonus [×1.5, ×1.25] je Attacke */
 const BONUS={hieb:[5,10],kick:[7,14],wurf:[12,22],sig:[12,22],fin:[8,15]};
 const FIN_TIME=15;

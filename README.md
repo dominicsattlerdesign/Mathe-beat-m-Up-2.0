@@ -7,7 +7,7 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 - **15 Kämpfer:** 5 von Anfang an, pro Story-Durchgang kommt ein zufälliger gesperrter Kämpfer dazu. In der Stufe „Mittel“ ist es ein zufälliger gesperrter Kämpfer, nur dort können auch die Bosse Kaiser Null und Mathemagus frei werden.
 - **Zweites Outfit je Figur:** wird frei, wenn man die Story mit dieser Figur schafft, und ist in der Kämpferwahl umschaltbar.
 - **5 Arenen** mit Objekten, die im Kampf zu Bruch gehen.
-- **Vier Stufen:** 1.–2. Klasse (Plus und Minus bis 20), Leicht, Mittel, Schwer.
+- **Vier Stufen:** 1.–2. Klasse (Plus und Minus bis 20), Leicht, Mittel, Schwer. Schwer mischt 75 % Aufgaben aus Mittel mit 25 % grossen Zahlen, dafür haben die Gegner dort mehr Leben (+25 %, Story-Bosse +50 % und +75 %).
 - **Story** (10 Kämpfe, jeder bis zwei Rundensiege) und **Freier Kampf**.
 - **Rangliste:** schnellste Kampfzeit für die Story je Stufe, gespeichert auf dem Gerät.
 - **Sprache:** Deutsch oder Englisch, umschaltbar auf dem Startbildschirm und in den Einstellungen.
