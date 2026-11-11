@@ -275,8 +275,9 @@ const ALT={
 CH.forEach(c=>c.alt=ALT[c.id]);
 /* Figur im gewählten Outfit: erbt alles von der Figur und überschreibt nur das Aussehen */
 const outfit=(ch,o)=>o&&ch.alt?Object.assign(Object.create(ch),ch.alt,{o:1}):ch;
-/* Je Story-Durchgang wird ein weiterer Kämpfer frei: 5 am Start, 10 zum Freispielen */
-CH.forEach((c,i)=>c.lock=i<5?0:i-4);
+/* 5 Kämpfer am Start, 10 zum Freispielen: je Story-Durchgang einer */
+/* lock: 0 = von Anfang an spielbar, 1 = wird über die Story frei. Die beiden Bosse nur über die Story in der Stufe "Mittel". */
+CH.forEach((c,i)=>{c.lock=i<5?0:1;c.boss=c.id=="kaiser"||c.id=="magus"});
 /* Porträts (Brustbild + Ganzkörper) direkt aus den 3D-Modellen fotografieren. Zweites Outfit erst bei Bedarf. */
 let PS=null;
 function shoot(ch,o){

@@ -4,7 +4,11 @@ const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[],lang
   if(!Array.isArray(s.lb))s.lb=[];if(!s.vol)s.vol={m:.8,s:.9};if(!Array.isArray(s.alts))s.alts=[];if(!s.of)s.of={};LANG=s.lang;return s})();
 const save=()=>{try{localStorage.setItem("mb3",JSON.stringify(SAVE))}catch(e){}};
 const esc=t=>String(t).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";"),fmtT=t=>Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0");
-const unlocked=ch=>!ch.lock||SAVE.done>=ch.lock;
+/* Freigespielte Kämpfer stehen in SAVE.unl. Alte Spielstände (Freischalten nach Anzahl Durchgänge) werden übernommen. */
+if(!Array.isArray(SAVE.unl)){SAVE.unl=CH.filter((c,i)=>i>=5&&SAVE.done>=i-4).map(c=>c.id)}
+const unlocked=ch=>!ch.lock||SAVE.unl.includes(ch.id);
+/* Nächster Kämpfer nach einem Story-Sieg: in "Mittel" zuerst die Bosse, sonst nur normale Kämpfer */
+const nextUnl=d=>{const free=CH.filter(c=>c.lock&&!unlocked(c));return(d==2&&free.find(c=>c.boss))||free.find(c=>!c.boss)||null};
 /* Zweites Outfit: frei, wenn die Story mit dieser Figur geschafft wurde. useAlt = Spieler hat es gewählt. */
 const altOk=c=>SAVE.alts.includes(c.id),useAlt=i=>!!(SAVE.of[CH[i].id]&&altOk(CH[i]));
 const pic=(i,k,o=useAlt(i))=>o?(altPics(CH[i]),CH[i][k+"2"]):CH[i][k];
@@ -224,7 +228,8 @@ function result(win){
     menu(`<h2>${L("Sieg","Victory")} ${sc_}</h2><p>${L(`Kampf ${lvl-1} von 10 geschafft. Kampfzeit bisher: ${fmtT(storyT)}`,`Fight ${lvl-1} of 10 done. Fight time so far: ${fmtT(storyT)}`)}</p><button class="btn" data-a="next">${L("Weiter zu Kampf ","On to fight ")+lvl}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button>`,1)}
   else if(win&&s){SAVE.done++;SAVE.story=null;const e={n:SAVE.name||HERO(),d:SAVE.diff,t:Math.round(storyT),c:pickC};SAVE.lb.push(e);SAVE.lb.sort((a,b)=>a.t-b.t);
     const rank=SAVE.lb.filter(x=>x.d==e.d).indexOf(e)+1;SAVE.lb=SAVE.lb.filter(x=>SAVE.lb.filter(y=>y.d==x.d).indexOf(x)<20);const id=CH[pickC].id,no=!SAVE.alts.includes(id);if(no)SAVE.alts.push(id);
-    lastUnl={c:CH.filter(c=>c.lock==SAVE.done),o:no?CH[pickC]:null};save();const nu=lastUnl.c.length||no;
+    const nc=nextUnl(e.d);if(nc)SAVE.unl.push(nc.id);
+    lastUnl={c:nc?[nc]:[],o:no?CH[pickC]:null};save();const nu=lastUnl.c.length||no;
     menu(`<p class="tag">${L("Story geschafft","Story cleared")} · ${DIFFS[e.d][0]}</p><h1 class="logo"><span>${L("Du bist","You are the")}</span>Champion!</h1><p>${L(`${esc(e.n)} hat mit ${CH[pickC].n} alle zehn Gegner besiegt. Kampfzeit ${fmtT(e.t)}, das ist Platz ${rank} der Rangliste.`,`${esc(e.n)} beat all ten opponents with ${CH[pickC].n}. Fight time ${fmtT(e.t)}, that’s rank ${rank} on the leaderboard.`)}</p><div class="rowb">${nu?`<button class="btn gold" data-a="unlock">${L("Was ist das …?","What’s that …?")}</button>`:""}<button class="btn alt" data-a="lb" data-i="${e.d}">${L("Rangliste","Leaderboard")}</button>${nu?"":`<button class="btn" data-a="home">${L("Hauptmenü","Main menu")}</button>`}</div>`,1)}
   else if(win)menu(`<h2>${L("Gewonnen","You won")} ${sc_}</h2><div class="rowb"><button class="btn" data-a="again">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
   else menu(`<h2>${L("Niederlage","Defeat")} ${sc_}</h2><p>${P(L(["Das war knapp. Atme durch und hol dir die Revanche!","Auch Champions fallen mal um. Aufstehen, Krone richten.","Dein Gegner hatte Glück. Sagt er jedenfalls."],["That was close. Take a breath and go for the rematch!","Even champions fall over sometimes. Get up, fix your crown.","Your opponent got lucky. At least that’s what they say."]))}</p><div class="rowb"><button class="btn" data-a="again">${L("Revanche","Rematch")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
@@ -266,7 +271,8 @@ function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt
   $("#det").innerHTML=`<img src="${u?pic(i,"full",o==1):c.full}" alt="" class="${u&&!lockO?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3>${seg}<p>${lockO?L(`Schaffe die Story mit ${c.n}, um dieses Outfit freizuschalten.`,`Clear the story with ${c.n} to unlock this outfit.`):c.d}</p>
     <div class="st">${L(["Kraft","Leben","Spezial"],["Power","Health","Special"]).map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>
     <div class="fn"><small>${L("SPEZIAL-ATTACKE","SPECIAL ATTACK")}</small>${c.sig}</div><div class="fn"><small>FINISHER</small>${c.fin}</div><button class="btn" data-a="go">${L("Kämpfen!","Fight!")}</button>`
-   :`<div class="ti">${L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${L(`Schaffe die Story ${c.lock}×, dann kommt dieser Kämpfer dazu. Bisher geschafft: ${SAVE.done}×. Jeder Durchgang schaltet einen Kämpfer frei.`,`Clear the story ${c.lock}× to unlock this fighter. Cleared so far: ${SAVE.done}×. Every clear unlocks one fighter.`)}</p><button class="btn" disabled>${L("Gesperrt","Locked")}</button>`)+`</div>`}
+   :`<div class="ti">${c.boss?L("Boss · noch gesperrt","Boss · locked"):L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${c.boss?L(`Boss-Kämpfer: nur über die Story in der Stufe „${DIFFS[2][0]}“ freizuschalten. Jeder Durchgang dort schaltet einen Boss frei.`,`Boss fighter: unlocked only by clearing the story on “${DIFFS[2][0]}”. Each clear there unlocks one boss.`)
+      :L(`Schaffe die Story, dann kommt der nächste Kämpfer dazu. Jeder Durchgang schaltet einen Kämpfer frei. Bisher geschafft: ${SAVE.done}×.`,`Clear the story to unlock the next fighter. Every clear unlocks one fighter. Cleared so far: ${SAVE.done}×.`)}</p><button class="btn" disabled>${L("Gesperrt","Locked")}</button>`)+`</div>`}
 const ACTIONS={
   start(){const n=$("#pname");if(n){SAVE.name=n.value.trim().slice(0,12)||HERO();save()}auInit();try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
   name(){startScreen();const n=$("#pname");n&&n.focus()},lb(b){lbScreen(+b.dataset.i)},
