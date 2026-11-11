@@ -223,13 +223,13 @@ function menu(h,solid){const m=$("#menu");m.hidden=false;m.classList.toggle("sol
 function menuHide(){$("#menu").hidden=true;$("#snd").hidden=true}
 function attract(){fid++;tws.length=0;rtw.length=0;TSb=1;over=true;clearFighters();buildStage(R(0,STG.length-1));const ok=CH.map((c,i)=>i).filter(i=>unlocked(CH[i])),a=P(ok),b=P(ok.filter(i=>i!=a));
   fighters=[mkF(CH[a],-1,true),mkF(CH[b],1,false)];CAM.mode="menu"}
-const LOGO=`<p class="tag">Das Mathe-Kampfspiel</p><h1 class="logo"><span>Math</span>brawl</h1>`;
+const LOGO=`<h1 class="logo"><span>Math</span>brawl</h1><p class="tag">Rechnen · Kämpfen · Siegen</p>`;
 function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=null;const st=SAVE.story;
   menu(LOGO+`<div class="rowb"><button class="btn" data-a="story">Story<small>10 KÄMPFE BIS ZUM MATHEMAGUS</small></button>${st?`<button class="btn gold" data-a="cont">Weiterkämpfen<small>${CH[st.c].n.toUpperCase()} · KAMPF ${st.lvl}/10</small></button>`:""}<button class="btn alt" data-a="arcade">Freier Kampf<small>EIN GEGNER, EINE ARENA</small></button></div>
    <div class="seg" id="dseg">${DIFFS.map((d,i)=>`<button type="button" data-a="diff" data-i="${i}" class="${SAVE.diff==i?"on":""}">${d[0]}<small>${d[1]}</small></button>`).join("")}</div>
    <div class="rowb"><button class="btn alt sm" data-a="lb" data-i="${SAVE.diff}">Rangliste</button><button class="btn alt sm" data-a="name">Spieler: ${esc(SAVE.name||"Held")}</button></div>
    <p class="tag">Story geschafft: ${SAVE.done}× · Kämpfer frei: ${CH.filter(unlocked).length}/15</p>`)}
-function startScreen(){menu(LOGO+`<p>Rechne richtig, dann schlägt dein Kämpfer zu.</p><label class="nmf" for="pname">Dein Kämpfername<input id="pname" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Name" value="${esc(SAVE.name)}"></label><button class="btn blink" data-a="start">Start</button>`)}
+function startScreen(){menu(LOGO+`<label class="nmf" for="pname"><input id="pname" aria-label="Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Name" value="${esc(SAVE.name)}"></label><button class="btn blink" data-a="start">Start</button>`)}
 function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
   menu(`<h2>Rangliste</h2><p>Schnellste Kampfzeit für die ganze Story. Gespeichert auf diesem Gerät.</p><div class="seg">${DIFFS.map((x,i)=>`<button type="button" data-a="lb" data-i="${i}" class="${d==i?"on":""}">${x[0]}</button>`).join("")}</div>
    ${rows.length?`<table class="rank"><thead><tr><th>Platz</th><th>Name</th><th>Kämpfer</th><th>Zeit</th></tr></thead><tbody>${rows.map((r,i)=>`<tr${r.n==SAVE.name?' class="me"':""}><td>${i+1}.</td><td>${esc(r.n)}</td><td>${CH[r.c].n}</td><td>${fmtT(r.t)}</td></tr>`).join("")}</tbody></table>`
