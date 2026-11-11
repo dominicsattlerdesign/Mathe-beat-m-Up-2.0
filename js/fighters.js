@@ -235,10 +235,7 @@ const CH_EN={
  kaiser:{ti:"Lord of the Void",d:"Swallowed a whole empire. Had a tummy ache afterwards.",q:"Bow down. Or just fall over.",sig:"Black Hole",fin:"Black Sun"},
  magus:{ti:"Lord of Numbers",d:"The final boss. Knows every formula and fears only one thing: the right answer.",q:"Show me your answer … if you dare!",sig:"Number Hail",fin:"Division by Zero"},
 };
-/* Stimme je Figur: p = Tonhöhe in Hz, f = Klangfarbe (Formant-Faktor), g = Knurren, t = Art (robot, whisper), e = Hall */
-const VOX={raiko:{p:165,f:1.05},akane:{p:285,f:1.18},rokka:{p:118,f:.92,g:.35},zeno:{p:150,f:1},tetsu:{p:104,f:.9},volt:{p:132,f:1,t:"robot"},luna:{p:300,f:1.2},
-  goro:{p:84,f:.82,g:.6},shade:{p:150,f:1,t:"whisper"},mika:{p:350,f:1.28},drako:{p:100,f:.88,g:.5},oni:{p:78,f:.8,g:.85},seraph:{p:178,f:1.05,e:1},kaiser:{p:92,f:.86,g:.2,e:1},magus:{p:96,f:.9,g:.3,e:1}};
-CH.forEach(c=>{c.vo=VOX[c.id];const e=CH_EN[c.id];for(const k in e)bi(c,k,c[k],e[k])});
+CH.forEach(c=>{const e=CH_EN[c.id];for(const k in e)bi(c,k,c[k],e[k])});
 /* Je Story-Durchgang werden zwei weitere Kämpfer frei: 5 am Start, 10 zum Freispielen */
 CH.forEach((c,i)=>c.lock=i<5?0:Math.ceil((i-4)/2));
 /* Porträts (Brustbild + Ganzkörper) direkt aus den 3D-Modellen fotografieren */

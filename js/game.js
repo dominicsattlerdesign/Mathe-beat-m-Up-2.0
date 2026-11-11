@@ -86,8 +86,6 @@ async function launch(b,toX,h,dur,spins=1,o={}){b.grounded=false;b.downed=true;p
   const x1=toX,x2=clamp(toX+Math.sign(toX-x0)*.7,-7.3,7.3);await tw(.3,p=>{fx_(b).y=yl+Math.sin(p*Math.PI)*.4;fx_(b).x=lerp(x1,x2,p)})}
 async function getUp(b){await wait(.3);const y0=fx_(b).y;pose(b,"crouch",14);await tw(.28,p=>{b.piv.rotation.x=-Math.PI/2*(1-ease(p));fx_(b).y=y0*(1-p)});b.piv.rotation.x=0;fx_(b).y=0;b.grounded=true;b.downed=false;b.turn.rotation.y=FACE}
 async function recover(a,b){await Promise.all([backHop(a),(async()=>{if(b.downed)await getUp(b);await dash(b,b.hx,.28);pose(b,b.dizzy?"dizzy":"idle",12)})()]);a.turn.rotation.y=b.turn.rotation.y=FACE}
-/* Kampfschreie: jede Figur hat ihre eigene Stimme. Kurze Sperre, damit sich Schreie nicht stapeln. */
-function say(f,k){if(!f||!f.ch)return;const t=performance.now(),key=k=="hurt"?"ht":"vt";if(f[key]&&t-f[key]<(k=="hurt"?320:380))return;f[key]=t;voice(f.ch.vo,k)}
 function koFx(){banner("K.O.!",P(QUIPS.ko));sfx("ko");flash("#fff");TSb=.22;rt(1.2).then(()=>TSb=1)}
 function impact(a,b,dmg,o={}){
   dmg=Math.max(1,Math.round(dmg));b.hp=Math.max(0,b.hp-dmg);const d=-a.side,x=fx_(b).x,lv=o.lv||0,y=o.y!=null?o.y:2.1*b.sc+fx_(b).y,cx=x-d*.45;
@@ -96,8 +94,7 @@ function impact(a,b,dmg,o={}){
   CAM.shake=Math.max(CAM.shake,.1+lv*.16+(o.big?.7:0));flashLight(a.ch.c,2+lv,x,2);sfx(o.s||"punch");hs=o.stop!=null?o.stop:.045+lv*.035;
   breakNear(x,o.r||1.25,d,1+lv*.3,o.max||2);if(lv||o.big)crack(x,o.big?5:1+lv,o.big?2:lv);
   if(!o.nomt){if(a.isP)a.mt=Math.min(100,a.mt+dmg*1.05*a.mg);if(b.isP)b.mt=Math.min(100,b.mt+dmg*.75)}
-  hud();if(b.hp<=0&&!over&&!o.noKO){over=true;say(b,"ko");koFx()}else if(b.hp>0&&(lv||Math.random()<.45))say(b,"hurt");
-  if(lv&&!o.quiet)say(a,"atk");
+  hud();if(b.hp<=0&&!over&&!o.noKO){over=true;koFx()}
   if(!o.noReact){pose(b,"hurt",30);const bx=x;tw(.22,p=>{fx_(b).x=clamp(bx+d*(Math.sin(p*Math.PI)*.3+p*(o.push||.12)),-7,7)})}
 }
 /* ----- Attacken: jede Art hat mehrere Varianten, die abwechselnd drankommen ----- */
@@ -169,7 +166,7 @@ const MOVES={
 /* Englische Namen der Varianten */
 {const en={hieb:["Triple Combo","Flash Cut","Hammer Fist","Drum Roll"],kick:["Whirl Kick","Sweep Kick","Hurricane Kick","Dive Kick"],wurf:["Sling Throw","Sky Drop","Giant Swing"]};
  for(const k in en)MOVES[k].forEach((m,i)=>bi(m,"n",m.n,en[k][i]))}
-async function runMove(k,a,b,dm){say(a,"atk");const ML=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,ML.length-1)}while(m[k]===i);m[k]=i;
+async function runMove(k,a,b,dm){const ML=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,ML.length-1)}while(m[k]===i);m[k]=i;
   pop(ML[i].n+"!",null,fx_(a).x,4.6*a.sc,"mv");await ML[i].f(a,b,dm)}
 const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a,b,dm),wurf:(a,b,dm)=>runMove("wurf",a,b,dm)};
 async function attack(a,b,k,mu){if(over)return;
@@ -181,7 +178,7 @@ async function attack(a,b,k,mu){if(over)return;
     if(a.isP&&fo=="none"&&wins.p==1&&b.hp<=b.max*.1&&!over)offerFin();return}
   /* Runde vorbei: gekämpft wird, bis jemand zwei Runden gewonnen hat */
   if(fo=="on")endOffer();
-  if(!b.downed)await launch(b,b.side*5.6,2,.75,1);pose(b,"down",20);await backHop(a);a.turn.rotation.y=FACE;pose(a,"win",10);say(a,"win");
+  if(!b.downed)await launch(b,b.side*5.6,2,.75,1);pose(b,"down",20);await backHop(a);a.turn.rotation.y=FACE;pose(a,"win",10);
   const w=a.isP?"p":"e";wins[w]++;hud();await rt(1.5);
   if(wins[w]>=2)return result(a.isP);
   round++;banner(L("Runde ","Round ")+round,L("Stand ","Score ")+`${wins.p} : ${wins.e}`);sfx("gong");clearTemp();untint(b);squash(b,1,1);b.root.visible=true;b.dizzy=false;
@@ -240,12 +237,12 @@ function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=n
    <p class="tag">${L("Story geschafft","Story cleared")}: ${SAVE.done}× · ${L("Kämpfer frei","Fighters unlocked")}: ${CH.filter(unlocked).length}/15</p>`)}
 const langSeg=()=>`<div class="seg" role="group" aria-label="Sprache / Language">${[["de","Deutsch"],["en","English"]].map(([k,t])=>`<button type="button" data-a="lang" data-l="${k}" class="${LANG==k?"on":""}">${t}</button>`).join("")}</div>`;
 function startScreen(){const v=$("#pname")?$("#pname").value:SAVE.name;menu(logo()+`<label class="nmf" for="pname"><input id="pname" aria-label="Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Name" value="${esc(v)}"></label><button class="btn blink" data-a="start">Start</button>${langSeg()}`)}
-/* Einstellungen: Lautstärke für Musik und Effekte (inkl. Stimmen), Sprache. back = wohin "Zurück" führt */
+/* Einstellungen: Lautstärke für Musik und Effekte, Sprache. back = wohin "Zurück" führt */
 let setBack="home";
 function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*100);
   menu(`<h2>${L("Einstellungen","Settings")}</h2><div class="sets">
    <label for="vm"><span>${L("Musik","Music")}</span><input id="vm" type="range" min="0" max="100" step="5" value="${v("m")}"><b id="vmv">${v("m")} %</b></label>
-   <label for="vs"><span>${L("Effekte & Stimmen","Effects & voices")}</span><input id="vs" type="range" min="0" max="100" step="5" value="${v("s")}"><b id="vsv">${v("s")} %</b></label>
+   <label for="vs"><span>${L("Effekte","Effects")}</span><input id="vs" type="range" min="0" max="100" step="5" value="${v("s")}"><b id="vsv">${v("s")} %</b></label>
    <div class="srow"><span>${L("Sprache","Language")}</span>${langSeg()}</div></div>
    <button class="btn alt sm" data-a="back">${L("Zurück","Back")}</button>`,1)}
 function applyLang(){document.documentElement.lang=LANG;$("#plbl").textContent=ATK.sig.n;$("#elbl").textContent=L("GEGNER-ANGRIFF","ENEMY ATTACK");
@@ -282,7 +279,7 @@ ACTIONS.psets=()=>settings("pause");
 $("#pz").addEventListener("click",()=>{if(over||paused||document.body.classList.contains("cine"))return;paused=true;pauseAt=performance.now();sfx("click");pauseMenu()});
 /* Schieberegler: Lautstärke sofort anwenden, beim Loslassen eine Hörprobe */
 $("#menu").addEventListener("input",e=>{const t=e.target;if(t.id!="vm"&&t.id!="vs")return;auInit();SAVE.vol[t.id=="vm"?"m":"s"]=t.value/100;$("#"+t.id+"v").textContent=t.value+" %";auVol(SAVE.vol.m,SAVE.vol.s)});
-$("#menu").addEventListener("change",e=>{const t=e.target;if(t.id=="vs"){sfx("punch");voice(CH[pickC].vo,"atk")}if(t.id=="vm"||t.id=="vs")save()});
+$("#menu").addEventListener("change",e=>{const t=e.target;if(t.id=="vs")sfx("punch");if(t.id=="vm"||t.id=="vs")save()});
 const sndBtn=$("#snd");function sndUi(){sndBtn.classList.toggle("off",SAVE.mute);sndBtn.setAttribute("aria-pressed",!SAVE.mute)}
 sndBtn.addEventListener("click",()=>{auInit();SAVE.mute=!SAVE.mute;save();auMute(SAVE.mute);sndUi()});
 document.addEventListener("visibilitychange",()=>{if(AU.ctx){if(document.hidden)AU.ctx.suspend();else AU.ctx.resume()}});
