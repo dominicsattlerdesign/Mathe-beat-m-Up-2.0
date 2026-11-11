@@ -196,7 +196,7 @@ async function attack(a,b,k,mu){if(over)return;const dm=a.isP?ATK[k].dm*mu*a.dm:
 function storyOpp(n){if(n==10)return pickC==14?13:14;if(n==5)return pickC==13?10:13;const pool=[];for(let i=0;i<10;i++)if(i!=pickC)pool.push(i);return pool[((n<5?n-1:n-2)+pickC*3)%pool.length]}
 function layout(){const p=$("#panel"),r=document.documentElement.style;
   if(p.hidden){VO.x=VO.y=0;VO.fw=VO.fh=1}
-  else{const L=$("#left").offsetWidth,Rw=$("#side").offsetWidth;r.setProperty("--cl",L+"px");r.setProperty("--cr",Rw+"px");const hh=$("#hud").offsetHeight||70;
+  else{const L=$("#left").offsetWidth+$("#side").offsetWidth,Rw=0;r.setProperty("--cl",L+"px");r.setProperty("--cr","0px");const hh=$("#hud").offsetHeight||70;
     VO.x=(Rw-L)/2;VO.y=-hh*.45;VO.fw=(GW-L-Rw)/GW;VO.fh=(GH-hh)/GH}
   applyOff()}
 function startFight(){

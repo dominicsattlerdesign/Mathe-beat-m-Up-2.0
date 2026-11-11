@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Chakra+Petch:wght@500;700&display=swap">
 <style>
 /* Immer Querformat: hält man das Tablet hochkant, dreht sich das Spielfeld um 90 Grad.
-   Layout: Vollbild-3D-Arena; Angriffskarten als Spalte links, Zahlenfeld als Spalte rechts, Kampf und Leisten dazwischen */
+   Layout: Vollbild-3D-Arena; Angriffskarten und Zahlenfeld als zwei Spalten links, Kampf und Leisten rechts daneben */
 :root{
   --bg:#0b0a14; --panel:#191530; --panel2:#262046; --ink:#f4f0ff; --dim:#a79fc7; --line:#05040a;
   --hot:#ff3b2f; --gold:#ffc21a; --cyan:#25d4ff; --violet:#9a6bff; --hp:#3fe06b;
@@ -50,7 +50,7 @@ body.cine #hud,body.cine #panel{opacity:0;pointer-events:none}
 
 /* ---------- Kampfleisten ---------- */
 #hud{position:fixed;left:var(--cl);right:var(--cr);top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
-  padding:calc(8px + env(safe-area-inset-top,0px)) 12px 0;pointer-events:none;transition:opacity .2s;z-index:1}
+  padding:calc(8px + env(safe-area-inset-top,0px)) var(--gr) 0 12px;pointer-events:none;transition:opacity .2s;z-index:1}
 .hb{flex:1;max-width:420px;display:flex;gap:8px;align-items:flex-start;min-width:0}
 .hb.r{flex-direction:row-reverse;text-align:right}
 .hb img{width:50px;height:50px;object-fit:cover;object-position:50% 12%;border:3px solid var(--line);background:var(--panel2);transform:skewX(-8deg);flex:none;box-shadow:3px 3px 0 var(--line)}
@@ -77,12 +77,12 @@ body.cine #hud,body.cine #panel{opacity:0;pointer-events:none}
 #lv b{display:block;font:400 18px var(--disp);letter-spacing:.06em;color:var(--gold)}
 #pz{pointer-events:auto;width:48px;height:36px;background:var(--panel);border:3px solid var(--line);font:700 16px var(--ui);transform:skewX(-10deg);box-shadow:2px 2px 0 var(--line)}
 
-/* ---------- Steuerpult: Attacken links, Zahlenfeld rechts, der Kampf bleibt in der Mitte frei ---------- */
-#panel{position:fixed;inset:0;display:flex;justify-content:space-between;pointer-events:none;z-index:1;transition:opacity .2s}
+/* ---------- Steuerpult: Attacken und Zahlenfeld nebeneinander links, der Kampf läuft rechts ---------- */
+#panel{position:fixed;inset:0;display:flex;justify-content:flex-start;pointer-events:none;z-index:1;transition:opacity .2s}
 #left,#side{pointer-events:auto;display:flex;flex-direction:column;gap:8px;justify-content:center;min-height:0;
   padding-block:calc(10px + env(safe-area-inset-top,0px)) calc(10px + env(safe-area-inset-bottom,0px));background:rgba(8,6,18,.88)}
-#left{width:clamp(168px,calc(var(--vw)*17),220px);padding-left:var(--gl);padding-right:10px;border-right:3px solid var(--line)}
-#side{width:clamp(196px,calc(var(--vw)*21),264px);padding-right:var(--gr);padding-left:10px;border-left:3px solid var(--line)}
+#left{width:clamp(168px,calc(var(--vw)*17),220px);padding-left:var(--gl);padding-right:6px}
+#side{width:clamp(196px,calc(var(--vw)*21),264px);padding-right:12px;padding-left:6px;border-right:3px solid var(--line)}
 #msg{position:absolute;left:var(--cl);right:var(--cr);bottom:calc(10px + env(safe-area-inset-bottom,0px));text-align:center;padding:0 12px;
   font:700 16px var(--ui);text-shadow:2px 2px 0 var(--line),-1px -1px 0 var(--line);letter-spacing:.02em}
 #cards{display:flex;flex-direction:column;gap:8px;flex:1;min-height:0;max-height:480px}
