@@ -12,7 +12,7 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 - Jede Runde startet mit einem Countdown „3, 2, 1, Rechnen!“.
 - **Rangliste:** schnellste Kampfzeit für die Story je Stufe, gespeichert auf dem Gerät.
 - **Sprache:** Deutsch oder Englisch, umschaltbar auf dem Startbildschirm und in den Einstellungen.
-- **Einstellungen:** Lautstärke für Musik und für Effekte, Wahl zwischen drei Arcade-Musiktiteln, auch im Pausenmenü.
+- **Einstellungen:** Lautstärke für Musik und Soundeffekte, Grafik-Effekte (Hoch, Mittel, Niedrig für ältere Geräte), Wahl zwischen drei Arcade-Musiktiteln, auch im Pausenmenü.
 - Soundeffekte und Menümusik werden live im Browser erzeugt, es gibt keine Audiodateien.
 
 ## Spielen

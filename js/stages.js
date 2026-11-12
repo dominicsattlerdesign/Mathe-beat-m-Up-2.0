@@ -296,7 +296,7 @@ function buildStage(si){
   for(let i=-3;i<=3;i++)M(gB(.5,.9,.1),s.trim,[i*2.4,-1.3,NZ*TW/2+.04],stage,0);
   s.build();
   /* Stimmungs-Partikel: Blütenblätter, Gischt, Glühwürmchen, Funken */
-  const[c,n,mode]=s.amb,pos=new Float32Array(n*3);for(let i=0;i<n*3;i+=3){pos[i]=rnd(-14,14);pos[i+1]=rnd(0,11);pos[i+2]=rnd(-7,3)}
+  const[c,n0,mode]=s.amb,n=Math.max(12,Math.round(n0*QF)),pos=new Float32Array(n*3);for(let i=0;i<n*3;i+=3){pos[i]=rnd(-14,14);pos[i+1]=rnd(0,11);pos[i+2]=rnd(-7,3)}
   const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(pos,3));
   const pts=new THREE.Points(g,new THREE.PointsMaterial({color:c,size:mode=="fall"?.2:mode=="rain"?.09:.14,transparent:true,opacity:.9,fog:false,depthWrite:false}));stage.add(pts);ambient={pts,mode,n};
 }

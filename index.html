@@ -40,6 +40,8 @@ body.cine #hud,body.cine #panel{opacity:0;pointer-events:none}
 #vig{position:fixed;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity .35s;background:radial-gradient(ellipse at 50% 55%,transparent 38%,rgba(0,0,0,.75) 100%);box-shadow:inset 0 0 calc(var(--vh)*22) calc(var(--vh)*4) var(--cc,#ff3b2f)}
 body.cine #vig{opacity:1}
 #c.drama{filter:saturate(1.45) contrast(1.15)}
+body.qlow #c.drama{filter:none}body.qlow #vig{box-shadow:none}
+.sets .hint{display:block;font:500 11px var(--ui);letter-spacing:0;color:var(--dim)}
 /* Einblendung im Anime-Stil */
 #cut{position:fixed;left:-5%;right:-5%;top:50%;height:clamp(110px,calc(var(--vh)*30),250px);transform:translateY(-50%) skewY(-5deg);pointer-events:none;z-index:4;overflow:hidden;visibility:hidden}
 #cut .band{position:absolute;inset:0;display:flex;align-items:center;gap:3vw;padding-inline:10vw;border-block:5px solid #fff;

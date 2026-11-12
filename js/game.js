@@ -1,7 +1,9 @@
 /* ---------- Spielablauf: Menüs, Touch-Steuerung, Kampf, Finisher ---------- */
-const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[],lang:(navigator.language||"de").slice(0,2)=="en"?"en":"de",vol:{m:.8,s:.9},track:0,alts:[],of:{},bst:[],arena:-1,ars:[]};
+const SAVE=(()=>{const s={done:0,diff:1,mute:false,story:null,name:"",lb:[],lang:(navigator.language||"de").slice(0,2)=="en"?"en":"de",vol:{m:.8,s:.9},track:0,alts:[],of:{},bst:[],arena:-1,ars:[],q:null};
   try{const n=localStorage.getItem("mb3");if(n)Object.assign(s,JSON.parse(n));else{const o=JSON.parse(localStorage.getItem("mrb2")||"null");if(o){s.done=o.done||0;s.diff=Math.min(3,(o.diff||0)+1);s.mute=!!o.mute}}}catch(e){}
-  if(!Array.isArray(s.lb))s.lb=[];if(!s.vol)s.vol={m:.8,s:.9};if(!Array.isArray(s.alts))s.alts=[];if(!s.of)s.of={};if(!Array.isArray(s.bst))s.bst=[];if(s.arena==null)s.arena=-1;if(!Array.isArray(s.ars))s.ars=[];LANG=s.lang;return s})();
+  if(!Array.isArray(s.lb))s.lb=[];if(!s.vol)s.vol={m:.8,s:.9};if(!Array.isArray(s.alts))s.alts=[];if(!s.of)s.of={};if(!Array.isArray(s.bst))s.bst=[];if(s.arena==null)s.arena=-1;if(!Array.isArray(s.ars))s.ars=[];
+  /* Grafikstufe: beim ersten Start nach Gerät raten (wenige Kerne, wenig Speicher oder kleiner Bildschirm = mittel) */
+  if(s.q==null)s.q=(navigator.hardwareConcurrency||8)<=4||(navigator.deviceMemory||8)<=3||Math.min(screen.width,screen.height)<500?1:2;LANG=s.lang;return s})();
 const save=()=>{try{localStorage.setItem("mb3",JSON.stringify(SAVE))}catch(e){}};
 const esc=t=>String(t).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";"),fmtT=t=>Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0");
 /* Freigespielte Kämpfer stehen in SAVE.unl. Alte Spielstände (Freischalten nach Anzahl Durchgänge) werden übernommen. */
@@ -280,7 +282,8 @@ let setBack="home";
 function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*100);
   menu(`<h2>${L("Einstellungen","Settings")}</h2><div class="sets">
    <label for="vm"><span>${L("Musik","Music")}</span><input id="vm" type="range" min="0" max="100" step="5" value="${v("m")}"><b id="vmv">${v("m")} %</b></label>
-   <label for="vs"><span>${L("Effekte","Effects")}</span><input id="vs" type="range" min="0" max="100" step="5" value="${v("s")}"><b id="vsv">${v("s")} %</b></label>
+   <label for="vs"><span>${L("Soundeffekte","Sound effects")}</span><input id="vs" type="range" min="0" max="100" step="5" value="${v("s")}"><b id="vsv">${v("s")} %</b></label>
+   <div class="srow wide"><span>${L("Grafik-Effekte","Visual effects")} <small class="hint">${L("„Niedrig“ für ältere Tablets und Handys","“Low” for older tablets and phones")}</small></span><div class="seg">${[L("Niedrig","Low"),L("Mittel","Medium"),L("Hoch","High")].map((t,k)=>`<button type="button" data-a="qual" data-i="${k}" class="${SAVE.q==k?"on":""}">${t}</button>`).join("")}</div></div>
    <div class="srow wide"><span>${L("Musiktitel","Music track")}</span><div class="seg">${TRK.map((t,k)=>`<button type="button" data-a="track" data-i="${k}" class="${SAVE.track==k?"on":""}">${L(t.n[0],t.n[1])}</button>`).join("")}</div></div>
    <div class="srow"><span>${L("Sprache","Language")}</span>${langSeg()}</div></div>
    <button class="btn alt sm" data-a="back">${L("Zurück","Back")}</button>`,1)}
@@ -332,10 +335,11 @@ const ACTIONS={
     menu(`<p class="tag">${L("Freigeschaltet","Unlocked")}</p><div class="rowb">${cs.map(c=>`<figure class="unf"><img class="unl" src="${c.full}" alt=""><figcaption><b>${c.n}</b>${L("Neuer Kämpfer","New fighter")}</figcaption></figure>`).join("")}${o?`<figure class="unf"><img class="unl" src="${o.full2}" alt=""><figcaption><b>${L(o.alt.on[0],o.alt.on[1])}</b>${L("Neues Outfit für ","New outfit for ")+o.n}</figcaption></figure>`:""}${ns!=null?`<figure class="unf"><div class="stc" style="${arStyle(ns)}">${STG[ns].n}</div><figcaption><b>${STG[ns].n}</b>${L("Neue Bonus-Arena","New bonus arena")}</figcaption></figure>`:""}${na!=null?`<figure class="unf"><div class="stc" style="${arStyle(na)}">${STG[na].n}</div><figcaption><b>${STG[na].n}</b>${L("Arena von ","Arena of ")+owner(na).n}</figcaption></figure>`:""}</div><button class="btn" data-a="home">${L("Weiter","Continue")}</button>`,1)},
   outfit(b){const c=CH[selC],o=+b.dataset.o;if(!o||altOk(c)){SAVE.of[c.id]=o;save()}showDet(selC,o)},
   track(b){SAVE.track=+b.dataset.i;save();musicTrack(SAVE.track);settings()},
+  qual(b){SAVE.q=+b.dataset.i;save();setQuality(SAVE.q);settings()},
   resume(){paused=false;const d=performance.now()-pauseAt;for(const k in cards)if(cards[k].t0)cards[k].t0+=d;last=performance.now();menuHide()},
   quit(){paused=false;home()},
 };
-$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(!["tile","diff","lb","lang","outfit","track"].includes(b.dataset.a))sfx(b.dataset.a=="arena"?"vs":"click");else sfx("pick");ACTIONS[b.dataset.a](b)});
+$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(!["tile","diff","lb","lang","outfit","track","qual"].includes(b.dataset.a))sfx(b.dataset.a=="arena"?"vs":"click");else sfx("pick");ACTIONS[b.dataset.a](b)});
 function pauseMenu(){menu(`<h2>Pause</h2><div class="rowb"><button class="btn" data-a="resume">${L("Weiter","Resume")}</button><button class="btn alt" data-a="psets">${L("Einstellungen","Settings")}</button><button class="btn alt" data-a="quit">${L("Kampf aufgeben","Give up")}</button></div>`,1)}
 ACTIONS.psets=()=>settings("pause");
 $("#pz").addEventListener("click",()=>{if(over||paused||document.body.classList.contains("cine"))return;paused=true;pauseAt=performance.now();sfx("click");pauseMenu()});
@@ -368,6 +372,6 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
   camStep(dt);ren.render(sc,cam)}
 
 /* ----- Start ----- */
-AU.muted=SAVE.mute;AU.vol={m:SAVE.vol.m,s:SAVE.vol.s};AU.track=Math.min(SAVE.track||0,TRK.length-1);applyLang();sndUi();rs();makePortraits();attract();
+setQuality(SAVE.q);AU.muted=SAVE.mute;AU.vol={m:SAVE.vol.m,s:SAVE.vol.s};AU.track=Math.min(SAVE.track||0,TRK.length-1);applyLang();sndUi();rs();makePortraits();attract();
 startScreen();
 requestAnimationFrame(loop);
