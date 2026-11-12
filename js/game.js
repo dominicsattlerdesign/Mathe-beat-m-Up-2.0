@@ -286,7 +286,7 @@ function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*
    <div class="srow wide"><span>${L("Grafik-Effekte","Visual effects")} <small class="hint">${L("„Niedrig“ für ältere Tablets und Handys","“Low” for older tablets and phones")}</small></span><div class="seg">${[L("Niedrig","Low"),L("Mittel","Medium"),L("Hoch","High")].map((t,k)=>`<button type="button" data-a="qual" data-i="${k}" class="${SAVE.q==k?"on":""}">${t}</button>`).join("")}</div></div>
    <div class="srow wide"><span>${L("Musiktitel","Music track")}</span><div class="seg">${TRK.map((t,k)=>`<button type="button" data-a="track" data-i="${k}" class="${SAVE.track==k?"on":""}">${L(t.n[0],t.n[1])}</button>`).join("")}</div></div>
    <div class="srow"><span>${L("Sprache","Language")}</span>${langSeg()}</div></div>
-   <button class="btn alt sm" data-a="back">${L("Zurück","Back")}</button>`,1)}
+   <div class="rowb"><button class="btn alt sm" data-a="back">${L("Zurück","Back")}</button><button class="btn sm danger" data-a="reset">${L("Fortschritt zurücksetzen","Reset progress")}</button></div>`,1)}
 function applyLang(){document.documentElement.lang=LANG;$("#plbl").textContent=ATK.sig.n;$("#elbl").textContent=L("GEGNER-ANGRIFF","ENEMY ATTACK");
   $("#snd").textContent=L("TON","SOUND");$("#snd").setAttribute("aria-label",L("Ton an oder aus","Sound on or off"))}
 function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
@@ -335,6 +335,14 @@ const ACTIONS={
     menu(`<p class="tag">${L("Freigeschaltet","Unlocked")}</p><div class="rowb">${cs.map(c=>`<figure class="unf"><img class="unl" src="${c.full}" alt=""><figcaption><b>${c.n}</b>${L("Neuer Kämpfer","New fighter")}</figcaption></figure>`).join("")}${o?`<figure class="unf"><img class="unl" src="${o.full2}" alt=""><figcaption><b>${L(o.alt.on[0],o.alt.on[1])}</b>${L("Neues Outfit für ","New outfit for ")+o.n}</figcaption></figure>`:""}${ns!=null?`<figure class="unf"><div class="stc" style="${arStyle(ns)}">${STG[ns].n}</div><figcaption><b>${STG[ns].n}</b>${L("Neue Bonus-Arena","New bonus arena")}</figcaption></figure>`:""}${na!=null?`<figure class="unf"><div class="stc" style="${arStyle(na)}">${STG[na].n}</div><figcaption><b>${STG[na].n}</b>${L("Arena von ","Arena of ")+owner(na).n}</figcaption></figure>`:""}</div><button class="btn" data-a="home">${L("Weiter","Continue")}</button>`,1)},
   outfit(b){const c=CH[selC],o=+b.dataset.o;if(!o||altOk(c)){SAVE.of[c.id]=o;save()}showDet(selC,o)},
   track(b){SAVE.track=+b.dataset.i;save();musicTrack(SAVE.track);settings()},
+  /* Fortschritt zurücksetzen: erst nachfragen, dann alles Freigespielte und die Rangliste löschen.
+     Name, Sprache, Lautstärke, Grafik, Musiktitel und Stufe bleiben. */
+  reset(){menu(`<h2>${L("Wirklich alles zurücksetzen?","Really reset everything?")}</h2>
+   <p>${L("Alle freigespielten Kämpfer, Outfits und Arenen, der Story-Fortschritt und die komplette Rangliste werden gelöscht. Das lässt sich nicht rückgängig machen.","All unlocked fighters, outfits and arenas, your story progress and the whole leaderboard will be deleted. This cannot be undone.")}</p>
+   <div class="rowb"><button class="btn alt" data-a="resetNo">${L("Nein, behalten","No, keep it")}</button><button class="btn danger" data-a="resetYes">${L("Ja, alles zurücksetzen","Yes, reset everything")}</button></div>`,1)},
+  resetNo(){settings()},
+  resetYes(){Object.assign(SAVE,{done:0,story:null,lb:[],unl:[],alts:[],of:{},bst:[],ars:[],arena:-1,opp:""});save();lives=2;storyT=0;lastUnl={c:[],o:null,s:null,a:null};sfx("ko");
+    paused=false;fighters.length=0;home();menu(`<h2>${L("Fortschritt zurückgesetzt","Progress reset")}</h2><p>${L("Alles beginnt von vorn: 5 Kämpfer und ihre Arenen sind frei, der Rest wartet darauf, freigespielt zu werden.","Everything starts over: 5 fighters and their arenas are unlocked, the rest is waiting to be earned.")}</p><button class="btn" data-a="home">${L("Zum Hauptmenü","To main menu")}</button>`,1)},
   qual(b){SAVE.q=+b.dataset.i;save();setQuality(SAVE.q);settings()},
   resume(){paused=false;const d=performance.now()-pauseAt;for(const k in cards)if(cards[k].t0)cards[k].t0+=d;last=performance.now();menuHide()},
   quit(){paused=false;home()},
