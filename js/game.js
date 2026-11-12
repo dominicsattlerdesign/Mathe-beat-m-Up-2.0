@@ -246,12 +246,12 @@ function result(win){
     const ns=e.d==3?STG.findIndex((x,i)=>x.bonus&&!SAVE.bst.includes(i)):-1;if(ns>=0)SAVE.bst.push(ns);
     lastUnl={c:nc?[nc]:[],o:no?CH[pickC]:null,s:ns>=0?ns:null,a:na};save();const nu=lastUnl.c.length||no||ns>=0||na!=null;
     menu(`<p class="tag">${L("Story geschafft","Story cleared")} · ${DIFFS[e.d][0]}</p><h1 class="logo"><span>${L("Du bist","You are the")}</span>Champion!</h1><p>${L(`${esc(e.n)} hat mit ${CH[pickC].n} alle zehn Gegner besiegt. Kampfzeit ${fmtT(e.t)}, das ist Platz ${rank} der Rangliste.`,`${esc(e.n)} beat all ten opponents with ${CH[pickC].n}. Fight time ${fmtT(e.t)}, that’s rank ${rank} on the leaderboard.`)}</p><div class="rowb">${nu?`<button class="btn gold" data-a="unlock">${L("Was ist das …?","What’s that …?")}</button>`:""}<button class="btn alt" data-a="lb" data-i="${e.d}">${L("Rangliste","Leaderboard")}</button>${nu?"":`<button class="btn" data-a="home">${L("Hauptmenü","Main menu")}</button>`}</div>`,1)}
-  else if(win)menu(`<h2>${L("Gewonnen","You won")} ${sc_}</h2><div class="rowb"><button class="btn" data-a="again">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
+  else if(win)menu(`<h2>${L("Gewonnen","You won")} ${sc_}</h2><div class="rowb"><button class="btn" data-a="arcade">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
   else if(s&&lives>1){lives--;SAVE.story={c:pickC,lvl,t:storyT,lv:lives};save();
     menu(`<h2>${L("Niederlage","Defeat")} ${sc_}</h2><p>${L(`Du hast noch ${lives} Leben. Versuch Kampf ${lvl} gleich nochmal!`,`You have ${lives} life left. Try fight ${lvl} again!`)}</p><p class="tag">${hearts()}</p><div class="rowb"><button class="btn" data-a="again">${L("Weiterkämpfen","Keep fighting")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
   else if(s){lives=0;SAVE.story=null;save();
     menu(`<h1 class="logo"><span>Game</span>Over</h1><p>${L(`Keine Leben mehr. ${CH[pickC].n} ist in Kampf ${lvl} gescheitert, die Story beginnt von vorn.`,`No lives left. ${CH[pickC].n} fell in fight ${lvl}, the story starts over.`)}</p><div class="rowb"><button class="btn" data-a="story">${L("Neue Story","New story")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
-  else menu(`<h2>${L("Niederlage","Defeat")} ${sc_}</h2><p>${P(L(["Das war knapp. Atme durch und hol dir die Revanche!","Auch Champions fallen mal um. Aufstehen, Krone richten.","Dein Gegner hatte Glück. Sagt er jedenfalls."],["That was close. Take a breath and go for the rematch!","Even champions fall over sometimes. Get up, fix your crown.","Your opponent got lucky. At least that’s what they say."]))}</p><div class="rowb"><button class="btn" data-a="again">${L("Revanche","Rematch")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
+  else menu(`<h2>${L("Niederlage","Defeat")} ${sc_}</h2><p>${P(L(["Das war knapp. Atme durch und such dir den nächsten Gegner!","Auch Champions fallen mal um. Aufstehen, Krone richten.","Dein Gegner hatte Glück. Sagt er jedenfalls."],["That was close. Take a breath and pick your next opponent!","Even champions fall over sometimes. Get up, fix your crown.","Your opponent got lucky. At least that’s what they say."]))}</p><div class="rowb"><button class="btn" data-a="arcade">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
 
 /* ----- Menüs ----- */
 function menu(h,solid){const m=$("#menu");m.hidden=false;m.classList.toggle("solid",!!solid);m.innerHTML=h;m.scrollTop=0;$("#snd").hidden=false}
@@ -312,7 +312,7 @@ const ACTIONS={
   name(){startScreen();const n=$("#pname");n&&n.focus()},lb(b){lbScreen(+b.dataset.i)},
   settings(){settings("home")},back(){setBack=="pause"?pauseMenu():home()},
   lang(b){LANG=SAVE.lang=b.dataset.l;save();applyLang();if($("#pname"))startScreen();else settings()},
-  story(){mode="s";lvl=1;selChar()},arcade(){mode="a";selChar()},
+  story(){mode="s";lvl=1;selChar()},arcade(){mode="a";if(pl){endFightUi();musicOn();attract();pl=en=null}selChar()},
   cont(){const s=SAVE.story;mode="s";pickC=s.c;lvl=s.lvl;storyT=s.t||0;lives=s.lv||2;startFight()},
   diff(b){SAVE.diff=+b.dataset.i;save();document.querySelectorAll("#dseg button").forEach((x,i)=>x.classList.toggle("on",i==SAVE.diff))},
   tile(b){showDet(+b.dataset.i)},go(){pickC=selC;if(mode=="s"){SAVE.story=null;storyT=0;lives=2;save();startFight()}else oppScreen()},
