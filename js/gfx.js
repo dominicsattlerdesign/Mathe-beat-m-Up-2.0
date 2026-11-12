@@ -114,6 +114,16 @@ function glow(x,y,c,size=3,life=.35,z=.6){const m=new THREE.Sprite(new THREE.Spr
 /* Lichtkegel von oben, z. B. für Spezial-Attacken */
 function shaft(x,c,l=.8,w=1.4){const m=new THREE.Mesh(geo("shaft",()=>new THREE.CylinderGeometry(.35,1,1,16,1,true)),addMat(c,.4));m.position.set(x,8,0);fxAdd(m,l,(m,p)=>{m.scale.set(w,16,w);m.material.opacity=.4*Math.sin(p*Math.PI)},1)}
 function colorBurst(c1,c2,i=2.2){colA.color.setHex(c1);colB.color.setHex(c2);colA.intensity=colB.intensity=i}
+/* Schockwelle am Treffpunkt: senkrechter Ring zur Kamera hin */
+const RINGG=()=>geo("ring",()=>new THREE.RingGeometry(.78,1,36));
+function hitRing(x,y,c,s=1){const m=new THREE.Mesh(RINGG(),addMat(c,.95));m.position.set(x,y,1);fxAdd(m,.3,(m,p)=>{m.scale.setScalar(s*(.3+eOut(p)*2.4));m.material.opacity=.95*(1-p)},1);
+  const w=new THREE.Mesh(RINGG(),addMat(0xffffff,.9));w.position.set(x,y,1.05);fxAdd(w,.2,(m,p)=>{m.scale.setScalar(s*(.2+eOut(p)*1.6));m.material.opacity=.9*(1-p)},1)}
+/* Speedlines, die vom Treffpunkt wegschiessen */
+function burstLines(x,y,c,n=10,len=2.4){for(let i=0;i<n;i++){const a=i/n*6.283+rnd(.3),m=new THREE.Mesh(gB(1,1,1),addMat(i%2?c:0xffffff,.95)),l=len*rnd(.6,1.25);m.rotation.z=a;
+  fxAdd(m,.24,(m,p)=>{const r=.35+eOut(p)*l;m.position.set(x+Math.cos(a)*r,y+Math.sin(a)*r,1.1);m.scale.set(l*.55*(1-p*.7),.07*(1-p),.02);m.material.opacity=.95*(1-p)},1)}}
+/* Energie strömt von aussen zur Figur (beim Aufladen) */
+function gather(f,c,l=1){let acc=0;fxAdd(new THREE.Group(),l,(m,p,dt)=>{acc+=dt*80;while(acc>1){acc--;const a=rnd(6.283),r=rnd(2.4,4.2),cx=f.root.position.x,cy=f.root.position.y+1.8*f.sc,x0=cx+Math.cos(a)*r,y0=cy+Math.sin(a)*r*.8,z0=rnd(-1,1.6);
+  const s=new THREE.Mesh(gO(.07),addMat(Math.random()<.35?0xffffff:c,1));fxAdd(s,.42,(m,p)=>{m.position.set(lerp(x0,cx,eIn(p)),lerp(y0,cy,eIn(p)),lerp(z0,.3,p));m.scale.setScalar(1.8*(1-p*.6));m.material.opacity=p<.8?1:(1-p)*5},1)}},1)}
 function flashLight(c,i=3,x=0,y=2){fxLight.color.setHex(c);fxLight.intensity=Math.min(1.3,i*.26);fxLight.position.set(x,y,2.5)}
 function stepFx(dt,rdt){
   for(let i=fxs.length-1;i>=0;i--){const f=fxs[i];f.t+=f.real?rdt:dt;const p=Math.min(1,f.t/f.l);f.u&&f.u(f.m,p,dt);if(p>=1){sc.remove(f.m);const k=fxs.indexOf(f);if(k>=0)fxs.splice(k,1)}}
@@ -122,3 +132,10 @@ function stepFx(dt,rdt){
     d.l-=dt;if(d.l<.35)m.scale.multiplyScalar(Math.max(0,1-dt*5));if(d.l<=0||m.position.y<-14){sc.remove(m);debris.splice(i,1)}}
   fxLight.intensity*=Math.pow(.002,dt);colA.intensity*=Math.pow(.02,rdt||dt);colB.intensity*=Math.pow(.02,rdt||dt);
 }
+
+/* Leucht-Halos für die grossen Effekte */
+{const _b=bolt,_p=pillar,_s=slashArc,_r=ring;
+ bolt=function(x,c,top=15,y0=0){_b(x,c,top,y0);glow(x,y0+.4,c,5,.35);glow(x,y0+.4,0xffffff,2.2,.2)};
+ pillar=function(x,c,r=1.3,h=14,l=.7){_p(x,c,r,h,l);glow(x,.6,c,r*5,l*.8);glow(x,h*.35,c,r*4,l*.6)};
+ slashArc=function(x,y,c,rot,s=1.5){_s(x,y,c,rot,s);_s(x,y,0xffffff,rot+.18,s*.78);glow(x,y,c,s*1.6,.18)};
+ ring=function(x,y,z,c,r=5,l=.5){_r(x,y,z,c,r,l);glow(x,y+.3,c,r*.8,l*.7,z)}}

@@ -36,6 +36,23 @@ body.cine #hud,body.cine #panel{opacity:0;pointer-events:none}
 #speed.on{opacity:.85;animation:spd .09s steps(2) infinite}
 @keyframes spd{50%{transform:rotate(2.3deg) scale(1.04)}}
 #fl{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:4}
+/* Kino-Modus: farbige Vignette, kräftigere Farben beim Finisher */
+#vig{position:fixed;inset:0;pointer-events:none;z-index:2;opacity:0;transition:opacity .35s;background:radial-gradient(ellipse at 50% 55%,transparent 38%,rgba(0,0,0,.75) 100%);box-shadow:inset 0 0 calc(var(--vh)*22) calc(var(--vh)*4) var(--cc,#ff3b2f)}
+body.cine #vig{opacity:1}
+#c.drama{filter:saturate(1.45) contrast(1.15)}
+/* Einblendung im Anime-Stil */
+#cut{position:fixed;left:-5%;right:-5%;top:50%;height:clamp(110px,calc(var(--vh)*30),250px);transform:translateY(-50%) skewY(-5deg);pointer-events:none;z-index:4;overflow:hidden;visibility:hidden}
+#cut .band{position:absolute;inset:0;display:flex;align-items:center;gap:3vw;padding-inline:10vw;border-block:5px solid #fff;
+  background:repeating-linear-gradient(90deg,transparent 0 60px,rgba(255,255,255,.12) 60px 64px),linear-gradient(90deg,#0b0912,var(--cc,#ff3b2f) 28%,var(--cc,#ff3b2f) 72%,#0b0912)}
+#cut img{height:140%;aspect-ratio:4/5;object-fit:cover;transform:skewY(5deg);filter:drop-shadow(8px 8px 0 #0b0912);border:4px solid #fff}
+#cut .txt{display:flex;flex-direction:column;transform:skewY(5deg);min-width:0}
+#cut b{font:400 clamp(40px,calc(var(--vw)*6.5),92px)/1 var(--disp);letter-spacing:.04em;color:#fff;-webkit-text-stroke:3px #0b0912;text-shadow:5px 6px 0 #0b0912;white-space:nowrap}
+#cut small{font:700 clamp(12px,calc(var(--vw)*1.4),18px) var(--ui);letter-spacing:.3em;color:#fff;text-shadow:2px 2px 0 #0b0912;text-transform:uppercase}
+#cut.go{visibility:visible}#cut.go .band{animation:cut 1.3s cubic-bezier(.2,.9,.2,1) both}
+#cut.r .band{flex-direction:row-reverse;text-align:right}#cut.go.r .band{animation-name:cutr}
+@keyframes cut{0%{transform:translateX(-110%)}16%{transform:translateX(0)}78%{transform:translateX(3%);opacity:1}100%{transform:translateX(120%);opacity:0}}
+@keyframes cutr{0%{transform:translateX(110%)}16%{transform:translateX(0)}78%{transform:translateX(-3%);opacity:1}100%{transform:translateX(-120%);opacity:0}}
+@media (prefers-reduced-motion:reduce){#cut.go .band{animation-duration:2s}}
 #fl.go{animation:fl .5s}
 @keyframes fl{0%{opacity:.9}100%{opacity:0}}
 #bn{position:fixed;left:0;right:0;top:24%;text-align:center;font:400 clamp(44px,calc(var(--vw)*9),110px)/1 var(--disp);letter-spacing:.04em;color:var(--gold);
@@ -240,7 +257,7 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 @media (prefers-reduced-motion:reduce){.blink,#fin.rdy,.bar.mt.full{animation:none}}
 </style></head><body>
 <canvas id="c"></canvas>
-<div id="speed"></div><div id="lb1" class="lb"></div><div id="lb2" class="lb"></div><div id="fl"></div><div id="bn"></div><div id="cdn" aria-live="polite"></div>
+<div id="speed"></div><div id="lb1" class="lb"></div><div id="lb2" class="lb"></div><div id="vig"></div><div id="fl"></div><div id="cut"><div class="band"><img alt=""><div class="txt"><small></small><b></b></div></div></div><div id="bn"></div><div id="cdn" aria-live="polite"></div>
 <div id="hud" hidden>
   <div class="hb l"><img id="pi" alt=""><div class="hbx"><div class="nr"><div class="nm" id="pn"></div><div class="pips" id="pw"><i></i><i></i></div></div><div class="bar"><i class="trail" id="pht"></i><i id="ph"></i></div><div class="bar mt" id="pmb"><i id="pm"></i></div><div class="lbl" id="plbl">SPEZIAL</div></div></div>
   <div id="mid"><button id="pz" type="button" aria-label="Pause">II</button><div id="lv"></div></div>

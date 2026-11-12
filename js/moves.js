@@ -193,16 +193,22 @@ const FIN={
     pop("ERROR!","#ff3b2f",bx,5.6);await rt(1.3);sc.remove(g);sfx("stone");for(let i=0;i<10;i++){const m=M(gD(rnd(.3,.6)),0x4a4f60,[bx+rnd(-1.2,1.2),rnd(.5,2.5),rnd(-.8,.8)],sc,1,0,"stone");debris.push({m,v:new THREE.Vector3(rnd(-4,4),rnd(2,7),rnd(-2,2)),s:new THREE.Vector3(rnd(6),rnd(6),rnd(6)),l:2,r:.3})}
     b.dizzy=true;dizzyStars(b)},
 };
-/* Rahmen um die Spezial-Attacke: wie beim Finisher mit Kino-Balken, Nahaufnahme und Lichtshow,
-   der Angriff selbst läuft dann in Zeitlupe ab */
-async function sigMove(a,b,dm){const c=a.ch.c,d=-a.side,ax=fx_(a).x;cine(true);banner(a.ch.sig+"!",(a.isP?"":a.ch.n+" · ")+L("Spezial-Attacke","Special attack"));sfx("charge");
-  CAM.mode="cine";CAM.k=7;CAM.tp.set(ax+d*2.2,2.3*a.sc,5.4);CAM.tl.set(ax+d*.2,2.2*a.sc,0);
-  pose(a,"charge",12);aura(a,c,.95);ring(ax,.06,0,c,3,.7);glow(ax,.4,c,3,.9,-.6);colorBurst(c,0xffffff,2.4);
-  await rt(.95,p=>{flashLight(c,1+p*2,ax,2);CAM.shake=.02+p*.06});
-  CAM.mode="fight";CAM.k=4.5;speed(true);impactFrame(70);sfx("slowmo");TSb=.45;rt(.45).then(()=>speed(false));
+/* Kino-Sequenz um die Spezial-Attacke:
+   1. Einblendung mit Porträt, Szene dunkel, Vignette in der Farbe der Figur
+   2. Kamera fährt in Untersicht um die Figur, Energie strömt zu ihr
+   3. Druckwelle beim Auslösen, dann läuft der Angriff in Zeitlupe */
+async function charge(a,c,d,ax,dur,big){gather(a,c,dur);aura(a,c,dur);ring(ax,.06,0,c,3,dur*.7);const R=(big?5.6:6)*a.sc,y0=fx_(a).y;
+  await rt(dur,p=>{const an=d*(-1+p*1.45);CAM.tp.set(ax+Math.sin(an)*R,1.2+p*1.5+y0,Math.cos(an)*R);CAM.tl.set(ax,(1.9+y0*.5)*a.sc,0);flashLight(c,1+p*3,ax,2);CAM.shake=.02+p*(big?.12:.07)})}
+function release(a,c,ax){const y=1.9*a.sc+fx_(a).y;impactFrame(80);edgeFlash(c);hitRing(ax,y,c,2.6);burstLines(ax,y,c,18,4.5);ring(ax,.06,0,c,7,.6);ring(ax,.06,0,0xffffff,4.5,.4);sparks(ax,y,.4,30,[c,0xffffff,0xffe14d],10);sfx("boom");CAM.shake=.5}
+async function sigMove(a,b,dm){const c=a.ch.c,d=-a.side,ax=fx_(a).x;cine(true);cutIn(a,a.ch.sig+"!",(a.isP?"":a.ch.n+" · ")+L("Spezial-Attacke","Special attack"));sfx("charge");
+  CAM.mode="cine";CAM.k=8;pose(a,"charge",12);colorBurst(c,0xffffff,2.4);
+  await charge(a,c,d,ax,1.15,0);
+  release(a,c,ax);CAM.mode="fight";CAM.k=4.5;speed(true);sfx("slowmo");TSb=.4;rt(.5).then(()=>speed(false));
   await SIG[a.ch.id](a,b,dm,d,c);
   TSb=1;speed(false);cine(false);CAM.k=5;clearTemp();a.piv.rotation.x=0}
-/* Rahmen um den Finisher: Kino-Balken, Nahaufnahme, dann die Sequenz. Endet immer mit K.O. */
-async function finMove(a,b){const c=a.ch.c,d=-a.side,ax=fx_(a).x;b.dizzy=false;cine(true);banner(a.ch.fin+"!","必殺 · FINISHER");sfx("charge");CAM.mode="cine";CAM.k=6;CAM.tp.set(ax+d*2.4,2.3*a.sc,5.6);CAM.tl.set(ax+d*.2,2.2*a.sc,0);
-  pose(a,"charge",10);pose(b,"dizzy",10);aura(a,c,1.1);ring(ax,.06,0,c,3,.8);await rt(1.15,p=>{flashLight(c,2+p*4,ax,2);CAM.shake=.03+p*.07});
-  CAM.mode="fight";CAM.k=4;await FIN[a.ch.id](a,b,d,c);if(b.hp>0)kill(a,b);cine(false);CAM.k=5;a.turn.rotation.y=FACE}
+/* Kino-Sequenz um den Finisher: wie oben, nur länger und grösser. Endet immer mit K.O. und einem Nachhall in Zeitlupe. */
+async function finMove(a,b){const c=a.ch.c,d=-a.side,ax=fx_(a).x;b.dizzy=false;cine(true);cv.classList.add("drama");cutIn(a,a.ch.fin+"!","必殺 · FINISHER");sfx("charge");CAM.mode="cine";CAM.k=7;
+  pose(a,"charge",10);pose(b,"dizzy",10);await charge(a,c,d,ax,1.5,1);
+  release(a,c,ax);flash("#fff");CAM.mode="fight";CAM.k=4;await FIN[a.ch.id](a,b,d,c);if(b.hp>0)kill(a,b);
+  const bx=fx_(b).x;hitRing(bx,2,c,3.4);burstLines(bx,2,c,22,5.5);pillar(bx,c,1.6,16,.8);TSb=.25;await rt(.9);TSb=1;
+  cv.classList.remove("drama");cine(false);CAM.k=5;a.turn.rotation.y=FACE}

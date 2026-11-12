@@ -34,7 +34,15 @@ const msg=t=>$("#msg").textContent=t;
 function pop(t,col,x,y=3.4,cls=""){const[px,py]=scr(x,y),d=document.createElement("div");d.className="pop "+cls;d.textContent=t;d.style.left=px+"px";d.style.top=py+"px";if(col)d.style.color=col;document.body.appendChild(d);setTimeout(()=>d.remove(),950)}
 function banner(t,sub){const b=$("#bn");b.innerHTML=(sub?`<small>${sub}</small>`:"")+t;b.classList.remove("go");void b.offsetWidth;b.classList.add("go")}
 function flash(c){const f=$("#fl");f.style.background=typeof c=="number"?hex(c):c;f.classList.remove("go");void f.offsetWidth;f.classList.add("go")}
-const cine=on=>document.body.classList.toggle("cine",on),speed=on=>$("#speed").classList.toggle("on",on);
+/* Kino-Modus: Balken, Vignette, Szene abdunkeln (Lichter werden danach wiederhergestellt) */
+const LT={h:null};function cine(on){const was=document.body.classList.contains("cine");document.body.classList.toggle("cine",on);
+  if(on&&!was){LT.h=hemi.intensity;LT.s=sun.intensity;hemi.intensity*=.42;sun.intensity*=.5}else if(!on&&was&&LT.h!=null){hemi.intensity=LT.h;sun.intensity=LT.s;LT.h=null}}
+const speed=on=>$("#speed").classList.toggle("on",on);
+/* Anime-Einblendung: Porträt und Attackenname rauschen auf einem schrägen Band durchs Bild */
+function cutIn(f,title,sub){const el=$("#cut");document.documentElement.style.setProperty("--cc",hex(f.ch.c));el.querySelector("img").src=f.ch.o?(f.ch.bust2||f.ch.bust):f.ch.bust;
+  el.querySelector("b").textContent=title;el.querySelector("small").textContent=sub;el.className="";void el.offsetWidth;el.className="go"+(f.isP?"":" r");sfx("whoosh")}
+/* farbiger Randblitz bei harten Treffern */
+function edgeFlash(c){const f=$("#fl");f.style.background=`radial-gradient(ellipse at center,transparent 35%,${typeof c=="number"?hex(c):c} 120%)`;f.classList.remove("go");void f.offsetWidth;f.classList.add("go")}
 function impactFrame(ms=90){cv.classList.add("impact");setTimeout(()=>cv.classList.remove("impact"),ms)}
 
 /* ----- Kämpfer im Kampf ----- */
@@ -106,12 +114,13 @@ async function countdown(){const id=fid,el=$("#cdn");
   for(const t of["3","2","1",L("Rechnen!","Solve!")]){if(id!=fid||!pl)return false;const[px,py]=scr((fx_(pl).x+fx_(en).x)/2,2.7);el.style.left=px+"px";el.style.top=py+"px";el.textContent=t;
     el.className="";void el.offsetWidth;el.className=t.length>1?"go word":"go";sfx(t.length>1?"gong":"pick");await rt(t.length>1?.85:.72)}
   el.className="word out";return id==fid}
-function koFx(){banner("K.O.!",P(QUIPS.ko));sfx("ko");flash("#fff");TSb=.22;rt(1.2).then(()=>TSb=1)}
+function koFx(){banner("K.O.!",P(QUIPS.ko));impactFrame(110);sfx("ko");flash("#fff");TSb=.22;rt(1.2).then(()=>TSb=1)}
 function impact(a,b,dmg,o={}){
   dmg=Math.max(1,Math.round(dmg));b.hp=Math.max(0,b.hp-dmg);const d=-a.side,x=fx_(b).x,lv=o.lv||0,y=o.y!=null?o.y:2.1*b.sc+fx_(b).y,cx=x-d*.45;
-  star(cx,y,a.ch.c,o.big?2.6:1.1+lv*.45);glow(cx,y,a.ch.c,o.big?9:2.4+lv*1.4,.28);colorBurst(a.ch.c,a.kc||0xffffff,o.big?3:1.3+lv*.7);sparks(cx,y,.6,o.big?30:8+lv*6,[0xffffff,0xffe14d,a.ch.c],6+lv*2);if(o.arc)slashArc(cx,y,a.ch.c,rnd(6),1.4+lv*.4);
+  star(cx,y,a.ch.c,o.big?3.2:1.3+lv*.55);glow(cx,y,a.ch.c,o.big?12:3.2+lv*1.8,.32);colorBurst(a.ch.c,a.kc||0xffffff,o.big?3.4:1.5+lv*.8);sparks(cx,y,.6,o.big?48:12+lv*8,[0xffffff,0xffe14d,a.ch.c],7+lv*2.5);
+  hitRing(cx,y,a.ch.c,o.big?2.4:.8+lv*.45);if(lv||o.big)burstLines(cx,y,a.ch.c,o.big?18:8+lv*3,o.big?4.2:1.8+lv*.7);if(lv>=2||o.big){edgeFlash(a.ch.c);dust(x,0,6+lv*3)}if(o.arc)slashArc(cx,y,a.ch.c,rnd(6),1.4+lv*.4);
   if(!o.quiet)pop(P(WORDS[o.big?2:lv]),hex(a.ch.c),x-d*.3,y+1.7);pop("−"+dmg,"#fff",x+d*.5,y+.8,"dm");
-  CAM.shake=Math.max(CAM.shake,.1+lv*.16+(o.big?.7:0));flashLight(a.ch.c,2+lv,x,2);sfx(o.s||"punch");hs=o.stop!=null?o.stop:.045+lv*.035;
+  CAM.shake=Math.max(CAM.shake,.13+lv*.2+(o.big?.95:0));flashLight(a.ch.c,2+lv,x,2);sfx(o.s||"punch");hs=o.stop!=null?o.stop:.045+lv*.035;
   breakNear(x,o.r||1.25,d,1+lv*.3,o.max||2);if(lv||o.big)crack(x,o.big?5:1+lv,o.big?2:lv);
   if(!o.nomt){const ka=a.isP?1:.75,kb=b.isP?1:.75;a.mt=Math.min(100,a.mt+dmg*1.05*a.mg*ka);b.mt=Math.min(100,b.mt+dmg*.75*kb)}
   hud();if(b.hp<=0&&!over&&!o.noKO){over=true;koFx()}
