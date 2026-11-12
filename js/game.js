@@ -200,8 +200,8 @@ const MOVES={
 async function runMove(k,a,b,dm){const ML=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,ML.length-1)}while(m[k]===i);m[k]=i;
   pop(ML[i].n+"!",null,fx_(a).x,4.6*a.sc,"mv");await ML[i].f(a,b,dm)}
 const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a,b,dm),wurf:(a,b,dm)=>runMove("wurf",a,b,dm)};
-/* Gegnerschaden im Verhältnis zum Spieler: 88 %, im Freien Kampf auf Mittel und Schwer 100 % */
-const enF=()=>mode=="a"&&SAVE.diff>=2?1:.88;
+/* Gegnerschaden im Verhältnis zum Spieler: 88 %, im Freien Kampf auf Mittel und Schwer 120 % */
+const enF=()=>mode=="a"&&SAVE.diff>=2?1.2:.88;
 async function attack(a,b,k,mu){if(over)return;
   if(k=="fin")await finMove(a,b);
   else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*a.dm*(a.isP?mu:enF()))}
