@@ -39,9 +39,9 @@ const PROP={
 };
 /* Bonus-Stages: Objekte für Kinderzimmer, Spielhalle und Neon-Gasse */
 const NBM={};function numMat(n,c){const k=n+"_"+c;return NBM[k]||(NBM[k]=new THREE.MeshToonMaterial({gradientMap:GRAD,map:ctex(128,128,g=>{g.fillStyle=hex(c);g.fillRect(0,0,128,128);g.strokeStyle="rgba(255,255,255,.55)";g.lineWidth=10;g.strokeRect(8,8,112,112);
-  g.font='900 88px Bangers,Impact,"Arial Black",sans-serif';g.textAlign="center";g.textBaseline="middle";g.lineWidth=8;g.strokeStyle="#15131a";g.strokeText(n,64,70);g.fillStyle="#fff";g.fillText(n,64,70)})}))}
+  g.font='900 88px Bangers,"Bangers Local",Impact,"Arial Black",sans-serif';g.textAlign="center";g.textBaseline="middle";g.lineWidth=8;g.strokeStyle="#15131a";g.strokeText(n,64,70);g.fillStyle="#fff";g.fillText(n,64,70)})}))}
 const KIDC=[0xff4f6d,0x2fa8ff,0xffc21a,0x3fd07a,0xa66bff,0xff8a2a];
-function signTex(t,c,font=80){return ctex(512,160,g=>{g.font=`900 ${font}px Bangers,Impact,"Arial Black",sans-serif`;g.textAlign="center";g.textBaseline="middle";g.shadowColor=c;g.shadowBlur=24;g.lineWidth=6;g.strokeStyle=c;g.strokeText(t,256,84);g.shadowBlur=10;g.fillStyle="#ffffff";g.fillText(t,256,84)})}
+function signTex(t,c,font=80){return ctex(512,160,g=>{g.font=`900 ${font}px Bangers,"Bangers Local",Impact,"Arial Black",sans-serif`;g.textAlign="center";g.textBaseline="middle";g.shadowColor=c;g.shadowBlur=24;g.lineWidth=6;g.strokeStyle=c;g.strokeText(t,256,84);g.shadowBlur=10;g.fillStyle="#ffffff";g.fillText(t,256,84)})}
 /* Neon-Schild: leuchtende Schrift mit Halo, bleibt dauerhaft stehen */
 function neon(t,c,x,y,z,w=4,ry=0,font){const m=new THREE.Mesh(new THREE.PlaneGeometry(w,w*.3125),new THREE.MeshBasicMaterial({map:signTex(t,hex(c),font),transparent:true,depthWrite:false,fog:false}));m.position.set(x,y,z);m.rotation.y=ry;stage.add(m);
   const h=new THREE.Sprite(new THREE.SpriteMaterial({map:GLOW,color:c,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));h.scale.set(w*1.5,w*.8,1);h.position.set(x,y,z-.05);stage.add(h);NEONS.push({m,h,ph:rnd(6)});return m}
@@ -168,7 +168,7 @@ const STG=[
  /* ---------- Bonus-Stages (Story auf "Schwer") ---------- */
  {n:"Kinderzimmer",en:"Playroom",bonus:1,bgk:"wood",cols:[0xff5ab0,0x2fa8ff],fog:0xcfe4ff,fn:30,ff:95,hemi:[0xffffff,0x8a7aa0,.74],sun:[0xfff2d8,.85],rim:0xffd0f0,floor:["#55b8ff","#2a6aa8","puzzle"],base:0xe8d8b8,trim:0xff6f8a,amb:[0xfff2b0,60,"float"],
   build(){const star5=(g,x,y,r)=>{g.beginPath();for(let i=0;i<10;i++){const a=i*Math.PI/5-Math.PI/2,q=i%2?r*.45:r;g.lineTo(x+Math.cos(a)*q,y+Math.sin(a)*q)}g.fill()};
-   const poster=(g,x,y,w,h,c,t)=>{g.fillStyle="#fff";g.fillRect(x-6,y-6,w+12,h+12);g.fillStyle=c;g.fillRect(x,y,w,h);g.font='900 46px Bangers,Impact,sans-serif';g.textAlign="center";g.textBaseline="middle";g.lineWidth=6;g.strokeStyle="#15131a";g.strokeText(t,x+w/2,y+h/2);g.fillStyle="#fff";g.fillText(t,x+w/2,y+h/2)};
+   const poster=(g,x,y,w,h,c,t)=>{g.fillStyle="#fff";g.fillRect(x-6,y-6,w+12,h+12);g.fillStyle=c;g.fillRect(x,y,w,h);g.font='900 46px Bangers,"Bangers Local",Impact,sans-serif';g.textAlign="center";g.textBaseline="middle";g.lineWidth=6;g.strokeStyle="#15131a";g.strokeText(t,x+w/2,y+h/2);g.fillStyle="#fff";g.fillText(t,x+w/2,y+h/2)};
    layer(ctex(1024,512,(g,w,h)=>{g.fillStyle="#bfe0ff";g.fillRect(0,0,w,h);for(let y=24;y<h-40;y+=64)for(let x=(y/64%2)*32+16;x<w;x+=64){g.fillStyle=(x+y)%128?"rgba(255,255,255,.6)":"rgba(255,212,71,.7)";star5(g,x,y,9)}
      const wx=372,wy=70;g.fillStyle="#f4f0e6";g.fillRect(wx-12,wy-12,304,214);const sk=g.createLinearGradient(0,wy,0,wy+190);sk.addColorStop(0,"#4aa6ff");sk.addColorStop(1,"#c8ecff");g.fillStyle=sk;g.fillRect(wx,wy,280,190);
      g.fillStyle="#fff";for(const[cx,cy]of[[440,120],[560,170]])for(let k=0;k<4;k++){g.beginPath();g.ellipse(cx+k*20,cy+Math.sin(k*2)*6,28,14,0,0,7);g.fill()}g.fillStyle="#ffe14d";g.beginPath();g.arc(600,105,22,0,7);g.fill();
@@ -186,7 +186,7 @@ const STG=[
   build(){layer(ctex(1024,512,(g,w,h)=>{g.fillStyle="#120a22";g.fillRect(0,0,w,h);for(let x=0;x<w;x+=32){g.fillStyle="rgba(255,255,255,.025)";g.fillRect(x,0,14,h)}
      for(const[c,y]of[["#ff3bd4",110],["#25d4ff",130]]){g.shadowColor=c;g.shadowBlur=22;g.fillStyle=c;g.fillRect(0,y,w,6)}g.shadowBlur=0;
      for(let i=0;i<6;i++){const x=60+i*165,c=["#ffe14d","#25d4ff","#ff3bd4"][i%3];g.fillStyle=["#2a1a4a","#3a0a2a"][i%2];g.fillRect(x,190,110,150);g.strokeStyle=c;g.lineWidth=4;g.strokeRect(x,190,110,150);
-       g.fillStyle=c;g.font='900 28px Bangers,Impact,sans-serif';g.textAlign="center";g.fillText(["HI-SCORE","1UP","K.O.!","MATH","BRAWL","GO!"][i],x+55,275)}}),84,42,0,13,-14,{opaque:1});
+       g.fillStyle=c;g.font='900 28px Bangers,"Bangers Local",Impact,sans-serif';g.textAlign="center";g.fillText(["HI-SCORE","1UP","K.O.!","MATH","BRAWL","GO!"][i],x+55,275)}}),84,42,0,13,-14,{opaque:1});
    BG(gB(70,.2,30),0x1a0f2e,0,-.62,-8);
    for(let i=-6;i<=6;i++){const x=i*2.3,c=KIDC[(i+12)%6];BG(gB(1.7,3.2,1.2),0x1c1830,x,1,-6.6);M(gB(1.3,.95,.05),c,[x,1.85,-5.98],stage,0,c);M(gB(1.72,.45,1.22),c,[x,2.82,-6.6],stage,1,c);M(gB(1.5,.2,.5),0x2a2440,[x,1.05,-5.85],stage,0)}
    neon("ARCADE",0xff3bd4,0,4.5,-5.6,5.2);neon("HIGHSCORE",0x25d4ff,-6.6,4.3,-5.8,3.8);neon("1UP",0xffe14d,6.6,4.4,-5.8,2.6);

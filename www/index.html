@@ -7,12 +7,16 @@
 <title>Mathbrawl</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bangers&family=Chakra+Petch:wght@500;700&display=swap">
 <style>
+/* Schriften liegen auch lokal bei (für die App ohne Internet). Online kommen sie zusätzlich von Google Fonts. */
+@font-face{font-family:"Bangers Local";src:url(fonts/bangers.woff2) format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Chakra Petch Local";src:url(fonts/chakra-petch-500.woff2) format("woff2");font-weight:500;font-display:swap}
+@font-face{font-family:"Chakra Petch Local";src:url(fonts/chakra-petch-700.woff2) format("woff2");font-weight:700;font-display:swap}
 /* Immer Querformat: hält man das Tablet hochkant, dreht sich das Spielfeld um 90 Grad.
    Layout: Vollbild-3D-Arena; der Kampf füllt den ganzen Bildschirm; unten eine flache Leiste mit den Attacken und direkt darunter der Zahlenreihe */
 :root{
   --bg:#0b0a14; --panel:#191530; --panel2:#262046; --ink:#f4f0ff; --dim:#a79fc7; --line:#05040a;
   --hot:#ff3b2f; --gold:#ffc21a; --cyan:#25d4ff; --violet:#9a6bff; --hp:#3fe06b;
-  --disp:"Bangers",Impact,"Arial Black",sans-serif; --ui:"Chakra Petch","Trebuchet MS",system-ui,sans-serif;
+  --disp:"Bangers","Bangers Local",Impact,"Arial Black",sans-serif; --ui:"Chakra Petch","Chakra Petch Local","Trebuchet MS",system-ui,sans-serif;
   --gl:max(16px,env(safe-area-inset-left,0px)); --gr:max(16px,env(safe-area-inset-right,0px));
   --vw:1vw; --vh:1vh; --cl:0px; --cr:0px; --uis:1;
   color-scheme:dark;
@@ -273,7 +277,7 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 </div>
 <div id="menu"></div>
 <button id="snd" type="button" aria-label="Ton an oder aus">TON</button>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="vendor/three.min.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/math.js"></script>
 <script src="js/gfx.js"></script>

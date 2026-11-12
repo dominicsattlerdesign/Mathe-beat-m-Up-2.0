@@ -1,0 +1,9 @@
+# Node / Capacitor
+node_modules/
+# Android-Build-Ergebnisse und lokale Pfade (stehen auch in android/.gitignore)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+*.apk
+*.aab

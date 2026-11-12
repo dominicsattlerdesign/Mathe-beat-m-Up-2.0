@@ -10,7 +10,7 @@ const kill=(a,b,o={})=>impact(a,b,b.hp+1,Object.assign({big:1,lv:2,noReact:1,nom
 function tint(f,c){const m=mat(c);f.model.traverse(o=>{if(o.isMesh&&o.material.isMeshToonMaterial){if(!o.userData.om)o.userData.om=o.material;o.material=m}})}
 function untint(f){f.model.traverse(o=>{if(o.userData.om){o.material=o.userData.om;o.userData.om=null}})}
 function squash(f,sx,sy){const s=f.rs||1;f.root.scale.set(Math.sign(f.root.scale.x)*s*sx,s*sy,s*sx)}
-function txt(t,c="#fff",h=1){const tex=ctex(512,256,g=>{let px=190;g.font=`900 ${px}px Bangers,Impact,"Arial Black",sans-serif`;while(g.measureText(t).width>470&&px>40){px-=10;g.font=`900 ${px}px Bangers,Impact,"Arial Black",sans-serif`}
+function txt(t,c="#fff",h=1){const tex=ctex(512,256,g=>{let px=190;g.font=`900 ${px}px Bangers,"Bangers Local",Impact,"Arial Black",sans-serif`;while(g.measureText(t).width>470&&px>40){px-=10;g.font=`900 ${px}px Bangers,"Bangers Local",Impact,"Arial Black",sans-serif`}
   g.textAlign="center";g.textBaseline="middle";g.lineJoin="round";g.lineWidth=px*.14;g.strokeStyle="#0b0912";g.strokeText(t,256,136);g.fillStyle=c;g.fillText(t,256,136)});
   return new THREE.Mesh(new THREE.PlaneGeometry(h*2,h),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,fog:false}))}
 /* Sternchen, die um den Kopf kreisen, solange f.dizzy gesetzt ist */

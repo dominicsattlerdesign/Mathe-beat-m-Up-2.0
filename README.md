@@ -15,13 +15,40 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 - **Einstellungen:** Lautstärke für Musik und Soundeffekte, Grafik-Effekte (Hoch, Mittel, Niedrig für ältere Geräte), Wahl zwischen drei Arcade-Musiktiteln, auch im Pausenmenü.
 - Soundeffekte und Menümusik werden live im Browser erzeugt, es gibt keine Audiodateien.
 
-## Spielen
+## Spielen im Browser
 
-`index.html` über einen beliebigen Webserver öffnen, zum Beispiel:
+Das Spiel liegt im Ordner `www`. Über einen beliebigen Webserver öffnen, zum Beispiel:
 
 ```
-npx serve .
+npx serve www
 ```
+
+Alles Nötige liegt lokal bei (three.js in `www/vendor`, Schriften in `www/fonts`), das Spiel läuft also auch ohne Internet.
+
+## Android-App (Tablet)
+
+Die App wird mit [Capacitor](https://capacitorjs.com) gebaut: Name „Math Brawl“, ID `de.mathbrawl.app`, immer Querformat, Vollbild ohne Status- und Navigationsleiste, Bildschirm bleibt während des Spiels an.
+
+Voraussetzungen: Node.js 20 oder neuer, Android Studio (bringt Android SDK und Java mit).
+
+```
+npm install
+npm run sync          # kopiert www in das Android-Projekt
+npm run open          # öffnet das Projekt in Android Studio
+```
+
+Debug-APK direkt per Kommandozeile bauen:
+
+```
+npm run apk           # Windows
+npm run apk:mac       # macOS / Linux
+```
+
+Die APK liegt danach unter `android/app/build/outputs/apk/debug/app-debug.apk`. Auf das Tablet kopieren und installieren (dafür „Installation aus unbekannten Quellen“ erlauben) oder mit angeschlossenem Tablet `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`.
+
+Nach jeder Änderung an den Spieldateien in `www` vor dem Bauen `npm run sync` ausführen (macht `npm run apk` automatisch).
+
+Das App-Icon liegt in `android/app/src/main/res/mipmap-*`, die Vorlage in 1024 px in `resources/icon-1024.png`.
 
 Spielstand, Name und Rangliste liegen im `localStorage` des Browsers.
 
@@ -29,13 +56,19 @@ Spielstand, Name und Rangliste liegen im `localStorage` des Browsers.
 
 | Datei | Inhalt |
 | --- | --- |
-| `index.html` | Oberfläche und Styles |
-| `js/audio.js` | Soundeffekte und Menümusik (WebAudio) |
-| `js/math.js` | Aufgaben-Generator je Attacke und Stufe |
-| `js/gfx.js` | Renderer, Schatten, Materialien, Kamera, Effekte |
-| `js/fighters.js` | Körper, Gesichter, Waffen, Posen und die 15 Kämpfer |
-| `js/stages.js` | Arenen und zerstörbare Objekte |
-| `js/moves.js` | Spezial-Attacken und Finisher je Figur |
-| `js/game.js` | Menüs, Steuerung, Kampfregeln, Rangliste |
+| `www/index.html` | Oberfläche und Styles |
+| `www/js/audio.js` | Soundeffekte und Menümusik (WebAudio) |
+| `www/js/math.js` | Aufgaben-Generator je Attacke und Stufe |
+| `www/js/gfx.js` | Renderer, Schatten, Materialien, Kamera, Effekte |
+| `www/js/fighters.js` | Körper, Gesichter, Waffen, Posen und die 15 Kämpfer |
+| `www/js/stages.js` | Arenen und zerstörbare Objekte |
+| `www/js/moves.js` | Spezial-Attacken und Finisher je Figur |
+| `www/js/game.js` | Menüs, Steuerung, Kampfregeln, Rangliste |
 
-three.js (r128) wird von cdnjs geladen.
+three.js (r128) liegt in `www/vendor`, die Schriften Bangers und Chakra Petch (SIL Open Font License) in `www/fonts`.
+
+| Ordner | Inhalt |
+| --- | --- |
+| `android/` | Android-Projekt (Capacitor) |
+| `resources/` | App-Icon in 1024 px |
+| `capacitor.config.json` | App-Name, ID, Webordner |
