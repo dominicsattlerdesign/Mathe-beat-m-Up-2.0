@@ -68,7 +68,10 @@ const VO={x:0,y:0,fw:1,fh:1};
 /* Spielfeldgröße GW×GH ist immer quer; im Hochformat wird die ganze Seite gedreht */
 let GW=innerWidth,GH=innerHeight;
 function applyOff(){const w=GW,h=GH;if(VO.x||VO.y)cam.setViewOffset(w,h,Math.round(VO.x),Math.round(VO.y),w,h);else cam.clearViewOffset();cam.updateProjectionMatrix()}
+let UIS=1;
 function rs(){const iw=innerWidth,ih=innerHeight,rot=ih>iw,b=document.body.style,r=document.documentElement.style;GW=rot?ih:iw;GH=rot?iw:ih;
+  /* Oberfläche ist für ca. 640 px Höhe und 1000 px Breite gebaut; darunter wird sie verkleinert */
+  UIS=clamp(Math.min(GH/640,GW/1000),.45,1);r.setProperty("--uis",UIS);
   b.width=rot?GW+"px":"";b.height=rot?GH+"px":"";b.transform=rot?`translateX(${iw}px) rotate(90deg)`:"";r.setProperty("--vw",GW/100+"px");r.setProperty("--vh",GH/100+"px");
   const w=GW,h=GH;ren.setPixelRatio(Math.min(2,devicePixelRatio||1));ren.setSize(w,h,false);cam.aspect=w/h;applyOff()}
 addEventListener("resize",()=>{rs();if(typeof layout=="function")layout()});

@@ -14,7 +14,7 @@
   --hot:#ff3b2f; --gold:#ffc21a; --cyan:#25d4ff; --violet:#9a6bff; --hp:#3fe06b;
   --disp:"Bangers",Impact,"Arial Black",sans-serif; --ui:"Chakra Petch","Trebuchet MS",system-ui,sans-serif;
   --gl:max(16px,env(safe-area-inset-left,0px)); --gr:max(16px,env(safe-area-inset-right,0px));
-  --vw:1vw; --vh:1vh; --cl:0px; --cr:0px;
+  --vw:1vw; --vh:1vh; --cl:0px; --cr:0px; --uis:1;
   color-scheme:dark;
 }
 *{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
@@ -135,6 +135,12 @@ body.lock .card,body.lock #fin{opacity:.45}
 .k.ok{background:var(--hp);color:var(--line);font:400 24px var(--disp);letter-spacing:.04em}
 .k.del{background:#3b2030}
 
+/* ---------- Automatische Skalierung: Leisten, Steuerung und Menüs sind für Tablet-Höhe gebaut und werden
+   auf kleineren Bildschirmen (Handy) als Ganzes verkleinert. --uis setzt das Spiel beim Start und bei jeder Grössenänderung. */
+#hud{left:0;right:auto;width:calc(100% / var(--uis));transform:scale(var(--uis));transform-origin:0 0}
+#panel{left:0;right:auto;width:calc(100% / var(--uis));transform:scale(var(--uis));transform-origin:0 100%}
+#menu{inset:0 auto auto 0;width:calc(100% / var(--uis));height:calc(100% / var(--uis));transform:scale(var(--uis));transform-origin:0 0}
+#snd{transform:skewX(-10deg) scale(max(var(--uis),.7));transform-origin:100% 0}
 /* ---------- Menüs ---------- */
 #menu{position:fixed;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;overflow:auto;touch-action:pan-y;
   padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(18px + env(safe-area-inset-bottom,0px));padding-left:var(--gl);padding-right:var(--gr);
@@ -165,7 +171,7 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 .sets label,.srow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) 54px;align-items:center;gap:12px;text-align:left;font:700 14px var(--ui);letter-spacing:.06em}
 .srow{grid-template-columns:minmax(0,1fr) auto}.srow .seg{justify-self:start}
 .srow .seg button{padding:10px 12px}
-.osel{transform:skewX(-8deg) scale(.86);transform-origin:left;align-self:flex-start}.osel button{padding:7px 9px;min-height:38px;font-size:11px;letter-spacing:.06em;white-space:nowrap}
+.osel{transform:skewX(-8deg) scale(.86);transform-origin:left;align-self:flex-start;max-width:112%;flex-wrap:wrap}.osel button{padding:7px 9px;min-height:38px;font-size:11px;letter-spacing:.06em;white-space:nowrap}
 .srow.wide{grid-template-columns:1fr;gap:6px}.srow.wide .seg{justify-self:stretch}.srow.wide .seg button{flex:1;white-space:nowrap}
 .sets b{font:700 15px var(--ui);text-align:right;font-variant-numeric:tabular-nums;color:var(--gold)}
 .sets input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;touch-action:none;margin:0}

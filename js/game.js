@@ -210,7 +210,7 @@ async function attack(a,b,k,mu){if(over)return;
 function storyOpp(n){if(n==10)return pickC==14?13:14;if(n==5)return pickC==13?10:13;const pool=[];for(let i=0;i<10;i++)if(i!=pickC)pool.push(i);return pool[((n<5?n-1:n-2)+pickC*3)%pool.length]}
 function layout(){const p=$("#panel"),r=document.documentElement.style;
   if(p.hidden){VO.x=VO.y=0;VO.fw=VO.fh=1}
-  else{r.setProperty("--cl","0px");r.setProperty("--cr","0px");const hh=$("#hud").offsetHeight||70,dk=Math.max(0,p.offsetHeight-22);
+  else{r.setProperty("--cl","0px");r.setProperty("--cr","0px");const hh=($("#hud").offsetHeight||70)*UIS,dk=Math.max(0,p.offsetHeight-22)*UIS;
     VO.x=0;VO.y=(dk-hh*.9)/2;VO.fw=1;VO.fh=(GH-hh-dk)/GH}
   applyOff()}
 function startFight(){
