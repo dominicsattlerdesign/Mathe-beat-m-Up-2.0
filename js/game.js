@@ -200,10 +200,12 @@ const MOVES={
 async function runMove(k,a,b,dm){const ML=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,ML.length-1)}while(m[k]===i);m[k]=i;
   pop(ML[i].n+"!",null,fx_(a).x,4.6*a.sc,"mv");await ML[i].f(a,b,dm)}
 const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a,b,dm),wurf:(a,b,dm)=>runMove("wurf",a,b,dm)};
+/* Gegnerschaden im Verhältnis zum Spieler: 88 %, im Freien Kampf auf Mittel und Schwer 100 % */
+const enF=()=>mode=="a"&&SAVE.diff>=2?1:.88;
 async function attack(a,b,k,mu){if(over)return;
   if(k=="fin")await finMove(a,b);
-  else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*a.dm*(a.isP?mu:.88))}
-  else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 88 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP?mu:.88));
+  else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*a.dm*(a.isP?mu:enF()))}
+  else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 88 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP?mu:enF()));
   if(b.hp>0){await recover(a,b);
     /* Finisher gibt es nur im Matchball: der Spieler führt 1 Runde und der Gegner hat höchstens 10 % Leben */
     if(a.isP&&fo=="none"&&wins.p==1&&b.hp<=b.max*.1&&!over)offerFin();return}
@@ -234,7 +236,7 @@ function startFight(){
     clearFighters();clearTemp();buildStage(stageI);
     pl=mkF(CH[pickC],-1,true,1,useAlt(pickC)?1:0);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
     round=1;wins={p:0,e:0};fo="none";cd={last:null,n:0,lock:null,left:0};$("#fo").hidden=true;
-    en.max=en.hp=Math.round((44+LV*6+CH[oi].st[1]*3+(boss?14:0))*(SAVE.diff==3?(boss?(lvl==10?1.75:1.5):1.25):1));if(boss)en.dm*=1.03;/* Stufe Schwer: Gegner +25 % Leben, Story-Bosse Kampf 5 +50 %, Kampf 10 +75 %. Bosse immer +3 % Schaden */en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Sonst im Freien Kampf höchstens 4,5 s. */en.timer=en.iv;
+    en.max=en.hp=Math.round((44+LV*6+CH[oi].st[1]*3+(boss?14:0))*(SAVE.diff==3?(boss?(lvl==10?1.75:1.5):1.25):1));if(boss)en.dm*=1.03;/* Stufe Schwer: Gegner +25 % Leben, Story-Bosse Kampf 5 +50 %, Kampf 10 +75 %. Bosse immer +3 % Schaden */en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=SAVE.diff>=2?3:Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Freier Kampf: Leicht höchstens 4,5 s, Mittel und Schwer 3 s (±15 %). */en.timer=en.iv;
     $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=pic(pickC,"bust");$("#ei").src=CH[oi].bust;
     $("#lv").innerHTML=`<b>${story?(lvl==10?L("ENDKAMPF","FINAL BATTLE"):L("KAMPF ","FIGHT ")+lvl+"/10"):L("FREIER KAMPF","FREE FIGHT")}</b>${STG[stageI].n}${story?" "+hearts():""}`;
     cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),sig:newCard("sig"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
