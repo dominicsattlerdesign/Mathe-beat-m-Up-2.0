@@ -1,0 +1,10 @@
+{
+  "appId": "de.mathbrawl.app",
+  "appName": "Math Brawl",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#0b0a14",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}

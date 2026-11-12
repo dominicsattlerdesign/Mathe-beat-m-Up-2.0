@@ -1,0 +1,19 @@
+{
+  "name": "mathbrawl",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Math Brawl – Mathe-Kampfspiel für Tablets (Android-App mit Capacitor)",
+  "scripts": {
+    "sync": "cap sync android",
+    "open": "cap open android",
+    "apk": "cap sync android && cd android && gradlew assembleDebug",
+    "apk:mac": "cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.6.10",
+    "@capacitor/core": "^7.6.10"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.6.10"
+  }
+}
