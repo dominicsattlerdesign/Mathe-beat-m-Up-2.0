@@ -304,14 +304,14 @@ function oppScreen(){const cur=CH.findIndex(c=>c.id==SAVE.opp),ok=cur>=0&&cur!=p
   menu(`<h2>${L("Wähle deinen Gegner","Choose your opponent")}</h2><div class="grid opp">
    <button type="button" class="tile rnd${ok?"":" on"}" data-a="opp" data-id=""><b>?</b><span>${L("Zufall","Random")}</span></button>
    ${CH.map((c,i)=>i==pickC?"":unlocked(c)?`<button type="button" class="tile${ok&&cur==i?" on":""}" data-a="opp" data-id="${c.id}"><img src="${c.bust}" alt=""><span>${c.n}</span></button>`:`<div class="tile lock"><img src="${c.bust}" alt=""><span>???</span></div>`).join("")}</div>
-   <button class="btn alt sm" data-a="pickBack">${L("Zurück","Back")}</button>`,1)}
+   <button class="btn alt sm pback" data-a="pickBack">${L("Zurück","Back")}</button>`,1)}
 function arenaScreen(){const cur=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:-1;
   const tile=(x,i)=>{const o=owner(i);if(stageOk(i))return`<button type="button" class="ar${cur==i?" on":""}" data-a="arena" data-i="${i}" style="${arStyle(i)}">${x.bonus?`<i>BONUS</i>`:o?`<img src="${o.bust}" alt="">`:""}<span>${x.n}</span></button>`;
     return`<div class="ar lk"><b>?</b><span>${x.bonus?L("Bonus-Arena","Bonus arena"):(unlocked(o)?L("Arena von ","Arena of ")+o.n:"???")}</span><small>${x.bonus?L("Story auf „Schwer“ schaffen","Clear the story on “Hard”"):unlocked(o)?L(`Story mit ${o.n} schaffen`,`Clear the story with ${o.n}`):L("Kämpfer noch gesperrt","Fighter still locked")}</small></div>`};
   const order=STG.map((x,i)=>i).sort((a,b)=>(STG[a].bonus?1:0)-(STG[b].bonus?1:0)||(owner(a)?CH.indexOf(owner(a)):0)-(owner(b)?CH.indexOf(owner(b)):0));
   menu(`<h2>${L("Wähle die Arena","Choose the arena")}</h2><div class="arenas">
    <button type="button" class="ar rnd${cur<0?" on":""}" data-a="arena" data-i="-1"><b>?</b><span>${L("Zufall","Random")}</span></button>${order.map(i=>tile(STG[i],i)).join("")}</div>
-   <button class="btn alt sm" data-a="oppBack">${L("Zurück","Back")}</button>`,1)}
+   <button class="btn alt sm pback" data-a="oppBack">${L("Zurück","Back")}</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
   menu(`<h2 class="pickh">${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt pback" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
 function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt(i)?1:0,o=pv==null?cur:pv,lockO=o==1&&!ao;
