@@ -7,3 +7,8 @@ android/app/build/
 android/local.properties
 *.apk
 *.aab
+
+# Signatur-Schlüssel für den Play Store – niemals hochladen
+keystore.properties
+*.jks
+*.keystore

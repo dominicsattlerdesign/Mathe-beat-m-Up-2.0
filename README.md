@@ -50,6 +50,17 @@ npm run apk:mac       # macOS / Linux
 
 Die APK liegt danach unter `android/app/build/outputs/apk/debug/app-debug.apk`. Auf das Tablet kopieren und installieren (dafür „Installation aus unbekannten Quellen“ erlauben) oder mit angeschlossenem Tablet `adb install -r android/app/build/outputs/apk/debug/app-debug.apk`.
 
+### Play Store
+
+Für den Play Store wird ein signiertes App-Bundle (`.aab`) gebaut. Dafür braucht es den Upload-Schlüssel `android/mathbrawl-upload.jks` und die Datei `android/keystore.properties` mit den Passwörtern. Beide stehen absichtlich nicht im Git und müssen sicher aufbewahrt werden.
+
+```bash
+npm run sync
+cd android && ./gradlew bundleRelease
+```
+
+Das Bundle liegt unter `android/app/build/outputs/bundle/release/app-release.aab`. Vor jedem Update `versionCode` (und `versionName`) in `android/app/build.gradle` erhöhen. Store-Bilder, Texte und die Datenschutzerklärung liegen im Ordner `playstore/`.
+
 Nach jeder Änderung an den Spieldateien in `www` vor dem Bauen `npm run sync` ausführen (macht `npm run apk` automatisch).
 
 Das App-Icon liegt in `android/app/src/main/res/mipmap-*`, die Vorlage in 1024 px in `resources/icon-1024.png`.
