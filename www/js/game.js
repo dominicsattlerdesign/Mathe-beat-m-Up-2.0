@@ -200,8 +200,8 @@ const MOVES={
 async function runMove(k,a,b,dm){const ML=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,ML.length-1)}while(m[k]===i);m[k]=i;
   pop(ML[i].n+"!",null,fx_(a).x,4.6*a.sc,"mv");await ML[i].f(a,b,dm)}
 const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a,b,dm),wurf:(a,b,dm)=>runMove("wurf",a,b,dm)};
-/* Gegnerschaden im Verhältnis zum Spieler: 88 %, im Freien Kampf auf Mittel und Schwer 120 % */
-const enF=()=>mode=="a"&&SAVE.diff>=2?1.2:.88;
+/* Gegnerschaden im Verhältnis zum Spieler: 88 %, im Freien Kampf auf Mittel und Schwer 140 % */
+const hardFree=()=>mode=="a"&&SAVE.diff>=2,enF=()=>hardFree()?1.4:.88;
 async function attack(a,b,k,mu){if(over)return;
   if(k=="fin")await finMove(a,b);
   else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*a.dm*(a.isP?mu:enF()*(a.tdm||1)))}
@@ -236,7 +236,7 @@ function startFight(){
     clearFighters();clearTemp();buildStage(stageI);
     pl=mkF(CH[pickC],-1,true,1,useAlt(pickC)?1:0);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
     round=1;wins={p:0,e:0};fo="none";cd={last:null,n:0,lock:null,left:0};$("#fo").hidden=true;
-    en.max=en.hp=Math.round((44+LV*6+CH[oi].st[1]*3+(boss?14:0))*(SAVE.diff==3?(boss?(lvl==10?1.75:1.5):1.25):1));if(boss)en.dm*=1.03;/* Stufe Schwer: Gegner +25 % Leben, Story-Bosse Kampf 5 +50 %, Kampf 10 +75 %. Bosse immer +3 % Schaden */en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=SAVE.diff>=2?3:Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Freier Kampf: Leicht höchstens 4,5 s, Mittel und Schwer 3 s. Jeder Abstand schwankt zufällig zwischen −20 % und +10 %. *//* Kampfstil des Gegners: Tempo 5 = 26 % schneller und 22 % weniger Schaden, Tempo 1 = 26 % langsamer und 30 % mehr Schaden */
+    en.max=en.hp=Math.round((44+LV*6+CH[oi].st[1]*3+(boss?14:0))*(SAVE.diff==3?(boss?(lvl==10?1.75:1.5):1.25):1));if(boss)en.dm*=1.03;/* Stufe Schwer: Gegner +25 % Leben, Story-Bosse Kampf 5 +50 %, Kampf 10 +75 %. Bosse immer +3 % Schaden */en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=SAVE.diff>=2?3:Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Freier Kampf: Leicht höchstens 4,5 s, Mittel und Schwer 3 s. Jeder Abstand schwankt zufällig zwischen −20 % und +10 %, im Freien Kampf auf Mittel und Schwer zwischen −30 % und +5 %. *//* Kampfstil des Gegners: Tempo 5 = 26 % schneller und 22 % weniger Schaden, Tempo 1 = 26 % langsamer und 30 % mehr Schaden */
     {const t=TEMPO[CH[oi].id]||3;en.iv*=1+(3-t)*.13;en.tdm=1+(3-t)*(t<3?.15:.11)}en.timer=en.iv;
     $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=pic(pickC,"bust");$("#ei").src=CH[oi].bust;
     $("#lv").innerHTML=`<b>${story?(lvl==10?L("ENDKAMPF","FINAL BATTLE"):L("KAMPF ","FIGHT ")+lvl+"/10"):L("FREIER KAMPF","FREE FIGHT")}</b>${STG[stageI].n}${story?" "+hearts():""}`;
@@ -371,7 +371,7 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
   if(pl&&!over){
     if(mode=="s")storyT+=dt;
     if(fo=="on"){const r=1-(performance.now()-cards.fin.t0)/1000/FIN_TIME;$("#fot").style.width=clamp(r,0,1)*100+"%";if(r<=0)endOffer(L("Zu langsam! Der Finisher ist futsch, jetzt normal zu Ende kämpfen.","Too slow! The finisher is gone, win the fight the normal way."))}
-    if(busy==0&&fo!="on"){en.timer-=dt;if(en.timer<=0){en.timer=en.iv*rnd(.8,1.1);const k=en.mt>=100?"sig":P(["hieb","hieb","kick","kick","wurf"]);if(k=="sig")en.mt=0;
+    if(busy==0&&fo!="on"){en.timer-=dt;if(en.timer<=0){en.timer=en.iv*(hardFree()?rnd(.7,1.05):rnd(.8,1.1));const k=en.mt>=100?"sig":P(["hieb","hieb","kick","kick","wurf"]);if(k=="sig")en.mt=0;
       q(async()=>{sfx("warn");pop(k=="sig"?"!!":"!",k=="sig"?"#ffc21a":"#ff3b2f",fx_(en).x,4.4*en.sc);pose(en,"windup",20);await wait(.4);await attack(en,pl,k,1)})}}
     const w=clamp(1-en.timer/en.iv,0,1);$("#ec").style.width=w*100+"%";$("#ecb").classList.toggle("warn",w>.85);
     if(sel){const el=(performance.now()-cards[sel].t0)/1000,th=BONUS[sel],bl=$("#bl"),bo=$("#bon");if(bl){bl.textContent=el<=th[0]?L("BLITZ ×1,5","FLASH ×1.5"):el<=th[1]?L("SCHNELL ×1,25","QUICK ×1.25"):"";bo.style.width=clamp(1-el/th[1],0,1)*100+"%";bo.style.background=el<=th[0]?"var(--gold)":"var(--cyan)"}}
