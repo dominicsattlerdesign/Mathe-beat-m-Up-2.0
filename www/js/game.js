@@ -8,6 +8,8 @@ const save=()=>{try{localStorage.setItem("mb3",JSON.stringify(SAVE))}catch(e){}}
 const esc=t=>String(t).replace(/[&<>"']/g,c=>"&#"+c.charCodeAt(0)+";"),fmtT=t=>Math.floor(t/60)+":"+String(Math.floor(t%60)).padStart(2,"0");
 /* Freigespielte Kämpfer stehen in SAVE.unl. Alte Spielstände (Freischalten nach Anzahl Durchgänge) werden übernommen. */
 if(!Array.isArray(SAVE.unl)){SAVE.unl=CH.filter((c,i)=>i>=5&&SAVE.done>=i-4).map(c=>c.id)}
+/* Rokka war früher ein Start-Kämpfer: wer schon gespielt hat, behält ihn samt Piratenbucht */
+if(!SAVE.m2){if((SAVE.name||SAVE.done)&&!SAVE.unl.includes("rokka")){SAVE.unl.push("rokka");if(!SAVE.ars.includes("rokka"))SAVE.ars.push("rokka")}SAVE.m2=1;save()}
 const unlocked=ch=>!ch.lock||SAVE.unl.includes(ch.id);
 /* Nächster Kämpfer nach einem Story-Sieg, immer zufällig aus den gesperrten:
    in "Mittel" aus allen (Bosse inklusive), in den anderen Stufen nur aus den normalen Kämpfern */
@@ -20,7 +22,7 @@ const hearts=()=>`<span class="lives">${"♥".repeat(lives)}<s>${"♥".repeat(Ma
 /* Arenen: jede Figur hat ihre eigene (own). Die der fünf Start-Figuren sind frei, die anderen kommen über die Story mit der Figur.
    Bonus-Arenen: frei über Story-Siege auf "Schwer", eine pro Sieg in fester Reihenfolge. */
 const owner=i=>CH.find(c=>c.id==STG[i].own),arenaOf=c=>STG.findIndex(x=>x.own==c.id);
-const stageOk=i=>{const x=STG[i];if(x.bonus)return SAVE.bst.includes(i);if(x.own)return CH.indexOf(owner(i))<5||SAVE.ars.includes(x.own);return true},okStages=()=>STG.map((s,i)=>i).filter(stageOk);
+const stageOk=i=>{const x=STG[i];if(x.bonus)return SAVE.bst.includes(i);if(x.own)return !owner(i).lock||SAVE.ars.includes(x.own);return true},okStages=()=>STG.map((s,i)=>i).filter(stageOk);
 const ATK={hieb:{n:"HIEB",kj:"拳",dm:6,c:0xff5a1a},kick:{n:"KICK",kj:"蹴",dm:10,c:0x25d4ff},wurf:{n:"WURF",kj:"投",dm:15,c:0x9a6bff},sig:{n:"SPEZIAL",dm:30}};
 bi(ATK.hieb,"n","HIEB","PUNCH");bi(ATK.wurf,"n","WURF","THROW");bi(ATK.sig,"n","SPEZIAL","SPECIAL");
 const QUIPS={};bi(QUIPS,"ko",["Das gibt Kopfweh.","Gute Nacht!","Autsch.","Sternchen zählen …","Der steht so schnell nicht auf."],["That’ll leave a mark.","Good night!","Ouch.","Counting stars …","Not getting up anytime soon."]);
@@ -306,7 +308,7 @@ const arStyle=i=>{const[c1,c2]=STG[i].cols;return`background:linear-gradient(150
 function oppScreen(){const cur=CH.findIndex(c=>c.id==SAVE.opp),ok=cur>=0&&cur!=pickC&&unlocked(CH[cur]);
   menu(`<h2>${L("Wähle deinen Gegner","Choose your opponent")}</h2><div class="grid opp">
    <button type="button" class="tile rnd${ok?"":" on"}" data-a="opp" data-id=""><b>?</b><span>${L("Zufall","Random")}</span></button>
-   ${CH.map((c,i)=>i==pickC?"":unlocked(c)?`<button type="button" class="tile${ok&&cur==i?" on":""}" data-a="opp" data-id="${c.id}"><img src="${c.bust}" alt=""><span>${c.n}</span></button>`:`<div class="tile lock"><img src="${c.bust}" alt=""><span>???</span></div>`).join("")}</div>
+   ${ORDER.map(i=>CH[i]).map((c,_,a,i=CH.indexOf(c))=>i==pickC?"":unlocked(c)?`<button type="button" class="tile${ok&&cur==i?" on":""}" data-a="opp" data-id="${c.id}"><img src="${c.bust}" alt=""><span>${c.n}</span></button>`:`<div class="tile lock"><img src="${c.bust}" alt=""><span>???</span></div>`).join("")}</div>
    <button class="btn alt sm pback" data-a="pickBack">${L("Zurück","Back")}</button>`,1)}
 function arenaScreen(){const cur=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:-1;
   const tile=(x,i)=>{const o=owner(i);if(stageOk(i))return`<button type="button" class="ar${cur==i?" on":""}" data-a="arena" data-i="${i}" style="${arStyle(i)}">${x.bonus?`<i>BONUS</i>`:o?`<img src="${o.bust}" alt="">`:""}<span>${x.n}</span></button>`;
@@ -316,9 +318,9 @@ function arenaScreen(){const cur=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:-
    <button type="button" class="ar rnd${cur<0?" on":""}" data-a="arena" data-i="-1"><b>?</b><span>${L("Zufall","Random")}</span></button>${order.map(i=>tile(STG[i],i)).join("")}</div>
    <button class="btn alt sm pback" data-a="oppBack">${L("Zurück","Back")}</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
-  menu(`<h2 class="pickh">${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt pback" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
+  menu(`<h2 class="pickh">${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${ORDER.map(i=>[CH[i],i]).map(([c,i])=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt pback" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
 function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt(i)?1:0,o=pv==null?cur:pv,lockO=o==1&&!ao;
-  document.querySelectorAll(".tile").forEach((t,j)=>{t.classList.toggle("on",j==i);if(j==i&&u)t.querySelector("img").src=pic(i,"bust")});
+  document.querySelectorAll(".tile").forEach(t=>{const j=+t.dataset.i;t.classList.toggle("on",j==i);if(j==i&&u)t.querySelector("img").src=pic(i,"bust")});
   const seg=`<div class="seg osel">${[L("Outfit 1","Outfit 1"),ao?L(c.alt.on[0],c.alt.on[1]):L("Outfit 2 · gesperrt","Outfit 2 · locked")].map((t,k)=>`<button type="button" data-a="outfit" data-o="${k}" class="${o==k?"on":""}">${t}</button>`).join("")}</div>`;
   $("#det").innerHTML=`<img src="${u?pic(i,"full",o==1):c.full}" alt="" class="${u&&!lockO?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3>${seg}<p>${lockO?L(`Schaffe die Story mit ${c.n}, um dieses Outfit freizuschalten.`,`Clear the story with ${c.n} to unlock this outfit.`):c.d}</p>
     <div class="st">${L(["Kraft","Leben","Spezial"],["Power","Health","Special"]).map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>

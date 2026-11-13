@@ -280,7 +280,11 @@ CH.forEach(c=>c.alt=ALT[c.id]);
 const outfit=(ch,o)=>o&&ch.alt?Object.assign(Object.create(ch),ch.alt,{o:1}):ch;
 /* 5 Kämpfer am Start, 10 zum Freispielen: je Story-Durchgang einer */
 /* lock: 0 = von Anfang an spielbar, 1 = wird über die Story frei. Die beiden Bosse nur über die Story in der Stufe "Mittel". */
-CH.forEach((c,i)=>{c.lock=i<5?0:1;c.boss=c.id=="kaiser"||c.id=="magus"});
+/* Start-Kämpfer: von Anfang an spielbar, ihre Arenen ebenfalls. Alle anderen werden über die Story frei. */
+const START=["raiko","akane","zeno","tetsu","luna"];
+CH.forEach(c=>{c.lock=START.includes(c.id)?0:1;c.boss=c.id=="kaiser"||c.id=="magus"});
+/* Reihenfolge in den Auswahl-Rastern: Start-Kämpfer zuerst, Bosse zuletzt */
+const ORDER=CH.map((c,i)=>i).sort((a,b)=>(CH[a].lock+(CH[a].boss?1:0))-(CH[b].lock+(CH[b].boss?1:0))||a-b);
 /* Porträts (Brustbild + Ganzkörper) direkt aus den 3D-Modellen fotografieren. Zweites Outfit erst bei Bedarf. */
 let PS=null;
 function shoot(ch,o){
