@@ -244,7 +244,7 @@ function startFight(){
     cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),sig:newCard("sig"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
     $("#hud").hidden=false;$("#panel").hidden=false;msg(L("Löse eine Aufgabe, dann greift dein Kämpfer an!","Solve a problem and your fighter attacks!"));render();layout();
     CAM.mode="fight";CAM.k=5;camFight();CAM.p.copy(CAM.tp).add(new THREE.Vector3(0,2,8));CAM.l.copy(CAM.tl);
-    setTimeout(()=>{if(id!=fid)return;menuHide();banner(L("Runde 1","Round 1"),story?(lvl==10?L("Endkampf","Final battle"):L("Kampf ","Fight ")+lvl)+L(" · wer zuerst 2 Runden gewinnt"," · first to win 2 rounds"):L("Wer zuerst 2 Runden gewinnt","First to win 2 rounds"));sfx("gong");rt(1.25).then(countdown).then(ok=>{if(ok&&id==fid)over=false})},2100);
+    setTimeout(()=>{if(id!=fid)return;menuHide();intro().then(()=>{if(id!=fid)return;banner(L("Runde 1","Round 1"),story?(lvl==10?L("Endkampf","Final battle"):L("Kampf ","Fight ")+lvl)+L(" · wer zuerst 2 Runden gewinnt"," · first to win 2 rounds"):L("Wer zuerst 2 Runden gewinnt","First to win 2 rounds"));sfx("gong");rt(1.25).then(countdown).then(ok=>{if(ok&&id==fid)over=false})})},2100);
   },60);
 }
 function endFightUi(){$("#panel").hidden=true;$("#hud").hidden=true;$("#fo").hidden=true;cine(false);speed(false);layout();CAM.mode="menu"}
@@ -291,7 +291,7 @@ function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*
    <div class="srow wide"><span>${L("Musiktitel","Music track")}</span><div class="seg">${TRK.map((t,k)=>`<button type="button" data-a="track" data-i="${k}" class="${SAVE.track==k?"on":""}">${L(t.n[0],t.n[1])}</button>`).join("")}</div></div>
    <div class="srow"><span>${L("Sprache","Language")}</span>${langSeg()}</div></div>
    <div class="rowb"><button class="btn alt sm" data-a="back">${L("Zurück","Back")}</button><button class="btn sm danger" data-a="reset">${L("Fortschritt zurücksetzen","Reset progress")}</button></div>`,1)}
-function applyLang(){document.documentElement.lang=LANG;$("#plbl").textContent=ATK.sig.n;$("#elbl").textContent=L("GEGNER-ANGRIFF","ENEMY ATTACK");
+function applyLang(){document.documentElement.lang=LANG;$("#skiphint").textContent=L("Tippen zum Überspringen","Tap to skip");$("#plbl").textContent=ATK.sig.n;$("#elbl").textContent=L("GEGNER-ANGRIFF","ENEMY ATTACK");
   $("#snd").textContent=L("TON","SOUND");$("#snd").setAttribute("aria-label",L("Ton an oder aus","Sound on or off"))}
 function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
   menu(`<h2>${L("Rangliste","Leaderboard")}</h2><p>${L("Schnellste Kampfzeit für die ganze Story. Gespeichert auf diesem Gerät.","Fastest fight time for the whole story. Saved on this device.")}</p><div class="seg">${DIFFS.map((x,i)=>`<button type="button" data-a="lb" data-i="${i}" class="${d==i?"on":""}">${x[0]}</button>`).join("")}</div>

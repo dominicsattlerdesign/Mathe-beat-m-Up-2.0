@@ -66,6 +66,10 @@ body.qlow #c.drama{filter:none}body.qlow #vig{box-shadow:none}
 #bn.go{animation:bn 1.3s}
 #bn small{display:block;font:700 .26em var(--ui);letter-spacing:.3em;color:var(--ink);-webkit-text-stroke:0;text-shadow:2px 2px 0 var(--line)}
 @keyframes bn{0%{transform:scale(2.6) skewX(-10deg);opacity:0}14%{transform:scale(1) skewX(-10deg);opacity:1}82%{transform:scale(1.04) skewX(-10deg);opacity:1}100%{transform:scale(1.2) skewX(-10deg);opacity:0}}
+/* Hinweis während der Auftritte */
+#skiphint{position:fixed;left:0;right:0;bottom:calc(11vh + 10px + env(safe-area-inset-bottom,0px));text-align:center;font:700 13px var(--ui);letter-spacing:.2em;text-transform:uppercase;color:#fff;
+  text-shadow:1px 1px 0 var(--line);opacity:0;transition:opacity .4s;pointer-events:none;z-index:5}
+body.intro #skiphint{opacity:.8}
 /* Countdown 3, 2, 1, Rechnen! */
 #cdn{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font:400 clamp(110px,calc(var(--vw)*17),210px)/1 var(--disp);color:var(--gold);-webkit-text-stroke:4px var(--line);
   text-shadow:6px 7px 0 var(--line),0 0 50px rgba(255,160,20,.85);pointer-events:none;z-index:5;opacity:0;white-space:nowrap}
@@ -281,7 +285,7 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 @media (prefers-reduced-motion:reduce){.blink,#fin.rdy,.bar.mt.full{animation:none}}
 </style></head><body>
 <canvas id="c"></canvas>
-<div id="speed"></div><div id="lb1" class="lb"></div><div id="lb2" class="lb"></div><div id="vig"></div><div id="fl"></div><div id="cut"><div class="band"><img alt=""><div class="txt"><small></small><b></b></div></div></div><div id="bn"></div><div id="cdn" aria-live="polite"></div>
+<div id="speed"></div><div id="lb1" class="lb"></div><div id="lb2" class="lb"></div><div id="vig"></div><div id="fl"></div><div id="cut"><div class="band"><img alt=""><div class="txt"><small></small><b></b></div></div></div><div id="bn"></div><div id="cdn" aria-live="polite"></div><div id="skiphint"></div>
 <div id="hud" hidden>
   <div class="hb l"><img id="pi" alt=""><div class="hbx"><div class="nr"><div class="nm" id="pn"></div><div class="pips" id="pw"><i></i><i></i></div></div><div class="bar"><i class="trail" id="pht"></i><i id="ph"></i></div><div class="bar mt" id="pmb"><i id="pm"></i></div><div class="lbl" id="plbl">SPEZIAL</div></div></div>
   <div id="mid"><button id="pz" type="button" aria-label="Pause">II</button><div id="lv"></div></div>
@@ -302,5 +306,6 @@ h2{font:400 clamp(34px,calc(var(--vw)*5.4),56px)/1 var(--disp);letter-spacing:.0
 <script src="js/fighters.js"></script>
 <script src="js/stages.js"></script>
 <script src="js/moves.js"></script>
+<script src="js/walkins.js"></script>
 <script src="js/game.js"></script>
 </body></html>

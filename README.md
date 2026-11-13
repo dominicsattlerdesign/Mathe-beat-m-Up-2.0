@@ -11,6 +11,7 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 - **Story** (10 Kämpfe, jeder bis zwei Rundensiege, 2 Leben: nach der ersten Niederlage darf man den Kampf wiederholen, nach der zweiten beginnt die Story von vorn) und **Freier Kampf** mit freier Wahl von Gegner und Arena.
 - Jede Runde startet mit einem Countdown „3, 2, 1, Rechnen!“.
 - **Handy:** Auf Handys sind Attackenkarten und Zahlentasten gross (Zahlen in zwei Reihen), der Kampf wird dafür kleiner dargestellt. Tablets und Browser bleiben unverändert.
+- **Auftritte vor dem Kampf:** 30 eigene Auftritte (je Figur und Outfit), z. B. Rokka springt von einem Piratenschiff, Volt-7 landet in einer Kapsel, Professor Kreide erscheint hinter einer Tafel. Tippen überspringt sie.
 - **Kampfstil der Gegner:** Jede Figur hat als KI-Gegner ein eigenes Tempo. Flinke Gegner (Raiko, Shade, Mika) greifen öfter an und treffen schwächer, schwere (Goro, Oni-Maru) seltener und härter.
 - **Rangliste:** schnellste Kampfzeit für die Story je Stufe, gespeichert auf dem Gerät.
 - **Sprache:** Deutsch oder Englisch, umschaltbar auf dem Startbildschirm und in den Einstellungen.
@@ -65,6 +66,7 @@ Spielstand, Name und Rangliste liegen im `localStorage` des Browsers.
 | `www/js/fighters.js` | Körper, Gesichter, Waffen, Posen und die 15 Kämpfer |
 | `www/js/stages.js` | Arenen und zerstörbare Objekte |
 | `www/js/moves.js` | Spezial-Attacken und Finisher je Figur |
+| `www/js/walkins.js` | Auftritte vor dem Kampf (30 Stück) |
 | `www/js/game.js` | Menüs, Steuerung, Kampfregeln, Rangliste |
 
 three.js (r128) liegt in `www/vendor`, die Schriften Bangers und Chakra Petch (SIL Open Font License) in `www/fonts`.
