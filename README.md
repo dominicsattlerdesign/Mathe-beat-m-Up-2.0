@@ -10,6 +10,8 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 - **Vier Stufen:** 1.–2. Klasse (Plus und Minus bis 20), Leicht, Mittel, Schwer. Schwer mischt 75 % Aufgaben aus Mittel mit 25 % grossen Zahlen, dafür haben die Gegner dort mehr Leben (+25 %, Story-Bosse +50 % und +75 %).
 - **Story** (10 Kämpfe, jeder bis zwei Rundensiege, 2 Leben: nach der ersten Niederlage darf man den Kampf wiederholen, nach der zweiten beginnt die Story von vorn) und **Freier Kampf** mit freier Wahl von Gegner und Arena.
 - Jede Runde startet mit einem Countdown „3, 2, 1, Rechnen!“.
+- **Handy:** Auf Handys sind Attackenkarten und Zahlentasten gross (Zahlen in zwei Reihen), der Kampf wird dafür kleiner dargestellt. Tablets und Browser bleiben unverändert.
+- **Kampfstil der Gegner:** Jede Figur hat als KI-Gegner ein eigenes Tempo. Flinke Gegner (Raiko, Shade, Mika) greifen öfter an und treffen schwächer, schwere (Goro, Oni-Maru) seltener und härter.
 - **Rangliste:** schnellste Kampfzeit für die Story je Stufe, gespeichert auf dem Gerät.
 - **Sprache:** Deutsch oder Englisch, umschaltbar auf dem Startbildschirm und in den Einstellungen.
 - **Einstellungen:** Lautstärke für Musik und Soundeffekte, Grafik-Effekte (Hoch, Mittel, Niedrig für ältere Geräte), Wahl zwischen drei Arcade-Musiktiteln, auch im Pausenmenü.

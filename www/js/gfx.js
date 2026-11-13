@@ -74,10 +74,14 @@ const VO={x:0,y:0,fw:1,fh:1};
 /* Spielfeldgröße GW×GH ist immer quer; im Hochformat wird die ganze Seite gedreht */
 let GW=innerWidth,GH=innerHeight;
 function applyOff(){const w=GW,h=GH;if(VO.x||VO.y)cam.setViewOffset(w,h,Math.round(VO.x),Math.round(VO.y),w,h);else cam.clearViewOffset();cam.updateProjectionMatrix()}
-let UIS=1;
+let UIS=1,UIH=1,UIP=1,UIM=1,PHONE=false;
 function rs(){const iw=innerWidth,ih=innerHeight,rot=ih>iw,b=document.body.style,r=document.documentElement.style;GW=rot?ih:iw;GH=rot?iw:ih;
   /* Oberfläche ist für ca. 640 px Höhe und 1000 px Breite gebaut; darunter wird sie verkleinert */
-  UIS=clamp(Math.min(GH/640,GW/1000),.45,1);r.setProperty("--uis",UIS);
+  UIS=clamp(Math.min(GH/640,GW/1000),.45,1);
+  /* Handy (kurze Seite unter 500 px): Steuerung in voller Grösse mit grossen Tasten, Menüs und Leisten weniger verkleinert.
+     Der Kampf bekommt dafür weniger Platz. Tablets und Browser-Fenster bleiben wie bisher. */
+  PHONE=GH<500;UIH=PHONE?Math.max(UIS,.72):UIS;UIP=PHONE?1:UIS;UIM=PHONE?clamp(GH/500,.6,1):UIS;
+  r.setProperty("--uis",UIH);r.setProperty("--uip",UIP);r.setProperty("--uim",UIM);document.body&&document.body.classList.toggle("phone",PHONE);
   b.width=rot?GW+"px":"";b.height=rot?GH+"px":"";b.transform=rot?`translateX(${iw}px) rotate(90deg)`:"";r.setProperty("--vw",GW/100+"px");r.setProperty("--vh",GH/100+"px");
   const w=GW,h=GH;ren.setPixelRatio(Math.min([1,1.5,2][QL],devicePixelRatio||1));ren.setSize(w,h,false);cam.aspect=w/h;applyOff()}
 addEventListener("resize",()=>{rs();if(typeof layout=="function")layout()});

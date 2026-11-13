@@ -204,8 +204,8 @@ const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a
 const enF=()=>mode=="a"&&SAVE.diff>=2?1.2:.88;
 async function attack(a,b,k,mu){if(over)return;
   if(k=="fin")await finMove(a,b);
-  else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*a.dm*(a.isP?mu:enF()))}
-  else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 88 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP?mu:enF()));
+  else if(k=="sig"){a.kc=0xffffff;await sigMove(a,b,ATK.sig.dm*a.dm*(a.isP?mu:enF()*(a.tdm||1)))}
+  else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 88 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP?mu:enF()*(a.tdm||1)));
   if(b.hp>0){await recover(a,b);
     /* Finisher gibt es nur im Matchball: der Spieler führt 1 Runde und der Gegner hat höchstens 10 % Leben */
     if(a.isP&&fo=="none"&&wins.p==1&&b.hp<=b.max*.1&&!over)offerFin();return}
@@ -223,7 +223,7 @@ async function attack(a,b,k,mu){if(over)return;
 function storyOpp(n){if(n==10)return pickC==14?13:14;if(n==5)return pickC==13?10:13;const pool=[];for(let i=0;i<10;i++)if(i!=pickC)pool.push(i);return pool[((n<5?n-1:n-2)+pickC*3)%pool.length]}
 function layout(){const p=$("#panel"),r=document.documentElement.style;
   if(p.hidden){VO.x=VO.y=0;VO.fw=VO.fh=1}
-  else{r.setProperty("--cl","0px");r.setProperty("--cr","0px");const hh=($("#hud").offsetHeight||70)*UIS,dk=Math.max(0,p.offsetHeight-22)*UIS;
+  else{r.setProperty("--cl","0px");r.setProperty("--cr","0px");const hh=($("#hud").offsetHeight||70)*UIH,dk=Math.max(0,p.offsetHeight-22)*UIP;
     VO.x=0;VO.y=(dk-hh*.9)/2;VO.fw=1;VO.fh=(GH-hh-dk)/GH}
   applyOff()}
 function startFight(){
@@ -236,7 +236,8 @@ function startFight(){
     clearFighters();clearTemp();buildStage(stageI);
     pl=mkF(CH[pickC],-1,true,1,useAlt(pickC)?1:0);en=mkF(CH[oi],1,false,boss?(lvl==10?1.18:1.1):1);fighters=[pl,en];
     round=1;wins={p:0,e:0};fo="none";cd={last:null,n:0,lock:null,left:0};$("#fo").hidden=true;
-    en.max=en.hp=Math.round((44+LV*6+CH[oi].st[1]*3+(boss?14:0))*(SAVE.diff==3?(boss?(lvl==10?1.75:1.5):1.25):1));if(boss)en.dm*=1.03;/* Stufe Schwer: Gegner +25 % Leben, Story-Bosse Kampf 5 +50 %, Kampf 10 +75 %. Bosse immer +3 % Schaden */en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=SAVE.diff>=2?3:Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Freier Kampf: Leicht höchstens 4,5 s, Mittel und Schwer 3 s (±15 %). */en.timer=en.iv;
+    en.max=en.hp=Math.round((44+LV*6+CH[oi].st[1]*3+(boss?14:0))*(SAVE.diff==3?(boss?(lvl==10?1.75:1.5):1.25):1));if(boss)en.dm*=1.03;/* Stufe Schwer: Gegner +25 % Leben, Story-Bosse Kampf 5 +50 %, Kampf 10 +75 %. Bosse immer +3 % Schaden */en.iv=(12-LV*.55)*.75*.7*.9;if(SAVE.diff==0)en.iv=5.5;else if(!story)en.iv=SAVE.diff>=2?3:Math.min(en.iv,4.5);/* 1.–2. Klasse: immer 5,5 s zwischen Gegnerangriffen, auch in der Story. Freier Kampf: Leicht höchstens 4,5 s, Mittel und Schwer 3 s (±15 %). *//* Kampfstil des Gegners: Tempo 5 = 26 % schneller und 22 % weniger Schaden, Tempo 1 = 26 % langsamer und 30 % mehr Schaden */
+    {const t=TEMPO[CH[oi].id]||3;en.iv*=1+(3-t)*.13;en.tdm=1+(3-t)*(t<3?.15:.11)}en.timer=en.iv;
     $("#pn").textContent=CH[pickC].n;$("#en").textContent=CH[oi].n;$("#pi").src=pic(pickC,"bust");$("#ei").src=CH[oi].bust;
     $("#lv").innerHTML=`<b>${story?(lvl==10?L("ENDKAMPF","FINAL BATTLE"):L("KAMPF ","FIGHT ")+lvl+"/10"):L("FREIER KAMPF","FREE FIGHT")}</b>${STG[stageI].n}${story?" "+hearts():""}`;
     cards={hieb:newCard("hieb"),kick:newCard("kick"),wurf:newCard("wurf"),sig:newCard("sig"),fin:newCard("fin")};sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;
@@ -312,7 +313,7 @@ function arenaScreen(){const cur=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:-
    <button type="button" class="ar rnd${cur<0?" on":""}" data-a="arena" data-i="-1"><b>?</b><span>${L("Zufall","Random")}</span></button>${order.map(i=>tile(STG[i],i)).join("")}</div>
    <button class="btn alt sm" data-a="oppBack">${L("Zurück","Back")}</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
-  menu(`<h2>${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
+  menu(`<h2 class="pickh">${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${CH.map((c,i)=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt pback" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
 function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt(i)?1:0,o=pv==null?cur:pv,lockO=o==1&&!ao;
   document.querySelectorAll(".tile").forEach((t,j)=>{t.classList.toggle("on",j==i);if(j==i&&u)t.querySelector("img").src=pic(i,"bust")});
   const seg=`<div class="seg osel">${[L("Outfit 1","Outfit 1"),ao?L(c.alt.on[0],c.alt.on[1]):L("Outfit 2 · gesperrt","Outfit 2 · locked")].map((t,k)=>`<button type="button" data-a="outfit" data-o="${k}" class="${o==k?"on":""}">${t}</button>`).join("")}</div>`;

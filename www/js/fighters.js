@@ -219,6 +219,9 @@ const CH=[
  {id:"magus",n:"Mathemagus",ti:"Herr der Zahlen",d:"Der Endgegner. Kennt jede Formel und fürchtet nur eines: die richtige Antwort.",q:"Zeig mir dein Ergebnis … wenn du dich traust!",noEars:1,skin:0x1a1626,hair:["bald",0],eye:0x3dffd0,face:{glow:0x3dffd0,mask:0x1a1626},top:0x2a5f96,belly:0x163450,pants:0x163450,glove:0x163450,sleeve:"long",wide:1,b:{w:1.05,h:1.14},
   c:0x3dffd0,sig:"Zahlenhagel",fin:"Division durch Null",st:[4,4,4],acc(H){H.hood(0x2a5f96);H.horns(0xffc21a,.5,.75);H.formulaStaff("L",0x3dffd0);H.cape(0x163450,1.7,1.05,0x0f8f7a);H.pads(0xffc21a,.2);H.belt(0xffc21a,0x3dffd0);H.skirt(0x2a5f96,.8);H.orbit(0x3dffd0)}},
 ];
+/* Kampfstil als KI-Gegner: Tempo 1 (schwer, langsam) bis 5 (leicht, flink).
+   Flinke Gegner greifen öfter an und treffen etwas schwächer, schwere seltener und härter. Gilt nur für Gegner, nicht für den Spieler. */
+const TEMPO={raiko:5,akane:4,rokka:3,zeno:4,tetsu:3,volt:2,luna:4,goro:1,shade:5,mika:5,drako:2,oni:1,seraph:3,kaiser:2,magus:3};
 /* Englische Texte je Figur. Die Felder schalten mit der Sprache um. */
 const CH_EN={
  raiko:{ti:"Lightning Ninja",d:"Faster than thunder. Still oversleeps every Monday.",q:"Don’t blink, or you’ll miss me!",sig:"Lightning Chain",fin:"Thunder Grill"},
