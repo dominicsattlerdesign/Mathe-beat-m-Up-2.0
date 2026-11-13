@@ -280,7 +280,9 @@ function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=n
    <div class="rowb"><button class="btn alt sm" data-a="lb" data-i="${SAVE.diff}">${L("Rangliste","Leaderboard")}</button><button class="btn alt sm" data-a="name">${L("Spieler","Player")}: ${esc(SAVE.name||HERO())}</button><button class="btn alt sm" data-a="settings">${L("Einstellungen","Settings")}</button></div>
    <p class="tag">${L("Story geschafft","Story cleared")}: ${SAVE.done}×</p>`)}
 const langSeg=()=>`<div class="seg" role="group" aria-label="Sprache / Language">${[["de","Deutsch"],["en","English"]].map(([k,t])=>`<button type="button" data-a="lang" data-l="${k}" class="${LANG==k?"on":""}">${t}</button>`).join("")}</div>`;
-function startScreen(){const v=$("#pname")?$("#pname").value:SAVE.name;menu(logo()+`<label class="nmf" for="pname"><input id="pname" aria-label="Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Name" value="${esc(v)}"></label><button class="btn blink" data-a="start">Start</button>${langSeg()}`)}
+function startScreen(){const v=$("#pname")?$("#pname").value:SAVE.name;menu(logo()+`<label class="nmf" for="pname"><input id="pname" aria-label="Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="Name" value="${esc(v)}"></label><button class="btn blink" data-a="start">Start</button>${langSeg()}${credits()}`)}
+/* Mitwirkende: Idee und Spieldesign, Programmierung */
+const credits=()=>`<p class="credits">${L("Spielidee & Game Design","Game idea & game design")}: <b>Dominic Sattler</b><span> · </span>${L("Programmiert mit","Programmed with")} <b>Claude Code</b> ${L("von","by")} Anthropic</p>`;
 /* Einstellungen: Lautstärke für Musik und Effekte, Sprache. back = wohin "Zurück" führt */
 let setBack="home";
 function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*100);

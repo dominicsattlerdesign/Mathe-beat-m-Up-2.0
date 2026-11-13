@@ -76,3 +76,8 @@ three.js (r128) liegt in `www/vendor`, die Schriften Bangers und Chakra Petch (S
 | `android/` | Android-Projekt (Capacitor) |
 | `resources/` | App-Icon in 1024 px |
 | `capacitor.config.json` | App-Name, ID, Webordner |
+
+## Mitwirkende
+
+- Spielidee und Game Design: Dominic Sattler
+- Programmiert mit Claude Code von Anthropic
