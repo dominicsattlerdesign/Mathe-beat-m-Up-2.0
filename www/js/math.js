@@ -105,6 +105,38 @@ const TASKS={
      ()=>{const a=rI(11,15),b=rI(4,9),c=rI(6,9);return[`(${a} × ${a}) − (${b} × ${c})`,a*a-b*c]}]],
 };
 /* Spezial-Attacke: mittelschwer, bunt gemischt aus der Stufe */
+/* ---------- Algebra-Vorstufe für die 4. Klasse (Mittel und Schwer) ----------
+   Gesucht ist immer eine Zahl: A Platzhalter mit zwei Schritten, B Symbol-Rätsel, C Zahlenfolge, D Platzhalter vorne.
+   Drittes Feld = Art der Aufgabe (für die Beschriftung der Karte). */
+const ALG={
+  mid:[ /* Mittel: Ergebnisse bis 100, kleines Einmaleins, höchstens zwei Schritte */
+    ()=>{const a=rI(2,9),x=rI(2,10),b=rI(1,Math.min(20,100-a*x));return[`${a} × ▢ + ${b} = ${a*x+b}`,x,"ph"]},
+    ()=>{const a=rI(3,9),x=rI(3,10),b=rI(1,a*x-2);return[`${a} × ▢ − ${b} = ${a*x-b}`,x,"ph"]},
+    ()=>{const x=rI(2,30),b=rI(1,30);return[`★ + ★ + ${b} = ${2*x+b}`,x,"sym"]},
+    ()=>{const x=rI(2,30);return[`★ + ★ + ★ = ${3*x}`,x,"sym"]},
+    ()=>{const x=rI(3,10),a=rI(2,5),b=rI(1,a*x-2);return[`● × ${a} − ${b} = ${a*x-b}`,x,"sym"]},
+    ()=>{const d=rI(2,9),s0=rI(1,100-5*d);return[`${s0}, ${s0+d}, ${s0+2*d}, ${s0+3*d}, ▢`,s0+4*d,"seq"]},
+    ()=>{const d=rI(2,9),s0=rI(5*d+1,99);return[`${s0}, ${s0-d}, ${s0-2*d}, ${s0-3*d}, ▢`,s0-4*d,"seq"]},
+    ()=>{const a=rI(11,60),c=rI(a+5,100);return[`▢ + ${a} = ${c}`,c-a,"ph"]},
+    ()=>{const a=rI(3,9),r=rI(2,10);return[`▢ ÷ ${a} = ${r}`,a*r,"ph"]},
+    ()=>{const a=rI(11,40),c=rI(5,60);return[`▢ − ${a} = ${c}`,a+c,"ph"]}],
+  hard:[ /* Schwer: Zahlen bis 1000, Vielfache von 10, zwei Schritte */
+    ()=>{const a=rI(3,9),x=rI(6,15),b=rI(10,a*x-5);return[`${a} × ▢ − ${b} = ${a*x-b}`,x,"ph"]},
+    ()=>{const a=rI(2,9)*10,x=rI(2,9),b=rI(10,99);return[`▢ × ${a} + ${b} = ${a*x+b}`,x,"ph"]},
+    ()=>{const x=rI(11,60),b=rI(5,30);return[`● + ● + ● − ${b} = ${3*x-b}`,x,"sym"]},
+    ()=>{const x=rI(15,90),b=rI(10,99);return[`★ × 4 + ${b} = ${4*x+b}`,x,"sym"]},
+    ()=>{const s0=rI(2,9);return[`${s0}, ${s0*2}, ${s0*4}, ${s0*8}, ▢`,s0*16,"seq"]},
+    ()=>{const st=rI(6,12),s0=rI(100,400);return[`${s0}, ${s0-st}, ${s0-2*st-1}, ${s0-3*st-3}, ▢`,s0-4*st-6,"seq"]},
+    ()=>{const d=rP([25,50,75,125]),s0=rI(1,4)*d;return[`${s0}, ${s0+d}, ${s0+2*d}, ${s0+3*d}, ▢`,s0+4*d,"seq"]},
+    ()=>{const a=rI(3,9),b=rI(2,9),c=rI(2,12);return[`▢ ÷ ${a} − ${b} = ${c}`,a*(b+c),"ph"]},
+    ()=>{const a=rI(120,480),c=rI(100,500);return[`▢ − ${a} = ${c}`,a+c,"ph"]},
+    ()=>{const a=rI(2,9)*10,x=rI(3,Math.min(12,Math.floor(1000/a)));return[`▢ × ${a} = ${a*x}`,x,"ph"]}]};
+/* Wurf mischt auf Mittel und Schwer Klammer-Aufgaben und Algebra etwa halb-halb; Spezial-Attacke und Finisher bekommen sie ebenfalls */
+TASKS.wurf[2]=TASKS.wurf[2].concat(ALG.mid.slice(0,8));TASKS.wurf[3]=TASKS.wurf[3].concat(ALG.hard.slice(0,8));
+TASKS.fin[2]=TASKS.fin[2].concat([ALG.mid[0],ALG.mid[4]]);TASKS.fin[3]=TASKS.fin[3].concat([ALG.hard[0],ALG.hard[7]]);
+const KINDS={ph:["Platzhalter","missing number"],sym:["Symbol-Rätsel","symbol puzzle"],seq:["Zahlenfolge","number pattern"]};
+/* Was gesucht ist, kurz für Anzeige und Fehlermeldung: ▢, ★, ● oder die ganze Aufgabe */
+const unk=t=>t.includes("▢")?"▢":t.includes("★")?"★":t.includes("●")?"●":t;
 TASKS.sig=[0,1,2,3].map(d=>TASKS.wurf[d].concat(TASKS.kick[d].slice(-3),TASKS.hieb[d].slice(-2)));
 /* Stufe Schwer: 75 % der Aufgaben aus Mittel, 25 % aus Schwer */
 function task(type,d){if(d==3&&Math.random()<.75)d=2;for(let i=0;i<20;i++){const t=rP(TASKS[type][d])();if(t[1]>=0&&Number.isInteger(t[1]))return t}return["2 + 2",4]}

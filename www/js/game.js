@@ -60,11 +60,12 @@ function hud(){$("#ph").style.width=$("#pht").style.width=pl.hp/pl.max*100+"%";$
   for(const[id,n]of[["#pw",wins.p],["#ew",wins.e]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<n))}
 const newCard=k=>({q:task(k,SAVE.diff),t0:0});
 function render(){const lb=LABELS[SAVE.diff?1:0];
-  $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>{const LK=cd.lock==k;return`<button type="button" class="card ${k}${sel==k?" sel":""}${LK?" cdl":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${LK?(LANG=="en"?"Resting · "+cd.left+" more":"Pause · noch "+cd.left+" andere"):lb[k]}</small><div class="q${cards[k].q[0].length>13?" lg":""}">${LK?(LANG=="en"?"locked":"gesperrt"):cards[k].q[0]}</div></button>`}).join("");
+  $("#cards").innerHTML=["hieb","kick","wurf"].map(k=>{const LK=cd.lock==k;return`<button type="button" class="card ${k}${sel==k?" sel":""}${LK?" cdl":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${LK?(LANG=="en"?"Resting · "+cd.left+" more":"Pause · noch "+cd.left+" andere"):(cards[k].q[2]?L(...KINDS[cards[k].q[2]]):lb[k])}</small><div class="q${cards[k].q[0].length>19?" xl":cards[k].q[0].length>13?" lg":""}">${LK?(LANG=="en"?"locked":"gesperrt"):cards[k].q[0]}</div></button>`}).join("");
   document.body.classList.toggle("lock",lock);hud();renderAns()}
 function renderAns(){const t=sel&&cards[sel].q[0];const pt=t&&t.split("▢"),em=`<em>${inp||"?"}</em>`;
   /* Bei gesuchter Zahl steht die Eingabe direkt in der Lücke, sonst hinter dem Gleichheitszeichen */
-  $("#ans").innerHTML=sel?(pt.length>1?`<span>${pt[0]}</span>${em}<span>${pt[1]}</span>`:`<span>${t} =</span>${em}`)+`<u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?L("Dein Kämpfer greift an …","Your fighter attacks …"):L("Attacke antippen, dann rechnen.","Tap an attack, then solve it.")}</span>`}
+  const sy=t&&!t.includes("▢")&&unk(t)!==t?unk(t):null;
+  $("#ans").innerHTML=sel?(sy?`<span>${sy} =</span>${em}`:pt.length>1?`<span>${pt[0]}</span>${em}<span>${pt[1]}</span>`:`<span>${t} =</span>${em}`)+`<u id="bl"></u><i id="bon"></i>`:`<span class="hint">${lock?L("Dein Kämpfer greift an …","Your fighter attacks …"):L("Attacke antippen, dann rechnen.","Tap an attack, then solve it.")}</span>`}
 function pick(k){if(over||lock||paused||(k=="sig"&&pl.mt<100)||(k=="fin"&&fo!="on"))return;
   if(k==cd.lock){sfx("wrong");msg(L(`${ATK[k].n} macht Pause. Schaffe erst ${cd.left==1?"eine andere Attacke":cd.left+" andere Attacken"}!`,`${ATK[k].n} needs a rest. Land ${cd.left==1?"one other attack":cd.left+" other attacks"} first!`));return}
   if(sel!=k)inp="";sel=k;if(!cards[k].t0)cards[k].t0=performance.now();sfx("pick");render()}
@@ -78,7 +79,7 @@ function submit(){if(!sel||inp===""||lock||over)return;
   const k=sel,c=cards[k],ok=+inp==c.q[1],el=(performance.now()-c.t0)/1000,th=BONUS[k];sel=null;inp="";lock=true;
   if(k=="fin"){fo="used";$("#fo").hidden=true;
     if(ok){sfx("ok");msg("Finisher!");q(async()=>{await attack(pl,en,"fin",1);lock=false;if(!over)render()})}
-    else{sfx("wrong");endOffer(L(`Daneben! ${c.q[0].includes("▢")?"▢":c.q[0]} = ${c.q[1]}. Der Finisher ist futsch, jetzt normal zu Ende kämpfen.`,`Missed! ${c.q[0].includes("▢")?"▢":c.q[0]} = ${c.q[1]}. The finisher is gone, win the fight the normal way.`));q(async()=>{pose(pl,"stumble",20);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
+    else{sfx("wrong");endOffer(L(`Daneben! ${unk(c.q[0])} = ${c.q[1]}. Der Finisher ist futsch, jetzt normal zu Ende kämpfen.`,`Missed! ${unk(c.q[0])} = ${c.q[1]}. The finisher is gone, win the fight the normal way.`));q(async()=>{pose(pl,"stumble",20);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
     return render()}
   cards[k]=newCard(k);let note="";
   if(k!="sig"){if(cd.last==k)cd.n++;else{cd.last=k;cd.n=1}
@@ -87,7 +88,7 @@ function submit(){if(!sel||inp===""||lock||over)return;
   else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`);cd.lock=null}
   if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");msg((mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")pl.mt=0;
     q(async()=>{await attack(pl,en,k,mu);lock=false;if(!over)render()})}
-  else{sfx("wrong");msg(`${P(QUIPS.bad)} ${c.q[0].includes("▢")?"▢":c.q[0]} = ${c.q[1]}.`+note);en.timer-=en.iv*.15;
+  else{sfx("wrong");msg(`${P(QUIPS.bad)} ${unk(c.q[0])} = ${c.q[1]}.`+note);en.timer-=en.iv*.15;
     q(async()=>{pose(pl,"stumble",20);pop("?!","#a79fc7",pl.root.position.x,4);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
   render()}
 $("#pad").innerHTML=["1","2","3","4","5","6","7","8","9","0","del","ok"].map(k=>`<button type="button" class="k${k=="ok"?" ok":k=="del"?" del":""}" data-k="${k}">${k=="del"?"⌫":k=="ok"?"OK":k}</button>`).join("");
