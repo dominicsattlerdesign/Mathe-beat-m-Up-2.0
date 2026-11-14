@@ -4,7 +4,7 @@
    Antworten beide innerhalb von 0,7 Sekunden richtig, gibt es einen Zusammenprall: beide nehmen etwas Schaden. */
 const VS_OK=()=>!PHONE&&GH>=560&&GW>=880;
 const CLASH_T=700;
-const V={team:[[],[]],cur:[0,0],ko:[0,0],pend:[null,null],gen:0,c:[]};
+const V={team:[[],[]],cur:[0,0],ko:[0,0],rw:[0,0],rd:1,pend:[null,null],gen:0,c:[]};
 const PN=p=>L("Spieler ","Player ")+(p+1);
 
 /* zweites Steuerpult: gleicher Aufbau wie das untere, nur ohne IDs */
@@ -45,11 +45,11 @@ function vStart(){
   stageI=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:P(okStages());
   menu(`<p class="tag">Versus · ${DIFFS[SAVE.diff][0]}</p><h1 class="logo"><span>${STG[stageI].n}</span>Versus</h1>`,1);
   setTimeout(()=>{const id=fid;
-    clearFighters();clearTemp();buildStage(stageI);V.cur=[0,0];V.ko=[0,0];V.pend=[null,null];V.gen++;
+    clearFighters();clearTemp();buildStage(stageI);V.cur=[0,0];V.ko=[0,0];V.rw=[0,0];V.rd=1;V.pend=[null,null];V.gen++;
     pl=vMk(0);en=vMk(1);fighters=[pl,en];
     round=1;wins={p:0,e:0};fo="none";$("#fo").hidden=true;sel=null;inp="";lock=false;busy=0;Q=Promise.resolve();over=true;document.body.classList.remove("lock");
     for(const c of V.c){vReset(c);vMsg(c,L("Löse eine Aufgabe, dann greift dein Kämpfer an!","Solve a problem and your fighter attacks!"))}
-    $("#lv").innerHTML=`<b>VERSUS</b>${STG[stageI].n}`;vNames();
+    vLv();vNames();
     $("#hud").hidden=false;$("#panel").hidden=false;$("#panel2").hidden=false;vRenderAll();layout();
     CAM.mode="fight";CAM.k=5;camFight();CAM.p.copy(CAM.tp).add(new THREE.Vector3(0,2,8));CAM.l.copy(CAM.tl);
     setTimeout(()=>{if(id!=fid)return;menuHide();vTeamIntro().then(()=>{if(id!=fid)return;rt(.3).then(countdown).then(ok=>{if(ok&&id==fid)over=false})})},2100)
@@ -132,10 +132,14 @@ async function vKO(a,b){const pb=b.isP?0:1,g=++V.gen;for(const pd of V.pend)if(p
   for(const c of V.c){c.sel=null;c.inp="";c.lock=false;c.wrong=false}vRenderAll();
   if(!b.downed)await launch(b,b.side*5.6,2,.75,1);pose(b,"down",20);await backHop(a);a.turn.rotation.y=FACE;pose(a,"win",10);
   V.ko[pb]++;vHud();await rt(1.5);if(g!=V.gen)return;
-  if(V.ko[pb]>=2)return vResult(1-pb);
+  if(V.ko[pb]>=2){/* Team leer: Runde vorbei. Gespielt wird auf 2 Gewinnrunden. */
+    const w=1-pb;V.rw[w]++;vLv();if(V.rw[w]>=2)return vResult(w);
+    V.rd++;banner(L("Runde ","Round ")+V.rd,L("Stand ","Score ")+V.rw[0]+" : "+V.rw[1]);sfx("gong");vLv();await rt(1.4);if(g!=V.gen)return;
+    /* beide Teams wieder komplett, die Startkämpfer springen gleichzeitig herein */
+    V.cur=[0,0];V.ko=[0,0];const A=vSwap(0),B=vSwap(1);vNames();vHud();for(const c of V.c){vReset(c);vMsg(c,L("Neue Runde, beide Teams wieder komplett!","New round, both teams back in full!"))}
+    await rt(.3);await Promise.all([vJumpIn(A),vJumpIn(B)]);if(g!=V.gen)return;vRenderAll();await rt(.4);if(await countdown())over=false;return}
   /* zweiter Kämpfer kommt rein, der Sieger behält seine Leben */
-  V.cur[pb]=1;sc.remove(b.root);{const h=b.J.hd.children[0].material;h.map&&h.map.dispose();h.dispose()}
-  const nf=vMk(pb);if(pb)en=nf;else pl=nf;fighters=[pl,en];fx_(nf).x=nf.hx;vNames();vHud();
+  V.cur[pb]=1;const nf=vSwap(pb);vNames();vHud();
   await rt(.4);await vJumpIn(nf);if(g!=V.gen)return;pose(a,"idle",12);a.turn.rotation.y=FACE;
   for(const c of V.c){c.lock=false;vMsg(c,L("Neuer Kämpfer! Weiter geht’s.","New fighter! Keep going."))}vRenderAll();
   await rt(.6);if(await countdown())over=false}
@@ -144,6 +148,10 @@ function vTeamIntro(){const el=$("#vsi"),band=p=>{const t=V.team[p];return`<div 
   el.innerHTML=band(1)+`<div class="vv">VS</div>`+band(0);el.hidden=false;el.className="";void el.offsetWidth;el.className="go";document.body.classList.add("vsi");sfx("vs");setTimeout(()=>sfx("gong"),700);
   return new Promise(res=>{let done=false;const end=()=>{if(done)return;done=true;el.removeEventListener("pointerdown",end);el.className="out";document.body.classList.remove("vsi");setTimeout(()=>{el.hidden=true},300);res()};
     el.addEventListener("pointerdown",end);setTimeout(end,2800)})}
+/* Kämpfer von Spieler p ersetzen. Der neue bleibt unsichtbar ausserhalb, bis er hereinspringt. */
+function vSwap(p){const old=vF(p);sc.remove(old.root);{const h=old.J.hd.children[0].material;h.map&&h.map.dispose();h.dispose()}
+  const nf=vMk(p);nf.root.visible=false;fx_(nf).x=nf.side*10;if(p)en=nf;else pl=nf;fighters=[pl,en];return nf}
+function vLv(){$("#lv").innerHTML=`<b>VERSUS</b>${L("Runde ","Round ")+V.rd} · ${V.rw[0]} : ${V.rw[1]}`}
 /* Ersatzkämpfer springt von aussen in die Arena */
 async function vJumpIn(f){const x0=f.side*10,x1=f.hx;f.root.visible=true;f.grounded=false;pose(f,"kickCh",25);fx_(f).x=x0;fx_(f).y=2;sfx("jump");setTimeout(()=>sfx("whoosh"),250);
   await tw(.8,p=>{fx_(f).x=lerp(x0,x1,p);fx_(f).y=lerp(2,0,p)+Math.sin(p*Math.PI)*4;f.piv.rotation.x=-Math.PI*2*eOut(p)});
@@ -155,7 +163,7 @@ async function vEnter(f){const id=++WI.id;WI.active=true;const vo={x:VO.x,y:VO.y
   WI.active=false;$("#cut").className="";clearTemp();settle(f);pose(f,"idle",12);
   document.body.classList.remove("cine","intro");Object.assign(VO,vo);layout();CAM.mode="fight";CAM.k=4}
 function vResult(w){over=true;endFightUi();sfx("win");const t=V.team[w],lt=V.team[1-w];
-  menu(`<p class="tag">Versus · ${DIFFS[SAVE.diff][0]}</p><h1 class="logo"><span>${PN(w)}</span>${L("gewinnt!","wins!")}</h1>
+  menu(`<p class="tag">Versus · ${DIFFS[SAVE.diff][0]} · ${L("Runden","Rounds")} ${V.rw[0]} : ${V.rw[1]}</p><h1 class="logo"><span>${PN(w)}</span>${L("gewinnt!","wins!")}</h1>
    <div class="vres">${t.map((i,n)=>`<img src="${pic(i,"full")}" alt="" class="${n<V.cur[w]?"ko":""}">`).join("")}</div>
    <p>${L(`${CH[t[V.cur[w]]].n} steht als Letzter im Ring. ${CH[lt[0]].n} und ${CH[lt[1]].n} sind K.O.`,`${CH[t[V.cur[w]]].n} is the last one standing. ${CH[lt[0]].n} and ${CH[lt[1]].n} are knocked out.`)}</p>
    <div class="rowb"><button class="btn" data-a="again">${L("Revanche","Rematch")}</button><button class="btn alt" data-a="vnew">${L("Neue Teams","New teams")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
