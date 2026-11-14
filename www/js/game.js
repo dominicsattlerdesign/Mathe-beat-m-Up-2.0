@@ -200,7 +200,7 @@ const MOVES={
 /* Englische Namen der Varianten */
 {const en={hieb:["Triple Combo","Flash Cut","Hammer Fist","Drum Roll"],kick:["Whirl Kick","Sweep Kick","Hurricane Kick","Dive Kick"],wurf:["Sling Throw","Sky Drop","Giant Swing"]};
  for(const k in en)MOVES[k].forEach((m,i)=>bi(m,"n",m.n,en[k][i]))}
-async function runMove(k,a,b,dm){const ML=MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,ML.length-1)}while(m[k]===i);m[k]=i;
+async function runMove(k,a,b,dm){const ML=(KMV[a.ch.id]&&KMV[a.ch.id][k])||MOVES[k],m=a.lastMv=a.lastMv||{};a.kc=ATK[k].c;colorBurst(a.ch.c,a.kc,1.6);let i;do{i=R(0,ML.length-1)}while(m[k]===i);m[k]=i;
   pop(ML[i].n+"!",null,fx_(a).x,4.6*a.sc,"mv");await ML[i].f(a,b,dm)}
 const ACT={hieb:(a,b,dm)=>runMove("hieb",a,b,dm),kick:(a,b,dm)=>runMove("kick",a,b,dm),wurf:(a,b,dm)=>runMove("wurf",a,b,dm)};
 /* Gegnerschaden im Verhältnis zum Spieler. Ziel auf Mittel und Schwer (bei 107 Leben): Freier Kampf 4–7 Treffer bis K.O. (210 %),

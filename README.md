@@ -2,7 +2,7 @@
 
 Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift an.
 
-- **Drei Attacken, drei Aufgabenarten:** Hieb, Kick und Wurf mit je eigener Aufgabenart und elf Varianten. Dreimal dieselbe Attacke am Stück sperrt sie, bis zwei andere geschafft sind.
+- **Drei Attacken, drei Aufgabenarten:** Hieb, Kick und Wurf mit je eigener Aufgabenart. Jeder Kämpfer hat eigene Bewegungen: 3 Hiebe, 3 Kicks und 2 Würfe mit eigenen Effekten und Requisiten (120 insgesamt). Schwere Kämpfer bewegen sich langsamer und wuchtiger, schnelle flinker. Alle machen gleich viel Schaden. Dreimal dieselbe Attacke am Stück sperrt sie, bis zwei andere geschafft sind.
 - **Spezial-Attacke und Finisher je Figur:** Die Spezial-Leiste lädt sich im Kampf auf, auch bei den Gegnern. Ist ihre Leiste voll, setzen sie ihre Spezial-Attacke ein. Den Finisher gibt es nur im Matchball, wenn der Gegner höchstens 10 % Leben hat, und nur 15 Sekunden lang.
 - **15 Kämpfer:** 5 von Anfang an (Raiko, Akane, Zeno, Theo, Ida), pro Story-Durchgang kommt ein zufälliger gesperrter Kämpfer dazu. In der Stufe „Mittel“ ist es ein zufälliger gesperrter Kämpfer, nur dort können auch die Bosse Kaiser Null und Mathemagus frei werden.
 - **Zweites Outfit und Arena je Figur:** Schafft man die Story mit einer Figur, wird zufällig ihr zweites Outfit oder ihre Arena frei, beim nächsten Mal das andere. Das Outfit ist in der Kämpferwahl umschaltbar.
@@ -79,6 +79,8 @@ Spielstand, Name und Rangliste liegen im `localStorage` des Browsers.
 | `www/js/fighters.js` | Körper, Gesichter, Waffen, Posen und die 15 Kämpfer |
 | `www/js/stages.js` | Arenen und zerstörbare Objekte |
 | `www/js/moves.js` | Spezial-Attacken und Finisher je Figur |
+| `www/js/styles.js` | Eigene Hiebe, Kicks und Würfe je Figur |
+| `www/js/versus.js` | Versus-Modus für zwei Spielende |
 | `www/js/walkins.js` | Auftritte vor dem Kampf (30 Stück) |
 | `www/js/game.js` | Menüs, Steuerung, Kampfregeln, Rangliste |
 
