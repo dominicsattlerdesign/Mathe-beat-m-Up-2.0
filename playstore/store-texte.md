@@ -23,8 +23,13 @@ VIER SCHWIERIGKEITSSTUFEN
 • Mittel: Einmaleins, Klammern und erste Algebra
 • Schwer: grosse Zahlen bis 1000
 
+VERSUS: ZU ZWEIT AN EINEM TABLET
+• Zwei Spielende rechnen gegeneinander, einer unten, einer oben
+• Jeder wählt 2 Kämpfer, gespielt wird auf 2 Gewinnrunden
+• Beide gleichzeitig richtig? Dann gibt es einen Zusammenprall!
+
 SO VIEL ZU ENTDECKEN
-• 15 Kämpfer mit eigener Spezialattacke, davon 10 zum Freischalten
+• 15 Kämpfer mit eigenen Hieben, Kicks, Würfen und Spezialattacken, davon 10 zum Freischalten
 • Story mit 10 Kämpfen bis zum Mathemagus
 • Freier Kampf gegen einen Gegner deiner Wahl
 • Zweite Outfits, Bonus-Arenen und Musik zum Freischalten
@@ -48,3 +53,10 @@ Spiele → Lernspiele (Educational)
 ## Datenschutzerklärung (URL)
 https://claude.ai/artifact/FEMo1oNx8WrGsQcSbF6Ei2
 (Vorher unter „Teilen“ auf „Jeder mit dem Link“ stellen.)
+
+## Versionshinweise 1.1 (max. 500 Zeichen)
+<de-DE>
+Neu: Versus-Modus für Tablets. Zwei Spielende rechnen gegeneinander, jeder mit einem Team aus 2 Kämpfern, auf 2 Gewinnrunden. Wer gleichzeitig richtig antwortet, löst einen Zusammenprall aus.
+Jeder Kämpfer hat jetzt eigene Hiebe, Kicks und Würfe – 120 neue Bewegungen.
+Musik schon auf dem Startbildschirm.
+</de-DE>
