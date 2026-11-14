@@ -43,8 +43,7 @@ Object.assign(ACTIONS,{
 function vStart(){
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
   stageI=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:P(okStages());
-  const fig=p=>{const i=V.team[p][0];return`<figure><img src="${pic(i,"full")}" alt=""><figcaption>${CH[i].n}<small>${PN(p)} · + ${CH[V.team[p][1]].n}</small></figcaption></figure>`};
-  menu(`<div class="vs">${fig(0)}<div class="v">VS</div>${fig(1)}</div><p class="tag">Versus · ${DIFFS[SAVE.diff][0]} · ${STG[stageI].n}</p>`,1);sfx("vs");
+  menu(`<p class="tag">Versus · ${DIFFS[SAVE.diff][0]}</p><h1 class="logo"><span>${STG[stageI].n}</span>Versus</h1>`,1);
   setTimeout(()=>{const id=fid;
     clearFighters();clearTemp();buildStage(stageI);V.cur=[0,0];V.ko=[0,0];V.pend=[null,null];V.gen++;
     pl=vMk(0);en=vMk(1);fighters=[pl,en];
@@ -53,7 +52,7 @@ function vStart(){
     $("#lv").innerHTML=`<b>VERSUS</b>${STG[stageI].n}`;vNames();
     $("#hud").hidden=false;$("#panel").hidden=false;$("#panel2").hidden=false;vRenderAll();layout();
     CAM.mode="fight";CAM.k=5;camFight();CAM.p.copy(CAM.tp).add(new THREE.Vector3(0,2,8));CAM.l.copy(CAM.tl);
-    setTimeout(()=>{if(id!=fid)return;menuHide();intro().then(()=>{if(id!=fid)return;banner("Versus",L("Wer zuerst beide Kämpfer verliert, verliert","Lose both fighters and you lose"));sfx("gong");rt(1.25).then(countdown).then(ok=>{if(ok&&id==fid)over=false})})},2100)
+    setTimeout(()=>{if(id!=fid)return;menuHide();vTeamIntro().then(()=>{if(id!=fid)return;rt(.3).then(countdown).then(ok=>{if(ok&&id==fid)over=false})})},2100)
   },60)}
 /* Kämpfer bauen. Versus-Leben etwas tiefer als im Einzelspiel, damit ein Duell mit 4 Kämpfern nicht zu lange dauert. */
 function vMk(p){const i=V.team[p][V.cur[p]],f=mkF(CH[i],p?1:-1,!p,1,useAlt(i)?1:0);f.max=f.hp=Math.round(f.max*.85);return f}
@@ -137,10 +136,18 @@ async function vKO(a,b){const pb=b.isP?0:1,g=++V.gen;for(const pd of V.pend)if(p
   /* zweiter Kämpfer kommt rein, der Sieger behält seine Leben */
   V.cur[pb]=1;sc.remove(b.root);{const h=b.J.hd.children[0].material;h.map&&h.map.dispose();h.dispose()}
   const nf=vMk(pb);if(pb)en=nf;else pl=nf;fighters=[pl,en];fx_(nf).x=nf.hx;vNames();vHud();
-  banner(L("Wechsel!","Tag in!"),PN(pb)+": "+nf.ch.n);sfx("gong");await rt(.9);
-  await vEnter(nf);if(g!=V.gen)return;pose(a,"idle",12);a.turn.rotation.y=FACE;
+  await rt(.4);await vJumpIn(nf);if(g!=V.gen)return;pose(a,"idle",12);a.turn.rotation.y=FACE;
   for(const c of V.c){c.lock=false;vMsg(c,L("Neuer Kämpfer! Weiter geht’s.","New fighter! Keep going."))}vRenderAll();
   await rt(.6);if(await countdown())over=false}
+/* Vorstellung zu Beginn: je Team ein Banner mit beiden Köpfen und Namen (Spieler 2 gedreht), keine Einlauf-Animationen. Tippen überspringt. */
+function vTeamIntro(){const el=$("#vsi"),band=p=>{const t=V.team[p];return`<div class="tb p${p+1}" style="--c1:${hex(CH[t[0]].c)};--c2:${hex(CH[t[1]].c)}"><div class="tl">${PN(p)}</div><div class="tm">${t.map(i=>`<figure><img src="${pic(i,"bust")}" alt=""><figcaption>${CH[i].n}</figcaption></figure>`).join(`<span>&amp;</span>`)}</div></div>`};
+  el.innerHTML=band(1)+`<div class="vv">VS</div>`+band(0);el.hidden=false;el.className="";void el.offsetWidth;el.className="go";document.body.classList.add("vsi");sfx("vs");setTimeout(()=>sfx("gong"),700);
+  return new Promise(res=>{let done=false;const end=()=>{if(done)return;done=true;el.removeEventListener("pointerdown",end);el.className="out";document.body.classList.remove("vsi");setTimeout(()=>{el.hidden=true},300);res()};
+    el.addEventListener("pointerdown",end);setTimeout(end,2800)})}
+/* Ersatzkämpfer springt von aussen in die Arena */
+async function vJumpIn(f){const x0=f.side*10,x1=f.hx;f.root.visible=true;f.grounded=false;pose(f,"kickCh",25);fx_(f).x=x0;fx_(f).y=2;sfx("jump");setTimeout(()=>sfx("whoosh"),250);
+  await tw(.8,p=>{fx_(f).x=lerp(x0,x1,p);fx_(f).y=lerp(2,0,p)+Math.sin(p*Math.PI)*4;f.piv.rotation.x=-Math.PI*2*eOut(p)});
+  f.piv.rotation.x=0;fx_(f).y=0;f.grounded=true;landFx(f,f.ch.c,true);pose(f,"win",20);pop(f.ch.n+"!",hex(f.ch.c),x1,4.6*f.sc,"mv");await rt(.7);pose(f,"idle",12)}
 /* Auftritt eines einzelnen Kämpfers (wie intro(), nur für einen) */
 async function vEnter(f){const id=++WI.id;WI.active=true;const vo={x:VO.x,y:VO.y,fw:VO.fw,fh:VO.fh};VO.x=VO.y=0;VO.fw=VO.fh=1;applyOff();
   document.body.classList.add("cine","intro");CAM.mode="cine";f.root.visible=false;
