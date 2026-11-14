@@ -394,4 +394,7 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
 /* ----- Start ----- */
 setQuality(SAVE.q);AU.muted=SAVE.mute;AU.vol={m:SAVE.vol.m,s:SAVE.vol.s};AU.track=Math.min(SAVE.track||0,TRK.length-1);applyLang();sndUi();rs();makePortraits();attract();
 startScreen();
+/* Menümusik schon auf dem Startbildschirm: sofort, wenn das Gerät Ton ohne Antippen erlaubt, sonst bei der ersten Berührung irgendwo */
+{const go=()=>{auInit();if(!AU.ctx)return;if(!pl)musicOn();if(AU.ctx.state=="running")for(const ev of EVS)removeEventListener(ev,go,true)},EVS=["pointerup","touchend","keydown","click"];
+ for(const ev of EVS)addEventListener(ev,go,true);try{auInit();if(AU.ctx&&AU.ctx.state=="running"){musicOn();for(const ev of EVS)removeEventListener(ev,go,true)}}catch(e){}}
 requestAnimationFrame(loop);
