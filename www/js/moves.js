@@ -200,7 +200,7 @@ const FIN={
 async function charge(a,c,d,ax,dur,big){gather(a,c,dur);aura(a,c,dur);ring(ax,.06,0,c,3,dur*.7);const R=(big?5.6:6)*a.sc,y0=fx_(a).y;
   await rt(dur,p=>{const an=d*(-1+p*1.45);CAM.tp.set(ax+Math.sin(an)*R,1.2+p*1.5+y0,Math.cos(an)*R);CAM.tl.set(ax,(1.9+y0*.5)*a.sc,0);flashLight(c,1+p*3,ax,2);CAM.shake=.02+p*(big?.12:.07)})}
 function release(a,c,ax){const y=1.9*a.sc+fx_(a).y;impactFrame(80);edgeFlash(c);hitRing(ax,y,c,2.6);burstLines(ax,y,c,18,4.5);ring(ax,.06,0,c,7,.6);ring(ax,.06,0,0xffffff,4.5,.4);sparks(ax,y,.4,30,[c,0xffffff,0xffe14d],10);sfx("boom");CAM.shake=.5}
-async function sigMove(a,b,dm){const c=a.ch.c,d=-a.side,ax=fx_(a).x;cine(true);cutIn(a,a.ch.sig+"!",(a.isP?"":a.ch.n+" · ")+L("Spezial-Attacke","Special attack"));sfx("charge");
+async function sigMove(a,b,dm){const c=a.ch.c,d=-a.side,ax=fx_(a).x;cine(true);cutIn(a,a.ch.sig+"!",(a.isP&&mode!="v"?"":a.ch.n+" · ")+L("Spezial-Attacke","Special attack"));sfx("charge");
   CAM.mode="cine";CAM.k=8;pose(a,"charge",12);colorBurst(c,0xffffff,2.4);
   await charge(a,c,d,ax,1.15,0);
   release(a,c,ax);CAM.mode="fight";CAM.k=4.5;speed(true);sfx("slowmo");TSb=.4;rt(.5).then(()=>speed(false));
