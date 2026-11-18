@@ -92,7 +92,7 @@ const SIG2={
   async seraph(a,b,dm,d,c){pose(a,"win",20);const bx=fx_(b).x;shaft(bx,0x3a2a60,1,2.4);
     for(let i=0;i<7;i++){const x0=bx+rnd(-3,3),x1=bx+rnd(-.4,.4),y1=rnd(1.4,2.8),m=new THREE.Mesh(gB(.1,.7,.25),bmat(i%2?0x15131a:0x3a2a60));m.rotation.z=rnd(6.3);
       fxAdd(m,.26,(m,p)=>{m.position.set(lerp(x0,x1,p),lerp(11,y1,p),.3);m.rotation.z+=.3;if(Math.random()<.5)sparks(m.position.x,m.position.y,0,1,[0x3a2a60,0x9a6bff],2)});sfx("swoosh");await wait(.12);
-      if(i>0)impact(a,b,dm*(i==6?.4:.1),{nomt:1,quiet:i%2,lv:i==6?2:0,stop:.03,push:.04,noReact:i==6,s:i==6?"heavy":"punch"})}
+      if(i>0)impact(a,b,dm*(i==6?.4:.12),{nomt:1,quiet:i%2,lv:i==6?2:0,stop:.03,push:.04,noReact:i==6,s:i==6?"heavy":"punch"})}
     glow(bx,2,0x3a2a60,7,.5);await launch(b,b.side*6,1.6,.6,1)},
   /* Weisser Kaiser: ein weisses Loch stösst den Gegner weg und platzt */
   async kaiser(a,b,dm,d,c){pose(a,"win",20);const bx=fx_(b).x,ox=bx-d*1,oy=2.6,o=new THREE.Group();o.add(new THREE.Mesh(gS(.5,16,12),bmat(0xffffff)));const r=new THREE.Mesh(gT(.8,.06,8,30),addMat(0xc8d8ff,.9));r.rotation.x=1.2;o.add(r);o.position.set(ox,oy,0);keep(o);sfx("charge");
