@@ -8,6 +8,8 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 - **Zweites Outfit und Arena je Figur:** Schafft man die Story mit einer Figur, wird zufällig ihr zweites Outfit oder ihre Arena frei, beim nächsten Mal das andere. Das Outfit ist in der Kämpferwahl umschaltbar.
 - **15 Arenen, eine pro Figur**, mit Objekten, die im Kampf zu Bruch gehen. Die Arenen der fünf Start-Figuren sind von Anfang an frei, die anderen kommen über die Story (siehe unten). In der Story kämpft man in der Arena des Gegners. Dazu **3 Bonus-Arenen** (Kinderzimmer, Spielhalle, Neon-Gasse): jeder Story-Sieg auf „Schwer“ schaltet eine frei. Im Freien Kampf wählt man die Arena selbst oder per Zufall.
 - **Vier Stufen:** 1.–2. Klasse (Plus und Minus bis 20), Leicht, Mittel, Schwer. Schwer mischt 75 % Aufgaben aus Mittel mit 25 % grossen Zahlen, dafür haben die Gegner dort mehr Leben (+25 %, Story-Bosse +50 % und +75 %).
+- **Vier Sprachen:** Deutsch, Englisch, Französisch und Spanisch. Beim ersten Start gilt die Sprache des Geräts, umstellen lässt sie sich auf dem Startbildschirm und in den Einstellungen. Neue Texte: `L(de,en)` schreiben und die französische und spanische Übersetzung in `www/js/i18n.js` eintragen (oder direkt `L(de,en,fr,es)`).
+- **Zweites Outfit mit eigenen Moves:** Jedes zweite Outfit hat eine eigene Spezial-Attacke und einen eigenen Finisher (30 Szenen), passend zum Outfit, zum Beispiel Eiszeit für den Eis-Ninja oder Hausaufgaben-Lawine für Professor Kreide.
 - **Versus (nur Tablet und Browser):** Zwei Spielende an einem Tablet. Spieler 1 rechnet unten, Spieler 2 oben auf einem um 180° gedrehten Steuerpult. Beide spielen in derselben Stufe, jeder wählt 2 Kämpfer. Zu Beginn stellt je ein Banner beide Kämpfer eines Teams vor (ohne Einlauf-Animationen). Geht einer K.O., springt der zweite in die Arena (der Sieger behält seine Leben). Wer zuerst beide Kämpfer verliert, verliert die Runde. Gespielt wird auf 2 Gewinnrunden, jede Runde beginnt mit beiden Teams komplett. Antworten beide innerhalb von 0,7 Sekunden richtig, gibt es einen Zusammenprall und beide nehmen halben Schaden. Auf Handys wird der Modus nicht angeboten.
 - **Vorstufe Algebra (Mittel und Schwer):** Platzhalter mit zwei Schritten (`4 × ▢ + 3 = 31`), Symbol-Rätsel (`★ + ★ + 5 = 19`), Zahlenfolgen (`3, 6, 12, 24, ▢`) und Platzhalter vorne (`▢ ÷ 4 = 9`). Kommen vor allem im Wurf und in der Spezialattacke vor (etwa die Hälfte der Wurf-Aufgaben), dazu gelegentlich im Finisher. Mittel bleibt bis 100, Schwer bis 1000.
 - **Story** (10 Kämpfe, jeder bis zwei Rundensiege, 2 Leben: nach der ersten Niederlage darf man den Kampf wiederholen, nach der zweiten beginnt die Story von vorn) und **Freier Kampf** mit freier Wahl von Gegner und Arena.
@@ -81,6 +83,8 @@ Spielstand, Name und Rangliste liegen im `localStorage` des Browsers.
 | `www/js/moves.js` | Spezial-Attacken und Finisher je Figur |
 | `www/js/styles.js` | Eigene Hiebe, Kicks und Würfe je Figur |
 | `www/js/versus.js` | Versus-Modus für zwei Spielende |
+| `www/js/outfits.js` | Eigene Spezial-Attacke und eigener Finisher für jedes zweite Outfit |
+| `www/js/i18n.js` | Französische und spanische Übersetzungen (Schlüssel ist der englische Text) |
 | `www/js/walkins.js` | Auftritte vor dem Kampf (30 Stück) |
 | `www/js/game.js` | Menüs, Steuerung, Kampfregeln, Rangliste |
 

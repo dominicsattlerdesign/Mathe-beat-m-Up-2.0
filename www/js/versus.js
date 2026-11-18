@@ -68,7 +68,7 @@ function vHud(){if(!pl||!en)return;$("#ph").style.width=$("#pht").style.width=pl
 function vFin(c){const f=vF(c.p);if(!f)return;const full=f.mt>=100,b=c.el.fin;b.classList.toggle("rdy",full);b.classList.toggle("sel",c.sel=="sig");b.firstElementChild.style.width=f.mt+"%";
   b.querySelector("span").textContent=full?ATK.sig.n+" · "+f.ch.sig.toUpperCase():ATK.sig.n+" "+Math.round(f.mt)+" %";b.querySelector("b").textContent=full?c.cards.sig.q[0]:""}
 function vRender(c){const lb=LABELS[SAVE.diff?1:0];
-  c.el.cards.innerHTML=["hieb","kick","wurf"].map(k=>{const LK=c.cd.lock==k,q=c.cards[k].q;return`<button type="button" class="card ${k}${c.sel==k?" sel":""}${LK?" cdl":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${LK?(LANG=="en"?"Resting · "+c.cd.left+" more":"Pause · noch "+c.cd.left+" andere"):(q[2]?L(...KINDS[q[2]]):lb[k])}</small><div class="q${q[0].length>19?" xl":q[0].length>13?" lg":""}">${LK?(LANG=="en"?"locked":"gesperrt"):q[0]}</div></button>`}).join("");
+  c.el.cards.innerHTML=["hieb","kick","wurf"].map(k=>{const LK=c.cd.lock==k,q=c.cards[k].q;return`<button type="button" class="card ${k}${c.sel==k?" sel":""}${LK?" cdl":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${LK?L("Pause · noch "+c.cd.left+" andere","Resting · "+c.cd.left+" more","Repos · encore "+c.cd.left,"Descanso · faltan "+c.cd.left):(q[2]?L(...KINDS[q[2]]):lb[k])}</small><div class="q${q[0].length>19?" xl":q[0].length>13?" lg":""}">${LK?L("gesperrt","locked"):q[0]}</div></button>`}).join("");
   c.el.root.classList.toggle("lk",c.lock);vFin(c);vAns(c)}
 function vAns(c){const t=c.sel&&c.cards[c.sel].q[0],em=`<em>${c.inp||"?"}</em>`;let h;
   if(!c.sel)h=`<span class="hint">${c.wrong?L("Kurz durchatmen …","Take a breath …"):c.lock?L("Dein Kämpfer greift an …","Your fighter attacks …"):L("Attacke antippen, dann rechnen.","Tap an attack, then solve it.")}</span>`;
@@ -87,7 +87,7 @@ function vLayout(){const r=document.documentElement.style,p2=$("#panel2"),s=UIP,
 
 /* ----- Eingabe ----- */
 function vPick(p,k){const c=V.c[p],f=vF(p);if(over||paused||c.lock||!f||k=="fin"||(k=="sig"&&f.mt<100))return;
-  if(k==c.cd.lock){sfx("wrong");vMsg(c,L(`${ATK[k].n} macht Pause. Schaffe erst ${c.cd.left==1?"eine andere Attacke":c.cd.left+" andere Attacken"}!`,`${ATK[k].n} needs a rest. Land ${c.cd.left==1?"one other attack":c.cd.left+" other attacks"} first!`));return}
+  if(k==c.cd.lock){sfx("wrong");vMsg(c,L(`${ATK[k].n} macht Pause. Schaffe erst ${c.cd.left==1?"eine andere Attacke":c.cd.left+" andere Attacken"}!`,`${ATK[k].n} needs a rest. Land ${c.cd.left==1?"one other attack":c.cd.left+" other attacks"} first!`,`${ATK[k].n} se repose. Réussis d’abord ${c.cd.left==1?"une autre attaque":c.cd.left+" autres attaques"} !`,`${ATK[k].n} descansa. ¡Primero acierta ${c.cd.left==1?"otro ataque":c.cd.left+" ataques distintos"}!`));return}
   if(c.sel!=k)c.inp="";c.sel=k;if(!c.cards[k].t0)c.cards[k].t0=performance.now();sfx("pick");vRender(c)}
 function vPress(p,k){const c=V.c[p];if(over||paused||c.lock||!c.sel)return;
   if(k=="del"){c.inp=c.inp.slice(0,-1);sfx("key")}else if(k=="ok")return vSubmit(p);else if(c.inp.length<6){c.inp+=k;sfx("key")}vAns(c)}
@@ -95,9 +95,9 @@ function vSubmit(p){const c=V.c[p];if(!c.sel||c.inp==="")return;
   const k=c.sel,cd=c.cd,card=c.cards[k],ok=+c.inp==card.q[1],el=(performance.now()-card.t0)/1000,th=BONUS[k],f=vF(p),g=V.gen;c.sel=null;c.inp="";c.lock=true;c.cards[k]=newCard(k);let note="";
   /* dreimal dieselbe Attacke am Stück: Pause, bis 2 andere geschafft sind (wie im Einzelspiel) */
   if(k!="sig"){if(cd.last==k)cd.n++;else{cd.last=k;cd.n=1}
-    if(ok&&cd.lock&&k!=cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`);cd.lock=null}
-    if(cd.n>=3){cd.lock=k;cd.left=2;cd.n=0;cd.last=null;note=L(` Dreimal ${ATK[k].n}: Der macht jetzt Pause.`,` Three ${ATK[k].n}es: it needs a rest now.`)}}
-  else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`);cd.lock=null}
+    if(ok&&cd.lock&&k!=cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
+    if(cd.n>=3){cd.lock=k;cd.left=2;cd.n=0;cd.last=null;note=L(` Dreimal ${ATK[k].n}: Der macht jetzt Pause.`,` Three ${ATK[k].n}es: it needs a rest now.`,` Trois ${ATK[k].n} : il doit se reposer.`,` Tres ${ATK[k].n}: ahora necesita descansar.`)}}
+  else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
   if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");vMsg(c,(mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")f.mt=0;vOk(p,k,mu)}
   else{sfx("wrong");vMsg(c,`${P(QUIPS.bad)} ${unk(card.q[0])} = ${card.q[1]}.`+note);pop("?!","#a79fc7",fx_(f).x,4);if(busy==0)pose(f,"stumble",20);
     /* falsche Antwort: gut eine Sekunde Pause für dieses Pult */
@@ -165,7 +165,7 @@ async function vEnter(f){const id=++WI.id;WI.active=true;const vo={x:VO.x,y:VO.y
 function vResult(w){over=true;endFightUi();sfx("win");const t=V.team[w],lt=V.team[1-w];
   menu(`<p class="tag">Versus · ${DIFFS[SAVE.diff][0]} · ${L("Runden","Rounds")} ${V.rw[0]} : ${V.rw[1]}</p><h1 class="logo"><span>${PN(w)}</span>${L("gewinnt!","wins!")}</h1>
    <div class="vres">${t.map((i,n)=>`<img src="${pic(i,"full")}" alt="" class="${n<V.cur[w]?"ko":""}">`).join("")}</div>
-   <p>${L(`${CH[t[V.cur[w]]].n} steht als Letzter im Ring. ${CH[lt[0]].n} und ${CH[lt[1]].n} sind K.O.`,`${CH[t[V.cur[w]]].n} is the last one standing. ${CH[lt[0]].n} and ${CH[lt[1]].n} are knocked out.`)}</p>
+   <p>${L(`${CH[t[V.cur[w]]].n} steht als Letzter im Ring. ${CH[lt[0]].n} und ${CH[lt[1]].n} sind K.O.`,`${CH[t[V.cur[w]]].n} is the last one standing. ${CH[lt[0]].n} and ${CH[lt[1]].n} are knocked out.`,`${CH[t[V.cur[w]]].n} est le dernier debout. ${CH[lt[0]].n} et ${CH[lt[1]].n} sont K.-O.`,`${CH[t[V.cur[w]]].n} es el último en pie. ${CH[lt[0]].n} y ${CH[lt[1]].n} están K.O.`)}</p>
    <div class="rowb"><button class="btn" data-a="again">${L("Revanche","Rematch")}</button><button class="btn alt" data-a="vnew">${L("Neue Teams","New teams")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
   /* Gewinnt Spieler 2, steht das Ergebnis für ihn richtig herum */
   if(w)$("#menu").classList.add("flip")}

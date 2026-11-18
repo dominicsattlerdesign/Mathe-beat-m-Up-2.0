@@ -3,9 +3,12 @@
    0 = 1.–2. Klasse (nur Plus & Minus im Zahlenraum bis 20), 1 = leicht, 2 = mittel, 3 = schwer.
    hieb/kick/wurf = Standard-Attacken, sig = Spezial-Attacke, fin = Finisher (schwer, 15 Sekunden).
    Eine Aufgabe ist [Text, Lösung]. Steht ▢ im Text, wird die fehlende Zahl gesucht. */
-/* Sprache: LANG ist "de" oder "en". L(de,en) wählt den Text, bi() legt ein Feld an, das je nach Sprache den passenden Wert liefert. */
-let LANG="de";const L=(de,en)=>LANG=="en"?en:de;
-function bi(o,k,de,en){Object.defineProperty(o,k,{get:()=>LANG=="en"?en:de,configurable:true,enumerable:true})}
+/* Sprache: LANG ist "de", "en", "fr" oder "es". L(de,en,fr,es) wählt den Text, bi() legt ein Feld an, das je nach Sprache den passenden Wert liefert.
+   Fehlen fr/es, wird der englische Text im Wörterbuch TR (js/i18n.js) nachgeschlagen, sonst bleibt er englisch. */
+let LANG="de";const LANGS=[["de","Deutsch"],["en","English"],["fr","Français"],["es","Español"]],TR={fr:{},es:{}},BIK=[];
+const tr=(en,l)=>{if(Array.isArray(en))return en.map(x=>tr(x,l));const t=TR[l]&&TR[l][en];return t!=null?t:en};
+const L=(de,en,fr,es)=>LANG=="de"?de:LANG=="en"?en:LANG=="fr"?(fr!=null?fr:tr(en,"fr")):(es!=null?es:tr(en,"es"));
+function bi(o,k,de,en,fr,es){BIK.push(en);Object.defineProperty(o,k,{get:()=>L(de,en,fr,es),configurable:true,enumerable:true})}
 const rI=(a,b)=>a+Math.floor(Math.random()*(b-a+1)),rP=a=>a[rI(0,a.length-1)];
 const DIFFS=[["1.–2. Klasse","Plus & Minus bis 20"],["Leicht","kleines Einmaleins"],["Mittel","Einmaleins & Klammern"],["Schwer","gemischt, auch grosse Zahlen"]];
 [["Grade 1–2","plus & minus to 20"],["Easy","small times tables"],["Medium","times tables & brackets"],["Hard","mixed, incl. big numbers"]].forEach((e,i)=>{const d=DIFFS[i];bi(d,0,d[0],e[0]);bi(d,1,d[1],e[1])});

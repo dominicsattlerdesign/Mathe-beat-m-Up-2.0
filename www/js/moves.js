@@ -204,11 +204,11 @@ async function sigMove(a,b,dm){const c=a.ch.c,d=-a.side,ax=fx_(a).x;cine(true);c
   CAM.mode="cine";CAM.k=8;pose(a,"charge",12);colorBurst(c,0xffffff,2.4);
   await charge(a,c,d,ax,1.15,0);
   release(a,c,ax);CAM.mode="fight";CAM.k=4.5;speed(true);sfx("slowmo");TSb=.4;rt(.5).then(()=>speed(false));
-  await SIG[a.ch.id](a,b,dm,d,c);
+  await ((a.ch.o&&SIG2[a.ch.id])||SIG[a.ch.id])(a,b,dm,d,c);
   TSb=1;speed(false);cine(false);CAM.k=5;clearTemp();a.piv.rotation.x=0}
 /* Kino-Sequenz um den Finisher: wie oben, nur länger und grösser. Endet immer mit K.O. und einem Nachhall in Zeitlupe. */
 async function finMove(a,b){const c=a.ch.c,d=-a.side,ax=fx_(a).x;b.dizzy=false;cine(true);cv.classList.add("drama");cutIn(a,a.ch.fin+"!","必殺 · FINISHER");sfx("charge");CAM.mode="cine";CAM.k=7;
   pose(a,"charge",10);pose(b,"dizzy",10);await charge(a,c,d,ax,1.5,1);
-  release(a,c,ax);flash("#fff");CAM.mode="fight";CAM.k=4;await FIN[a.ch.id](a,b,d,c);if(b.hp>0)kill(a,b);
+  release(a,c,ax);flash("#fff");CAM.mode="fight";CAM.k=4;await ((a.ch.o&&FIN2[a.ch.id])||FIN[a.ch.id])(a,b,d,c);if(b.hp>0)kill(a,b);
   const bx=fx_(b).x;hitRing(bx,2,c,3.4);burstLines(bx,2,c,22,5.5);pillar(bx,c,1.6,16,.8);TSb=.25;await rt(.9);TSb=1;
   cv.classList.remove("drama");cine(false);CAM.k=5;a.turn.rotation.y=FACE}

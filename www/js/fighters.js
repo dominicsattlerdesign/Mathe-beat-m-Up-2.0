@@ -277,7 +277,8 @@ const ALT={
 };
 CH.forEach(c=>c.alt=ALT[c.id]);
 /* Figur im gewählten Outfit: erbt alles von der Figur und überschreibt nur das Aussehen */
-const outfit=(ch,o)=>o&&ch.alt?Object.assign(Object.create(ch),ch.alt,{o:1}):ch;
+/* Zweites Outfit: Aussehen aus ALT, dazu eigene Namen für Spezial und Finisher (siehe outfits.js) */
+const outfit=(ch,o)=>{if(!(o&&ch.alt))return ch;const x=Object.assign(Object.create(ch),ch.alt,{o:1}),n=ch.alt.names;if(n){bi(x,"sig",...n.sig);bi(x,"fin",...n.fin)}return x};
 /* 5 Kämpfer am Start, 10 zum Freispielen: je Story-Durchgang einer */
 /* lock: 0 = von Anfang an spielbar, 1 = wird über die Story frei. Die beiden Bosse nur über die Story in der Stufe "Mittel". */
 /* Start-Kämpfer: von Anfang an spielbar, ihre Arenen ebenfalls. Alle anderen werden über die Story frei. */
