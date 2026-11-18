@@ -179,6 +179,11 @@ FAIT POUR LES ENFANTS
 
 Idée et game design : Dominic Sattler. Programmé avec Claude Code par Anthropic.
 
+## Images (dossier fr/)
+• Icône : icon-512.png
+• Image de présentation : image-de-presentation-1024x500.png
+• Captures téléphone, tablette 7 et 10 pouces : screenshot-1.jpg à screenshot-8.jpg
+
 ---------------------------------------------------------------------
 
 # ESPAÑOL (es-ES)
@@ -228,6 +233,11 @@ HECHO PARA NIÑOS
 • Para móviles y tabletas, en español, inglés, alemán y francés
 
 Idea y diseño del juego: Dominic Sattler. Programado con Claude Code de Anthropic.
+
+## Imágenes (carpeta es/)
+• Icono: icon-512.png
+• Gráfico destacado: grafico-destacado-1024x500.png
+• Capturas móvil, tableta de 7 y 10 pulgadas: screenshot-1.jpg a screenshot-8.jpg
 
 ---------------------------------------------------------------------
 
