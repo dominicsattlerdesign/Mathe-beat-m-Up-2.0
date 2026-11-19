@@ -274,7 +274,10 @@ function result(win){
   else menu(`<h2>${L("Niederlage","Defeat")} ${sc_}</h2><p>${P(L(["Das war knapp. Atme durch und such dir den nächsten Gegner!","Auch Champions fallen mal um. Aufstehen, Krone richten.","Dein Gegner hatte Glück. Sagt er jedenfalls."],["That was close. Take a breath and pick your next opponent!","Even champions fall over sometimes. Get up, fix your crown.","Your opponent got lucky. At least that’s what they say."]))}</p><div class="rowb"><button class="btn" data-a="arcade">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1)}
 
 /* ----- Menüs ----- */
-function menu(h,solid){const m=$("#menu");m.hidden=false;m.classList.remove("flip");m.classList.toggle("solid",!!solid);m.innerHTML=h;m.scrollTop=0;$("#snd").hidden=false}
+/* Der verkleinerte Inhalt #mw zählt fürs Scrollen sonst mit seiner unverkleinerten Höhe: #mc bekommt deshalb genau die sichtbare Höhe */
+function fitMenu(){const mw=$("#mw"),mc=$("#mc");if(mw&&mc)mc.style.height=Math.ceil(mw.offsetHeight*UIM)+"px"}
+const menuRO=new ResizeObserver(fitMenu);addEventListener("resize",()=>setTimeout(fitMenu,0));
+function menu(h,solid){const m=$("#menu");m.hidden=false;m.classList.remove("flip");m.classList.toggle("solid",!!solid);m.innerHTML=`<div id="mc"><div id="mw">${h}</div></div>`;menuRO.observe($("#mw"));fitMenu();m.scrollTop=0;$("#snd").hidden=false}
 function menuHide(){$("#menu").hidden=true;$("#snd").hidden=true}
 function attract(si){fid++;tws.length=0;rtw.length=0;TSb=1;over=true;clearFighters();buildStage(si!=null?si:P(okStages()));const ok=CH.map((c,i)=>i).filter(i=>unlocked(CH[i])),a=P(ok),b=P(ok.filter(i=>i!=a));
   fighters=[mkF(CH[a],-1,true),mkF(CH[b],1,false)];CAM.mode="menu"}

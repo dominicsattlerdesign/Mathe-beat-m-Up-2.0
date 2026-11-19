@@ -166,16 +166,18 @@ body.lock .card,body.lock .pfin,.pnl.lk .card,.pnl.lk .pfin{opacity:.45}
    auf kleineren Bildschirmen (Handy) als Ganzes verkleinert. --uis setzt das Spiel beim Start und bei jeder Grössenänderung. */
 #hud{left:0;right:auto;width:calc(100% / var(--uis));transform:scale(var(--uis));transform-origin:0 0}
 .pnl{left:0;right:auto;width:calc(100% / var(--uip));transform:scale(var(--uip));transform-origin:0 100%}
-#menu{inset:0 auto auto 0;width:calc(100% / var(--uim));height:calc(100% / var(--uim));transform:scale(var(--uim));transform-origin:0 0}
+/* Menüs: der scrollbare Rahmen #menu bleibt unskaliert (sonst schneiden manche Handys wie das Pixel 9 ihn bei --uim ab), verkleinert wird nur der Inhalt #mw */
+#mc{position:relative;width:100%;overflow:hidden}
+#mw{width:calc(100% / var(--uim));min-height:calc(var(--vh) * 100 / var(--uim));transform:scale(var(--uim));transform-origin:0 0}
 /* ---------- Handy: grosse Touch-Flächen. Zeile 1: Attacken und Spezial. Zeile 2: Aufgabe links, Zahlen in zwei Reihen rechts. ---------- */
 body.phone .pnl{gap:6px;padding-top:22px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
 body.phone .card,body.phone .pfin{height:52px}
 body.phone .card b{font-size:22px}body.phone .card small{display:none}body.phone .card{grid-template-rows:auto;column-gap:8px;padding-left:14px}
 body.phone .card .q{grid-row:1;font-size:clamp(14px,calc(var(--vw)*2.3),20px)}body.phone .card .q.lg{font-size:clamp(11px,calc(var(--vw)*1.65),15px)}body.phone .card .q.xl{font-size:clamp(10px,calc(var(--vw)*1.4),13px)}body.phone .card b{font-size:18px}
-body.phone #menu{gap:10px}body.phone .pick .tile{aspect-ratio:1/1}body.phone .pick .tile img{object-position:50% 15%}body.phone .det>img{max-height:calc(var(--vh)*60)}
+body.phone #mw{gap:10px}body.phone .pick .tile{aspect-ratio:1/1}body.phone .pick .tile img{object-position:50% 15%}body.phone .det>img{max-height:calc(var(--vh)*60)}
 body.phone .pickh{display:none}body.phone .pback{min-width:0;position:absolute;left:var(--gl);top:calc(8px + env(safe-area-inset-top,0px));z-index:1}
 /* Auswahl-Raster mittig halten, wenn "Zurück" oben links schwebt */
-body.phone #menu>.arenas,body.phone #menu>.grid.opp,body.phone #menu>.pick{margin-bottom:auto}
+body.phone #mw>.arenas,body.phone #mw>.grid.opp,body.phone #mw>.pick{margin-bottom:auto}
 body.phone .ar.lk b{display:none}body.phone .ar.lk{padding-block:6px}body.phone .arenas{gap:6px}
 body.phone .sets{gap:8px;padding-block:12px}body.phone .sets .srow.wide{gap:4px}
 body.phone .pfin b{font-size:15px}
@@ -187,10 +189,11 @@ body.phone .pmsg{font-size:13px}
 body.phone .grid.opp{width:min(98%,900px)}
 #snd{transform:skewX(-10deg) scale(max(var(--uis),.7));transform-origin:100% 0}
 /* ---------- Menüs ---------- */
-#menu{position:fixed;inset:0;z-index:6;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;overflow:auto;touch-action:pan-y;
-  padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(18px + env(safe-area-inset-bottom,0px));padding-left:var(--gl);padding-right:var(--gr);
+#menu{position:fixed;inset:0;z-index:6;overflow:auto;overflow-x:hidden;touch-action:pan-y;
   background:radial-gradient(ellipse at 50% 30%,rgba(11,10,20,.35),rgba(11,10,20,.86) 75%)}
-#menu>:first-child{margin-top:auto}#menu>:last-child{margin-bottom:auto}
+#mw{box-sizing:border-box;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;
+  padding-block:calc(18px + env(safe-area-inset-top,0px)) calc(18px + env(safe-area-inset-bottom,0px));padding-left:var(--gl);padding-right:var(--gr)}
+#mw>:first-child{margin-top:auto}#mw>:last-child{margin-bottom:auto}
 #menu.solid{background:rgba(11,10,20,.9)}
 .logo{font:400 clamp(64px,calc(var(--vw)*13),150px)/.82 var(--disp);letter-spacing:.03em;color:var(--hot);-webkit-text-stroke:3px var(--line);
   text-shadow:6px 7px 0 var(--line),0 0 50px rgba(255,60,20,.7);transform:rotate(-4deg) skewX(-6deg);margin:0;text-transform:uppercase}
@@ -302,7 +305,7 @@ body.phone .credits{font-size:15px!important}
 body.vsi #hud,body.vsi .pnl{opacity:0;pointer-events:none}
 /* ---------- Versus: zweites Steuerpult oben, um 180° gedreht (die Drehung setzt vLayout per JS) ---------- */
 #panel2{top:0;bottom:auto;transform-origin:0 0}
-#menu.flip{transform:translate(calc(var(--vw)*100),calc(var(--vh)*100)) rotate(180deg) scale(var(--uim))}
+#menu.flip{transform:rotate(180deg)}
 .vteam{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}
 .vslot{width:86px;height:86px;border:3px dashed var(--dim);display:grid;place-items:center;font:400 30px var(--disp);color:var(--dim);background:var(--panel);position:relative;transform:skewX(-6deg)}
 .vslot.f{border-style:solid;border-color:var(--gold)}.vslot img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
