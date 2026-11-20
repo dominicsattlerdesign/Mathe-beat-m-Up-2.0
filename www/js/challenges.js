@@ -14,21 +14,21 @@ const OUTK={raiko:"kick",akane:"hieb",rokka:"wurf",zeno:"wurf",tetsu:"wurf",volt
 const cn=id=>CH.find(c=>c.id==id).n;
 const CHL=[
   /* Kämpfer */
-  {id:"f_rokka",r:["f","rokka"],need:30,v:()=>atkSum("wurf"),t:()=>L("Lande 30 Würfe","Land 30 throws","Réussis 30 lancers","Acierta 30 lanzamientos")},
-  {id:"f_volt",r:["f","volt"],need:25,v:()=>STD().blitz,t:()=>L("Löse 25 Aufgaben blitzschnell (×1,5)","Solve 25 problems lightning fast (×1.5)","Résous 25 calculs ultra-rapides (×1,5)","Resuelve 25 cuentas rapidísimo (×1,5)")},
-  {id:"f_goro",r:["f","goro"],need:5,v:()=>STD().winA,t:()=>L("Gewinne 5 Freie Kämpfe","Win 5 free fights","Gagne 5 combats libres","Gana 5 combates libres")},
-  {id:"f_shade",r:["f","shade"],need:10,v:()=>STD().best,t:()=>L("10 richtige Antworten am Stück","10 correct answers in a row","10 bonnes réponses d’affilée","10 respuestas correctas seguidas")},
-  {id:"f_mika",r:["f","mika"],need:50,v:()=>atkSum("kick"),t:()=>L("Lande 50 Kicks","Land 50 kicks","Réussis 50 coups de pied","Acierta 50 patadas")},
-  {id:"f_drako",r:["f","drako"],need:3,v:()=>STD().defM.akane||0,t:()=>L("Besiege Akane 3× auf Mittel oder Schwer","Beat Akane 3× on Medium or Hard","Bats Akane 3× en Moyen ou Difficile","Vence a Akane 3× en Medio o Difícil")},
-  {id:"f_oni",r:["f","oni"],need:5,v:()=>STD().fin,t:()=>L("Schaffe 5 Finisher","Land 5 finishers","Réussis 5 finishers","Consigue 5 remates")},
+  {id:"f_rokka",r:["f","rokka"],need:80,v:()=>atkSum("wurf"),t:()=>L("Lande 80 Würfe","Land 80 throws","Réussis 80 lancers","Acierta 80 lanzamientos")},
+  {id:"f_volt",r:["f","volt"],need:60,v:()=>STD().blitz,t:()=>L("Löse 60 Aufgaben blitzschnell (×1,5)","Solve 60 problems lightning fast (×1.5)","Résous 60 calculs ultra-rapides (×1,5)","Resuelve 60 cuentas rapidísimo (×1,5)")},
+  {id:"f_goro",r:["f","goro"],need:10,v:()=>STD().winA,t:()=>L("Gewinne 10 Freie Kämpfe","Win 10 free fights","Gagne 10 combats libres","Gana 10 combates libres")},
+  {id:"f_shade",r:["f","shade"],need:20,v:()=>STD().best,t:()=>L("20 richtige Antworten am Stück","20 correct answers in a row","20 bonnes réponses d’affilée","20 respuestas correctas seguidas")},
+  {id:"f_mika",r:["f","mika"],need:150,v:()=>atkSum("kick"),t:()=>L("Lande 150 Kicks","Land 150 kicks","Réussis 150 coups de pied","Acierta 150 patadas")},
+  {id:"f_drako",r:["f","drako"],need:5,v:()=>STD().defM.akane||0,t:()=>L("Besiege Akane 5× auf Mittel oder Schwer","Beat Akane 5× on Medium or Hard","Bats Akane 5× en Moyen ou Difficile","Vence a Akane 5× en Medio o Difícil")},
+  {id:"f_oni",r:["f","oni"],need:12,v:()=>STD().fin,t:()=>L("Schaffe 12 Finisher","Land 12 finishers","Réussis 12 finishers","Consigue 12 remates")},
   {id:"f_seraph",r:["f","seraph"],need:3,v:()=>STD().flaw,t:()=>L("Gewinne 3 Kämpfe ohne falsche Antwort","Win 3 fights without a wrong answer","Gagne 3 combats sans erreur","Gana 3 combates sin fallar")},
-  {id:"f_mimi",r:["f","mimi"],need:10,v:()=>atkSum("sig"),t:()=>L("Setze 10 Spezialattacken ein","Use 10 special attacks","Utilise 10 attaques spéciales","Usa 10 ataques especiales")},
+  {id:"f_mimi",r:["f","mimi"],need:25,v:()=>atkSum("sig"),t:()=>L("Setze 25 Spezialattacken ein","Use 25 special attacks","Utilise 25 attaques spéciales","Usa 25 ataques especiales")},
   /* zweite Outfits: 25× die Lieblingsattacke mit genau diesem Kämpfer */
-  ...Object.entries(OUTK).map(([id,k])=>({id:"o_"+id,r:["o",id],need:25,v:()=>atkOf(id,k),t:()=>L(`Nutze mit ${cn(id)} 25× ${an(k)}`,`Use ${an(k)} 25× with ${cn(id)}`,`Utilise ${an(k)} 25× avec ${cn(id)}`,`Usa ${an(k)} 25× con ${cn(id)}`)})),
+  ...Object.entries(OUTK).map(([id,k])=>{const n=k=="wurf"?50:75;return{id:"o_"+id,r:["o",id],need:n,v:()=>atkOf(id,k),t:()=>L(`Nutze mit ${cn(id)} ${n}× ${an(k)}`,`Use ${an(k)} ${n}× with ${cn(id)}`,`Utilise ${an(k)} ${n}× avec ${cn(id)}`,`Usa ${an(k)} ${n}× con ${cn(id)}`)}}),
   /* Arenen der freispielbaren Kämpfer: den Besitzer zweimal besiegen */
-  ...["rokka","volt","goro","shade","mika","drako","oni","seraph","kaiser","magus","mimi"].map(id=>({id:"a_"+id,r:["a",id],need:2,v:()=>STD().def[id]||0,t:()=>L(`Besiege ${cn(id)} 2×`,`Beat ${cn(id)} 2×`,`Bats ${cn(id)} 2×`,`Vence a ${cn(id)} 2×`)})),
+  ...["rokka","volt","goro","shade","mika","drako","oni","seraph","kaiser","magus","mimi"].map(id=>({id:"a_"+id,r:["a",id],need:3,v:()=>STD().def[id]||0,t:()=>L(`Besiege ${cn(id)} 3×`,`Beat ${cn(id)} 3×`,`Bats ${cn(id)} 3×`,`Vence a ${cn(id)} 3×`)})),
   /* Bonus-Arenen über Rechen-Aufgaben (gibt es in Mittel und Schwer) */
-  {id:"b_neon",r:["b","Neon Alley"],need:30,v:()=>STD().k.seq||0,t:()=>L("Löse 30 Zahlenfolgen","Solve 30 number patterns","Résous 30 suites de nombres","Resuelve 30 series de números")},
+  {id:"b_neon",r:["b","Neon Alley"],need:50,v:()=>STD().k.seq||0,t:()=>L("Löse 50 Zahlenfolgen","Solve 50 number patterns","Résous 50 suites de nombres","Resuelve 50 series de números")},
 ];
 /* Belohnung: Name, Bild und ob sie schon frei ist */
 function rwInfo(r){const[t,id]=r;
@@ -69,10 +69,10 @@ function toastNext(){const it=TQ.shift();if(!it){tBusy=false;return}tBusy=true;l
 
 /* Bildschirm „Herausforderungen“ */
 function chScreen(){const done=SAVE.chd.length;
-  const row=c=>{const v=Math.min(c.v(),c.need),ok=SAVE.chd.includes(c.id),info=rwInfo(c.r);
+  const row=c=>{const ok=SAVE.chd.includes(c.id),v=ok?c.need:Math.min(c.v(),c.need),info=rwInfo(c.r);
     const pic_=info.img?`<img src="${info.img}" alt="">`:info.st!=null?`<span class="cst" style="${arStyle(info.st)}"></span>`:`<i>★</i>`;
     return`<div class="chr${ok?" ok":""}">${pic_}<div class="cht"><b>${c.t()}</b><small>${c.r[0]?info.what+(c.r[0]=="o"?" · "+info.n:": "+info.n):info.n}</small><div class="chb"><i style="width:${v/c.need*100}%"></i></div></div><span class="chv">${ok?"✓":v+"/"+c.need}</span></div>`};
-  menu(`<h2>${L("Herausforderungen","Challenges","Défis","Retos")}</h2><p class="tag">${done} / ${CHL.length} ${L("geschafft","done","réussis","superados")}</p>
+  menu(`<div class="chtop"><button class="btn alt sm" data-a="home">‹ ${L("Zurück","Back")}</button><h2>${L("Herausforderungen","Challenges","Défis","Retos")}</h2><span></span></div><p class="tag">${done} / ${CHL.length} ${L("geschafft","done","réussis","superados")}</p>
    <div class="chl">${CHL.map(row).join("")}</div><button class="btn alt sm" data-a="home">${L("Zurück","Back")}</button>`,1)}
 ACTIONS.chal=chScreen;
 /* beim Start einmal prüfen (z. B. nach einem Update mit neuen Herausforderungen) */

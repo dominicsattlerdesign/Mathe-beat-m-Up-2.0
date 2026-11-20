@@ -23,7 +23,7 @@ async function arc(f,x0,y0,z0,x1,y1,z1,h,dur,flips=0,ps="kickCh"){f.grounded=fal
   f.piv.rotation.x=0;f.root.position.set(x1,y1,z1);f.grounded=y1<=.01}
 function landFx(f,c,big){const x=f.root.position.x;sfx(big?"slam":"land");dust(x,0,big?14:8);ring(x,.06,0,c,big?5:3,.5);CAM.shake=Math.max(CAM.shake,big?.5:.25);if(big)crack(x,1.6,1)}
 async function strut(f,x0,x1,dur){f.root.visible=true;f.root.position.x=x0;f.run=true;pose(f,"run",30);await A(dur,p=>{f.root.position.x=lerp(x0,x1,p)});f.run=false;f.root.position.x=x1}
-async function finishPose(f,t=.75){pose(f,"win",12);f.turn.rotation.y=FACE;await A(t)}
+async function finishPose(f,t=.75){pose(f,introPose(f),12);f.turn.rotation.y=FACE;await A(t)}
 function say(f,de,en,col){pop(L(de,en),col||"#fff",f.root.position.x,4.3*f.sc,"mv")}
 /* Requisiten: Gruppe bauen, in die Szene setzen und beim Aufräumen wieder entfernen */
 function prop(type,x,z=0,s=1,ry=0,arg){const g=new THREE.Group();PROP[type](g,arg);g.position.set(x,0,z);g.scale.setScalar(s);g.rotation.y=ry;return keep(g)}
