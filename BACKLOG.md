@@ -13,7 +13,7 @@ Punkte 1–9 sind umgesetzt (Test-APK Version 1.3). Neue Punkte unten anhängen.
    - Eigene Hiebe, Kicks, Würfe, eigene Spezial-Attacke, eigener Finisher, eigenes Intro
    - Kein zweites Outfit
    - Freispielbare Arena: Liebespalast
-5. **Freier Kampf als Tag Team**
+5. **Freier Kampf als Tag Team** (wieder entfernt, gefiel im Test nicht)
    - 2 Kämpfer wählen
    - Geht einer K.O., springt der zweite in die Arena, es geht direkt weiter (kein neues Intro, kein neues 3-2-1)
    - Gemeinsames Intro für beide Kämpfer eines Teams, für jede mögliche Paarung ein eigenes, auch mit zweiten Outfits
@@ -31,4 +31,4 @@ Punkte 1–9 sind umgesetzt (Test-APK Version 1.3). Neue Punkte unten anhängen.
    - Eigener Bildschirm „Herausforderungen“ mit Fortschrittsbalken (z. B. 17/25) und einer Meldung im Kampf, wenn eine geschafft ist
    - Fortschritt wird auf dem Gerät gespeichert, bisher Freigeschaltetes bleibt frei
 8. **Rechnungen auf kleinen Bildschirmen (z. B. Google Pixel 9) teilweise nicht vollständig sichtbar** und dadurch nicht lösbar. Lange Aufgaben (Zahlenfolgen, Klammern, Algebra) auf den Karten und im Antwortfeld prüfen und so anpassen, dass sie immer ganz zu sehen sind.
-9. **Vibration bei falscher Antwort** (haptisches Feedback). Machbar in der Android-App über das Capacitor-Plugin „Haptics“ (bzw. `navigator.vibrate`), braucht die Berechtigung VIBRATE. Viele Tablets haben keinen Vibrationsmotor, dort passiert einfach nichts. Im Browser geht es nur auf Android, nicht auf iPhone/iPad. Idee: kurzes Doppel-Brummen bei falsch, evtl. ganz kurzes Tippen bei Treffern; in den Einstellungen ein- und ausschaltbar.
+9. **Vibration bei falscher Antwort** (haptisches Feedback). Wieder entfernt, brachte im Test nichts. Machbar in der Android-App über das Capacitor-Plugin „Haptics“ (bzw. `navigator.vibrate`), braucht die Berechtigung VIBRATE. Viele Tablets haben keinen Vibrationsmotor, dort passiert einfach nichts. Im Browser geht es nur auf Android, nicht auf iPhone/iPad. Idee: kurzes Doppel-Brummen bei falsch, evtl. ganz kurzes Tippen bei Treffern; in den Einstellungen ein- und ausschaltbar.

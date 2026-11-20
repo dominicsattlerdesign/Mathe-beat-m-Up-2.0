@@ -99,7 +99,7 @@ function vSubmit(p){const c=V.c[p];if(!c.sel||c.inp==="")return;
     if(cd.n>=3){cd.lock=k;cd.left=2;cd.n=0;cd.last=null;note=L(` Dreimal ${ATK[k].n}: Der macht jetzt Pause.`,` Three ${ATK[k].n}es: it needs a rest now.`,` Trois ${ATK[k].n} : il doit se reposer.`,` Tres ${ATK[k].n}: ahora necesita descansar.`)}}
   else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
   if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");vMsg(c,(mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")f.mt=0;vOk(p,k,mu)}
-  else{sfx("wrong");vib([70,60,70]);vMsg(c,`${P(QUIPS.bad)} ${unk(card.q[0])} = ${card.q[1]}.`+note);pop("?!","#a79fc7",fx_(f).x,4);if(busy==0)pose(f,"stumble",20);
+  else{sfx("wrong");vMsg(c,`${P(QUIPS.bad)} ${unk(card.q[0])} = ${card.q[1]}.`+note);pop("?!","#a79fc7",fx_(f).x,4);if(busy==0)pose(f,"stumble",20);
     /* falsche Antwort: gut eine Sekunde Pause für dieses Pult */
     c.wrong=true;setTimeout(()=>{c.wrong=false;if(g!=V.gen)return;c.lock=false;if(busy==0&&!over&&vF(p)==f)pose(f,"idle",12);vRender(c)},1100)}
   vRender(c);vHud()}

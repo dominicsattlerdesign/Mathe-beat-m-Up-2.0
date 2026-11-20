@@ -31,8 +31,6 @@ let mode="a",lvl=1,pickC=0,selC=0,pl=null,en=null,fighters=[],over=true,lock=fal
 let T=0,hs=0,TSb=1,last=performance.now();
 const q=fn=>{const id=fid;busy++;Q=Q.then(()=>id==fid&&fn()).catch(e=>console.error(e)).then(()=>{if(id==fid)busy--})};
 const msg=t=>$("#msg").textContent=t;
-/* Vibration (Android-Handys mit Vibrationsmotor; sonst passiert nichts). In den Einstellungen abschaltbar. */
-const vib=pat=>{if(SAVE.vib===false)return;try{navigator.vibrate&&navigator.vibrate(pat)}catch(e){}};
 
 /* ----- kleine Bildschirm-Effekte ----- */
 function pop(t,col,x,y=3.4,cls=""){const[px,py]=scr(x,y),d=document.createElement("div");d.className="pop "+cls;d.textContent=t;d.style.left=px+"px";d.style.top=py+"px";if(col)d.style.color=col;document.body.appendChild(d);setTimeout(()=>d.remove(),950)}
@@ -57,7 +55,7 @@ function hud(){if(mode=="v")return vHud();$("#ph").style.width=$("#pht").style.w
   const full=pl.mt>=100;$("#pmb").classList.toggle("full",full);const f=$("#fin");f.classList.toggle("rdy",full);f.classList.toggle("sel",sel=="sig");f.firstElementChild.style.width=pl.mt+"%";
   $("#fint").textContent=full?ATK.sig.n+" · "+pl.ch.sig.toUpperCase():ATK.sig.n+" "+Math.round(pl.mt)+" %";$("#finq").textContent=full?cards.sig.q[0]:"";if(full)fitBox($("#fin"),"b");
   const er=en.mt>=100;$("#ecb").classList.toggle("full",er);$("#elbl").textContent=er?L("SPEZIAL BEREIT!","SPECIAL READY!"):L("GEGNER-ANGRIFF","ENEMY ATTACK");
-  for(const[id,n]of mode=="a"?[["#pw",2-TG.ko.p],["#ew",2-TG.ko.e]]:[["#pw",wins.p],["#ew",wins.e]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<n))}
+  for(const[id,n]of [["#pw",wins.p],["#ew",wins.e]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<n))}
 const newCard=k=>({q:task(k,SAVE.diff),t0:0});
 /* Rechnungen immer ganz zeigen (kleine Handys, grosse Systemschrift): Schrift schrittweise verkleinern, bis nichts mehr überläuft */
 function fitCards(root){if(!root)return;root.querySelectorAll(".card").forEach(cd=>{const q=cd.querySelector(".q"),b=cd.querySelector("b");if(!q||!b||!cd.clientWidth)return;q.style.fontSize="";
@@ -88,7 +86,7 @@ function submit(){if(!sel||inp===""||lock||over)return;
   const k=sel,c=cards[k],ok=+inp==c.q[1],el=(performance.now()-c.t0)/1000,th=BONUS[k];sel=null;inp="";lock=true;
   if(k=="fin"){fo="used";$("#fo").hidden=true;
     if(ok){sfx("ok");ST.ok(pl.ch.id,"fin",1,null);msg("Finisher!");q(async()=>{await attack(pl,en,"fin",1);lock=false;if(!over)render()})}
-    else{sfx("wrong");ST.bad();vib([70,60,70]);endOffer(L(`Daneben! ${unk(c.q[0])} = ${c.q[1]}. Der Finisher ist futsch, jetzt normal zu Ende kämpfen.`,`Missed! ${unk(c.q[0])} = ${c.q[1]}. The finisher is gone, win the fight the normal way.`,`Raté ! ${unk(c.q[0])} = ${c.q[1]}. Le finisher est perdu, termine le combat normalement.`,`¡Fallaste! ${unk(c.q[0])} = ${c.q[1]}. El remate se perdió, termina el combate de forma normal.`));q(async()=>{pose(pl,"stumble",20);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
+    else{sfx("wrong");ST.bad();endOffer(L(`Daneben! ${unk(c.q[0])} = ${c.q[1]}. Der Finisher ist futsch, jetzt normal zu Ende kämpfen.`,`Missed! ${unk(c.q[0])} = ${c.q[1]}. The finisher is gone, win the fight the normal way.`,`Raté ! ${unk(c.q[0])} = ${c.q[1]}. Le finisher est perdu, termine le combat normalement.`,`¡Fallaste! ${unk(c.q[0])} = ${c.q[1]}. El remate se perdió, termina el combate de forma normal.`));q(async()=>{pose(pl,"stumble",20);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
     return render()}
   cards[k]=newCard(k);let note="";
   if(k!="sig"){if(cd.last==k)cd.n++;else{cd.last=k;cd.n=1}
@@ -97,7 +95,7 @@ function submit(){if(!sel||inp===""||lock||over)return;
   else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
   if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");ST.ok(pl.ch.id,k,mu,c.q[2]);msg((mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")pl.mt=0;
     q(async()=>{await attack(pl,en,k,mu);lock=false;if(!over)render()})}
-  else{sfx("wrong");ST.bad();vib([70,60,70]);msg(`${P(QUIPS.bad)} ${unk(c.q[0])} = ${c.q[1]}.`+note);en.timer-=en.iv*.15;
+  else{sfx("wrong");ST.bad();msg(`${P(QUIPS.bad)} ${unk(c.q[0])} = ${c.q[1]}.`+note);en.timer-=en.iv*.15;
     q(async()=>{pose(pl,"stumble",20);pop("?!","#a79fc7",pl.root.position.x,4);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
   render()}
 $("#pad").innerHTML=["1","2","3","4","5","6","7","8","9","0","del","ok"].map(k=>`<button type="button" class="k${k=="ok"?" ok":k=="del"?" del":""}" data-k="${k}">${k=="del"?"⌫":k=="ok"?"OK":k}</button>`).join("");
@@ -221,11 +219,10 @@ async function attack(a,b,k,mu){if(over)return;
   else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 88 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP||mode=="v"?mu:enF()*(a.tdm||1)));
   if(b.hp>0){await recover(a,b);
     /* Finisher gibt es nur im Matchball: der Spieler führt 1 Runde und der Gegner hat höchstens 10 % Leben */
-    if(a.isP&&fo=="none"&&(mode=="a"?TG.ko.e==1:wins.p==1)&&b.hp<=b.max*.1&&!over)offerFin();return}
+    if(a.isP&&fo=="none"&&wins.p==1&&b.hp<=b.max*.1&&!over)offerFin();return}
   /* Versus: K.O. heisst Kämpferwechsel, bis ein Team leer ist */
   if(mode!="v"&&!b.isP)ST.ko(b.ch.id);
   if(mode=="v")return vKO(a,b);
-  if(mode=="a")return tKO(a,b);
   /* Runde vorbei: gekämpft wird, bis jemand zwei Runden gewonnen hat */
   if(fo=="on")endOffer();
   if(!b.downed)await launch(b,b.side*5.6,2,.75,1);pose(b,"down",20);await backHop(a);a.turn.rotation.y=FACE;pose(a,"win",10);
@@ -243,7 +240,7 @@ function layout(){if(mode=="v"&&!$("#panel2").hidden)return vLayout();const p=$(
   else{r.setProperty("--cl","0px");r.setProperty("--cr","0px");const hh=($("#hud").offsetHeight||70)*UIH,dk=Math.max(0,p.offsetHeight-22)*UIP;
     VO.x=0;VO.y=(dk-hh*.9)/2;VO.fw=1;VO.fh=(GH-hh-dk)/GH}
   applyOff()}
-function startFight(){ST.fight();if(mode=="v")return vStart();if(mode=="a")return tStart();
+function startFight(){ST.fight();if(mode=="v")return vStart();
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
   const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):(()=>{const i=CH.findIndex(c=>c.id==SAVE.opp);return i>=0&&i!=pickC&&unlocked(CH[i])?i:P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i])))})(),LV=story?lvl:[2,3,5,8][SAVE.diff];
   stageI=story?arenaOf(CH[oi]):SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:P(okStages());
@@ -309,7 +306,6 @@ function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*
    <label for="vs"><span>${L("Soundeffekte","Sound effects")}</span><input id="vs" type="range" min="0" max="100" step="5" value="${v("s")}"><b id="vsv">${v("s")} %</b></label>
    <div class="srow wide"><span>${L("Grafik-Effekte","Visual effects")} <small class="hint">${L("„Niedrig“ für ältere Tablets und Handys","“Low” for older tablets and phones")}</small></span><div class="seg">${[L("Niedrig","Low"),L("Mittel","Medium"),L("Hoch","High")].map((t,k)=>`<button type="button" data-a="qual" data-i="${k}" class="${SAVE.q==k?"on":""}">${t}</button>`).join("")}</div></div>
    <div class="srow wide"><span>${L("Musiktitel","Music track")}</span><div class="seg">${TRK.map((t,k)=>`<button type="button" data-a="track" data-i="${k}" class="${SAVE.track==k?"on":""}">${L(t.n[0],t.n[1])}</button>`).join("")}</div></div>
-   <div class="srow"><span>${L("Vibration","Vibration","Vibration","Vibración")} <small class="hint">${L("bei falscher Antwort","on a wrong answer","en cas de mauvaise réponse","con una respuesta incorrecta")}</small></span><div class="seg">${[L("Aus","Off","Non","No"),L("Ein","On","Oui","Sí")].map((t,k)=>`<button type="button" data-a="vib" data-i="${k}" class="${(SAVE.vib!==false)==!!k?"on":""}">${t}</button>`).join("")}</div></div>
    <div class="srow"><span>${L("Sprache","Language")}</span>${langSeg()}</div></div>
    <div class="rowb"><button class="btn alt sm" data-a="back">${L("Zurück","Back")}</button><button class="btn sm danger" data-a="reset">${L("Fortschritt zurücksetzen","Reset progress")}</button></div>`,1)}
 function applyLang(){document.documentElement.lang=LANG;$("#skiphint").textContent=L("Tippen zum Überspringen","Tap to skip");$("#plbl").textContent=ATK.sig.n;$("#elbl").textContent=L("GEGNER-ANGRIFF","ENEMY ATTACK");
@@ -322,7 +318,7 @@ function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
 /* Arena-Auswahl im Freien Kampf. Gesperrte Bonus-Arenen zeigen, wie man sie bekommt. */
 const arStyle=i=>{const[c1,c2]=STG[i].cols;return`background:linear-gradient(150deg,${hex(STG[i].fog)} 0%,${hex(c1)} 120%),${hex(c2)}`};
 /* Gegner-Wahl im Freien Kampf: alle freigespielten Kämpfer außer dem eigenen, oder Zufall */
-function oppScreen(){if(mode=="a")return tagOppScreen();const cur=CH.findIndex(c=>c.id==SAVE.opp),ok=cur>=0&&cur!=pickC&&unlocked(CH[cur]);
+function oppScreen(){const cur=CH.findIndex(c=>c.id==SAVE.opp),ok=cur>=0&&cur!=pickC&&unlocked(CH[cur]);
   menu(`<h2>${L("Wähle deinen Gegner","Choose your opponent")}</h2><div class="grid opp">
    <button type="button" class="tile rnd${ok?"":" on"}" data-a="opp" data-id=""><b>?</b><span>${L("Zufall","Random")}</span></button>
    ${ORDER.map(i=>CH[i]).map((c,_,a,i=CH.indexOf(c))=>i==pickC?"":unlocked(c)?`<button type="button" class="tile${ok&&cur==i?" on":""}" data-a="opp" data-id="${c.id}"><img src="${c.bust}" alt=""><span>${c.n}</span></button>`:`<div class="tile lock"><img src="${c.bust}" alt=""><span>???</span></div>`).join("")}</div>
@@ -335,7 +331,7 @@ function arenaScreen(){const cur=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:-
    <button type="button" class="ar rnd${cur<0?" on":""}" data-a="arena" data-i="-1"><b>?</b><span>${L("Zufall","Random")}</span></button>${order.map(i=>tile(STG[i],i)).join("")}</div>
    <button class="btn alt sm pback" data-a="oppBack">${L("Zurück","Back")}</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
-  menu(`${mode=="a"?tagHead():`<h2 class="pickh">${L("Wähle deinen Kämpfer","Choose your fighter")}</h2>`}<div class="pick"><div class="grid">${ORDER.map(i=>[CH[i],i]).map(([c,i])=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt pback" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
+  menu(`<h2 class="pickh">${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${ORDER.map(i=>[CH[i],i]).map(([c,i])=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt pback" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
 function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt(i)?1:0,o=pv==null?cur:pv,lockO=o==1&&!ao;
   document.querySelectorAll(".tile").forEach(t=>{const j=+t.dataset.i;t.classList.toggle("on",j==i);if(j==i&&u)t.querySelector("img").src=pic(i,"bust")});
   const seg=!c.alt?"":`<div class="seg osel">${[L("Outfit 1","Outfit 1"),ao?L(c.alt.on[0],c.alt.on[1]):L("Outfit 2 · gesperrt","Outfit 2 · locked")].map((t,k)=>`<button type="button" data-a="outfit" data-o="${k}" class="${o==k?"on":""}">${t}</button>`).join("")}</div>`;
@@ -348,11 +344,11 @@ const ACTIONS={
   name(){startScreen();const n=$("#pname");n&&n.focus()},lb(b){lbScreen(+b.dataset.i)},
   settings(){settings("home")},back(){setBack=="pause"?pauseMenu():home()},
   lang(b){LANG=SAVE.lang=b.dataset.l;save();applyLang();if($("#pname"))startScreen();else settings()},
-  story(){mode="s";lvl=1;selChar()},arcade(){mode="a";TG.p=[];TG.e=[];if(pl){endFightUi();musicOn();attract();pl=en=null}selChar()},
+  story(){mode="s";lvl=1;selChar()},arcade(){mode="a";if(pl){endFightUi();musicOn();attract();pl=en=null}selChar()},
   cont(){const s=SAVE.story;mode="s";pickC=s.c;lvl=s.lvl;storyT=s.t||0;lives=s.lv||2;startFight()},
   diff(b){SAVE.diff=+b.dataset.i;save();document.querySelectorAll("#dseg button").forEach((x,i)=>x.classList.toggle("on",i==SAVE.diff))},
-  tile(b){showDet(+b.dataset.i)},go(){if(mode=="a")return tagGo();pickC=selC;if(mode=="s"){SAVE.story=null;storyT=0;lives=2;save();startFight()}else oppScreen()},
-  arena(b){SAVE.arena=+b.dataset.i;save();startFight()},pickBack(){if(mode=="a"&&TG.p.length)TG.p.pop();selChar()},oppBack(){mode=="v"?vPickScreen(1):oppScreen()},
+  tile(b){showDet(+b.dataset.i)},go(){pickC=selC;if(mode=="s"){SAVE.story=null;storyT=0;lives=2;save();startFight()}else oppScreen()},
+  arena(b){SAVE.arena=+b.dataset.i;save();startFight()},pickBack(){selChar()},oppBack(){mode=="v"?vPickScreen(1):oppScreen()},
   opp(b){SAVE.opp=b.dataset.id;save();arenaScreen()},
   next(){startFight()},again(){startFight()},home(){home()},
   unlock(){const{c:cs,o,s:ns,a:na}=lastUnl;sfx("unlock");flash("#fff");if(o)altPics(o);if(na!=null||ns!=null)attract(na!=null?na:ns);
@@ -367,12 +363,11 @@ const ACTIONS={
   resetNo(){settings()},
   resetYes(){Object.assign(SAVE,{done:0,story:null,lb:[],unl:[],alts:[],of:{},bst:[],ars:[],arena:-1,opp:"",st:{},chd:[]});save();lives=2;storyT=0;lastUnl={c:[],o:null,s:null,a:null};sfx("ko");
     paused=false;fighters.length=0;home();menu(`<h2>${L("Fortschritt zurückgesetzt","Progress reset")}</h2><p>${L("Alles beginnt von vorn: 5 Kämpfer und ihre Arenen sind frei, der Rest wartet darauf, freigespielt zu werden.","Everything starts over: 5 fighters and their arenas are unlocked, the rest is waiting to be earned.")}</p><button class="btn" data-a="home">${L("Zum Hauptmenü","To main menu")}</button>`,1)},
-  vib(b){SAVE.vib=b.dataset.i=="1";save();if(SAVE.vib)vib(80);settings()},
   qual(b){SAVE.q=+b.dataset.i;save();setQuality(SAVE.q);settings()},
   resume(){paused=false;const d=performance.now()-pauseAt;for(const k in cards)if(cards[k].t0)cards[k].t0+=d;if(mode=="v")vShift(d);last=performance.now();menuHide()},
   quit(){paused=false;home()},
 };
-$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(!["tile","diff","lb","lang","outfit","track","qual","vib"].includes(b.dataset.a))sfx(b.dataset.a=="arena"?"vs":"click");else sfx("pick");ACTIONS[b.dataset.a](b)});
+$("#menu").addEventListener("click",e=>{const b=e.target.closest("[data-a]");if(!b||b.disabled)return;auInit();if(!["tile","diff","lb","lang","outfit","track","qual"].includes(b.dataset.a))sfx(b.dataset.a=="arena"?"vs":"click");else sfx("pick");ACTIONS[b.dataset.a](b)});
 function pauseMenu(){menu(`<h2>${L("Pause","Pause","Pause","Pausa")}</h2><div class="rowb"><button class="btn" data-a="resume">${L("Weiter","Resume")}</button><button class="btn alt" data-a="psets">${L("Einstellungen","Settings")}</button><button class="btn alt" data-a="quit">${L("Kampf aufgeben","Give up")}</button></div>`,1)}
 ACTIONS.psets=()=>settings("pause");
 $("#pz").addEventListener("click",()=>{if(over||paused||document.body.classList.contains("cine"))return;paused=true;pauseAt=performance.now();sfx("click");pauseMenu()});

@@ -320,15 +320,7 @@ body.phone .chl{grid-template-columns:1fr}
 #toast b{display:block;font:400 20px var(--disp);letter-spacing:.04em}#toast span{display:block;font:700 13px/1.25 var(--ui)}
 #toast.go{animation:tin .35s cubic-bezier(.2,1.4,.4,1) forwards}#toast.out{transform:translate(-50%,0);animation:tout .35s forwards}
 @keyframes tin{to{transform:translate(-50%,0)}}@keyframes tout{to{transform:translate(-50%,-160%)}}
-/* Tag Team: Kopfzeile in der Auswahl und Gegner-Banner ohne Drehung */
-.tagh{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}.tagh>b{font:400 30px var(--disp);color:var(--gold);text-shadow:3px 3px 0 var(--line);letter-spacing:.04em}
-.tagh small{font:700 12px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:#fff;text-shadow:1px 1px 0 var(--line)}
-.tslot{width:46px;height:46px;border:3px dashed var(--dim);display:grid;place-items:center;font:400 22px var(--disp);color:var(--dim);background:var(--panel);transform:skewX(-6deg);overflow:hidden}
-.tslot.f{border-style:solid;border-color:var(--gold)}.tslot img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
-body.phone #mw>.tagh:first-child{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:1}body.phone .sets .hint{display:none}body.phone .sets{gap:6px;padding-block:8px}
-body.phone .tagh>b{font-size:20px}body.phone .tslot{width:32px;height:32px;font-size:16px}body.phone .tagh{gap:6px}body.phone .tagh small{font-size:10px}
-.grid.opp .tile .no{position:absolute;right:6px;top:4px;font:400 22px var(--disp);color:var(--gold);text-shadow:2px 2px 0 var(--line)}.grid.opp .tile{position:relative}
-#vsi.go .tb.p4{animation:tbr4 .45s .15s cubic-bezier(.2,1.4,.4,1) both}@keyframes tbr4{from{transform:translateX(120vw) skewX(-10deg)}}
+body.phone .sets .hint{display:none}body.phone .sets{gap:6px;padding-block:8px}
 /* ---------- Versus: zweites Steuerpult oben, um 180° gedreht (die Drehung setzt vLayout per JS) ---------- */
 #panel2{top:0;bottom:auto;transform-origin:0 0}
 #menu.flip{transform:rotate(180deg)}
@@ -368,6 +360,5 @@ body.phone .tagh>b{font-size:20px}body.phone .tslot{width:32px;height:32px;font-
 <script src="js/styles.js"></script>
 <script src="js/mimi.js"></script>
 <script src="js/versus.js"></script>
-<script src="js/tag.js"></script>
 <script src="js/challenges.js"></script>
 </body></html>
