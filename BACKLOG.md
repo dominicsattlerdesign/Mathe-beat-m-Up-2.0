@@ -31,3 +31,4 @@ Nur gesammelt, noch nicht umgesetzt.
    - Eigener Bildschirm „Herausforderungen“ mit Fortschrittsbalken (z. B. 17/25) und einer Meldung im Kampf, wenn eine geschafft ist
    - Fortschritt wird auf dem Gerät gespeichert, bisher Freigeschaltetes bleibt frei
 8. **Rechnungen auf kleinen Bildschirmen (z. B. Google Pixel 9) teilweise nicht vollständig sichtbar** und dadurch nicht lösbar. Lange Aufgaben (Zahlenfolgen, Klammern, Algebra) auf den Karten und im Antwortfeld prüfen und so anpassen, dass sie immer ganz zu sehen sind.
+9. **Vibration bei falscher Antwort** (haptisches Feedback). Machbar in der Android-App über das Capacitor-Plugin „Haptics“ (bzw. `navigator.vibrate`), braucht die Berechtigung VIBRATE. Viele Tablets haben keinen Vibrationsmotor, dort passiert einfach nichts. Im Browser geht es nur auf Android, nicht auf iPhone/iPad. Idee: kurzes Doppel-Brummen bei falsch, evtl. ganz kurzes Tippen bei Treffern; in den Einstellungen ein- und ausschaltbar.
