@@ -33,3 +33,18 @@ Punkte 1–9 sind umgesetzt (Test-APK Version 1.3). Neue Punkte unten anhängen.
 8. **Rechnungen auf kleinen Bildschirmen (z. B. Google Pixel 9) teilweise nicht vollständig sichtbar** und dadurch nicht lösbar. Lange Aufgaben (Zahlenfolgen, Klammern, Algebra) auf den Karten und im Antwortfeld prüfen und so anpassen, dass sie immer ganz zu sehen sind.
 9. **Vibration bei falscher Antwort** (haptisches Feedback). Wieder entfernt, brachte im Test nichts. Machbar in der Android-App über das Capacitor-Plugin „Haptics“ (bzw. `navigator.vibrate`), braucht die Berechtigung VIBRATE. Viele Tablets haben keinen Vibrationsmotor, dort passiert einfach nichts. Im Browser geht es nur auf Android, nicht auf iPhone/iPad. Idee: kurzes Doppel-Brummen bei falsch, evtl. ganz kurzes Tippen bei Treffern; in den Einstellungen ein- und ausschaltbar.
 10. **Grafik glatter** (Test-APK): gleich dicke Umrisslinien, rundere Kämpfer (mehr Segmente), feinerer Toon-Verlauf, Leuchten (Bloom) + Farbkorrektur auf „Hoch“, weichere Übergänge zwischen Posen, Kontaktschatten unter den Füssen.
+
+## Geplant für nächste Woche: Figuren-Update („Akane Maximum“)
+
+Vorschau-Bild und Bau-Skript: `docs/grafik-vorschau/` (das Skript baut die verbesserte Akane neben der heutigen auf und macht die Vergleichsbilder).
+
+11. **Fehler Pferdeschwanz:** Bei Frisur „pony“ (z. B. Akane) ist der Zopf falsch herum gedreht (`rotation.x=-.5` statt nach hinten) und sticht vorne unter dem Kinn heraus („roter Bart“). Von hinten sieht man keinen Zopf.
+12. **Akane als Vorzeigefigur komplett überarbeiten**, wie im Vorschaubild:
+    - Schärpe als Stoffband, das schräg am Oberkörper anliegt (statt geradem schwarzem Balken)
+    - Kimono-Kragen links über rechts, Faltenrock mit Saum, Gürtelknoten mit Enden
+    - Haare: weiche Ponysträhnen, lange Seitensträhnen, Hinterkopf bedeckt, durchgehender Pferdeschwanz mit Schleife
+    - Stirnband mit Knoten und hängenden Bändern
+    - Neues Gesicht: grössere Augen mit mehreren Glanzpunkten, feine Brauen, Nasenschatten, entschlossener Mund
+    - Arme und Beine mit Muskelformen, sauberer Hals, Fäuste mit Knöcheln, Füsse mit Zehen, Bandagen
+    - Schatten je Material: Haut warm, Stoff kühl, leichter Glanz auf Haar und Metall
+13. **Danach entscheiden:** Was davon für alle Kämpfer gilt (Körperformen, Hals, Hände, Füsse, Gesicht, Schattierung) und welche Figuren einzeln überarbeitet werden. Leistung auf echten Tablets und Handys messen (die Maximal-Akane hat etwa dreimal so viele Teile).
