@@ -30,3 +30,4 @@ Nur gesammelt, noch nicht umgesetzt.
    - **Zuordnungsidee:** Kämpfer über Story und Gegner-Herausforderungen, zweite Outfits über Attacken-Herausforderungen mit genau diesem Kämpfer, Arenen über Siege gegen den Besitzer der Arena oder über Rechen-Herausforderungen, Musik über Versus
    - Eigener Bildschirm „Herausforderungen“ mit Fortschrittsbalken (z. B. 17/25) und einer Meldung im Kampf, wenn eine geschafft ist
    - Fortschritt wird auf dem Gerät gespeichert, bisher Freigeschaltetes bleibt frei
+8. **Rechnungen auf kleinen Bildschirmen (z. B. Google Pixel 9) teilweise nicht vollständig sichtbar** und dadurch nicht lösbar. Lange Aufgaben (Zahlenfolgen, Klammern, Algebra) auf den Karten und im Antwortfeld prüfen und so anpassen, dass sie immer ganz zu sehen sind.
