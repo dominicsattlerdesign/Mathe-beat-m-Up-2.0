@@ -23,7 +23,7 @@ const fxLight=new THREE.PointLight(0xffffff,0,16);fxLight.position.set(0,2,2);sc
 
 /* Cel-Shading: Stufenverlauf + Tuschekontur (Rückseiten entlang der Normalen aufgeblasen) */
 /* weicher Anime-Verlauf: Schattenton, Mittelton, Licht mit sanften Übergängen */
-const GRAD=(()=>{const v=[70,84,112,156,192,214,228,236],d=new Uint8Array(v.length*4);v.forEach((x,i)=>d.set([x,x,x,255],i*4));const t=new THREE.DataTexture(d,v.length,1,THREE.RGBAFormat);t.minFilter=t.magFilter=THREE.LinearFilter;t.needsUpdate=true;return t})();
+const GRAD=(()=>{const v=[...Array(32)].map((_,i)=>{const x=i/31,sm=t=>t*t*(3-2*t),a=sm(clamp((x-.28)/.4,0,1));return Math.round(72+150*a+16*x*x)}),d=new Uint8Array(v.length*4);v.forEach((x,i)=>d.set([x,x,x,255],i*4));const t=new THREE.DataTexture(d,v.length,1,THREE.RGBAFormat);t.minFilter=t.magFilter=THREE.LinearFilter;t.needsUpdate=true;return t})();
 /* Oberflächen-Texturen (Stoff, Haut, Haar, Holz, Stein, Metall), einmal gemalt und über die Farbe getönt */
 const PT={};
 function ptex(kind){if(PT[kind])return PT[kind];const t=ctex(256,256,(g,w,h)=>{
@@ -46,17 +46,19 @@ const MATS={},BM={};
 function mat(c,e,kind){const k=c+"_"+(e||0)+(kind||"");if(MATS[k])return MATS[k];const m=new THREE.MeshToonMaterial({color:c,gradientMap:GRAD,emissive:e||0,map:kind?ptex(kind):null});if(kind&&kind!="wood"&&kind!="stone")m.onBeforeCompile=rimShader;return MATS[k]=m}
 function bmat(c){return BM[c]||(BM[c]=new THREE.MeshBasicMaterial({color:c}))}
 const OL=new THREE.MeshBasicMaterial({color:0x0b0912,side:THREE.BackSide});
-OL.onBeforeCompile=s=>{s.vertexShader=s.vertexShader.replace("#include <begin_vertex>","vec3 transformed=position+normalize(normal)*0.022;")};
-const GC={},geo=(k,f)=>GC[k]||(GC[k]=f());
-const gS=(r,w=20,h=14)=>geo(`s${r},${w},${h}`,()=>new THREE.SphereGeometry(r,w,h));
+/* Kontur: in Blickrichtung aufgeblasen, dadurch überall gleich dick auf dem Bildschirm (nah und fern, auch bei gestreckten Teilen) */
+const OLW={value:.0017};
+OL.onBeforeCompile=s=>{s.uniforms.olw=OLW;s.vertexShader="uniform float olw;\n"+s.vertexShader.replace("#include <project_vertex>","vec4 mvPosition=modelViewMatrix*vec4(position,1.0);vec3 nv=normalize(normalMatrix*normal);mvPosition.xyz+=nv*max(-mvPosition.z,1.0)*olw;gl_Position=projectionMatrix*mvPosition;")};
+let SEGM=1;const GC={},geo=(k,f)=>GC[k]||(GC[k]=f());
+const gS=(r,w=20,h=14)=>(w=Math.round(w*SEGM),h=Math.round(h*SEGM),geo(`s${r},${w},${h}`,()=>new THREE.SphereGeometry(r,w,h)));
 const gB=(x,y,z)=>geo(`b${x},${y},${z}`,()=>new THREE.BoxGeometry(x,y,z));
-const gC=(rt,rb,h,n=14)=>geo(`c${rt},${rb},${h},${n}`,()=>new THREE.CylinderGeometry(rt,rb,h,n));
+const gC=(rt,rb,h,n=14)=>(n=Math.round(n*SEGM),geo(`c${rt},${rb},${h},${n}`,()=>new THREE.CylinderGeometry(rt,rb,h,n)));
 const gK=(r,h,n=10)=>geo(`k${r},${h},${n}`,()=>new THREE.ConeGeometry(r,h,n));
 const gT=(r,t,a=8,b=18,arc=6.2832)=>geo(`t${r},${t},${a},${b},${arc}`,()=>new THREE.TorusGeometry(r,t,a,b,arc));
 const gO=r=>geo("o"+r,()=>new THREE.OctahedronGeometry(r));
 const gD=r=>geo("d"+r,()=>new THREE.DodecahedronGeometry(r));
 /* Drehkörper aus einem Profil [[Radius,Höhe],…]: für Arme, Beine, Rumpf, Kopf */
-const gL=(pts,seg=18,w=1)=>geo("l"+w+JSON.stringify(pts)+seg,()=>new THREE.LatheGeometry(pts.map(p=>new THREE.Vector2(Math.max(.0005,p[0]*w),p[1])),seg));
+const gL=(pts,seg=18,w=1)=>(seg=Math.round(seg*SEGM),geo("l"+w+JSON.stringify(pts)+seg,()=>new THREE.LatheGeometry(pts.map(p=>new THREE.Vector2(Math.max(.0005,p[0]*w),p[1])),seg)));
 /* M: Mesh anlegen. c = Farbe oder Material, o = Kontur ja/nein, e = Leuchtfarbe, kind = Oberfläche */
 function M(g,c,p,par,o=1,e,kind){const m=new THREE.Mesh(g,typeof c=="number"?mat(c,e,kind):c);if(p)m.position.set(p[0],p[1],p[2]);m.castShadow=true;if(o)m.add(new THREE.Mesh(g,OL));if(par)par.add(m);return m}
 function ctex(w,h,draw){const c=document.createElement("canvas");c.width=w;c.height=h;draw(c.getContext("2d"),w,h);const t=new THREE.CanvasTexture(c);return t}
@@ -84,6 +86,32 @@ function rs(){const iw=innerWidth,ih=innerHeight,rot=ih>iw,b=document.body.style
   r.setProperty("--uis",UIH);r.setProperty("--uip",UIP);r.setProperty("--uim",UIM);document.body&&document.body.classList.toggle("phone",PHONE);
   b.width=rot?GW+"px":"";b.height=rot?GH+"px":"";b.transform=rot?`translateX(${iw}px) rotate(90deg)`:"";r.setProperty("--vw",GW/100+"px");r.setProperty("--vh",GH/100+"px");
   const w=GW,h=GH;ren.setPixelRatio(Math.min([1,1.5,2][QL],devicePixelRatio||1));ren.setSize(w,h,false);cam.aspect=w/h;applyOff()}
+/* ---------- Nachbearbeitung (nur Qualität „Hoch“, WebGL2): Leuchten (Bloom) + sanfte Farbkorrektur + Vignette ---------- */
+const POST=(()=>{if(!ren.capabilities.isWebGL2||!THREE.WebGLMultisampleRenderTarget)return null;
+  const o={},q=new THREE.Scene(),oc=new THREE.OrthographicCamera(-1,1,1,-1,0,1),quad=new THREE.Mesh(new THREE.PlaneGeometry(2,2));quad.frustumCulled=false;q.add(quad);
+  const vs="varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.0,1.0);}";
+  const sm=(fs,u)=>new THREE.ShaderMaterial({uniforms:u,vertexShader:vs,fragmentShader:fs,depthTest:false,depthWrite:false});
+  /* Nur was selbst leuchtet, glüht nach: Effekte (additiv), Leuchtfarben, Lampen. Alles andere wird für diesen Durchgang schwarz. */
+  const BLK=new THREE.MeshBasicMaterial({color:0,fog:false}),bg0=new THREE.Color(0),sw=[];
+  const glows=m=>m.blending===THREE.AdditiveBlending||(m.isMeshBasicMaterial&&m!==OL&&!m.map&&m.side!==THREE.BackSide&&m.color&&(m.color.r+m.color.g+m.color.b)>1.2)||(m.emissive&&(m.emissive.r+m.emissive.g+m.emissive.b)>.3);
+  o.blur=sm("uniform sampler2D t;uniform vec2 dir;varying vec2 vUv;void main(){vec3 c=texture2D(t,vUv).rgb*.227;c+=(texture2D(t,vUv+dir*1.385).rgb+texture2D(t,vUv-dir*1.385).rgb)*.316;c+=(texture2D(t,vUv+dir*3.23).rgb+texture2D(t,vUv-dir*3.23).rgb)*.07;gl_FragColor=vec4(c,1.0);}",{t:{value:null},dir:{value:new THREE.Vector2()}});
+  o.comp=sm("uniform sampler2D t;uniform sampler2D b;uniform float k;varying vec2 vUv;void main(){vec4 c=texture2D(t,vUv);vec3 g=texture2D(b,vUv).rgb*k;vec3 col=c.rgb+g;float l=dot(col,vec3(.299,.587,.114));col=mix(vec3(l),col,1.1);col=(col-.5)*1.05+.5;col*=mix(1.0,.86,smoothstep(.35,.85,length((vUv-.5)*vec2(1.25,1.0))));float a=clamp(max(c.a,max(g.r,max(g.g,g.b))),0.0,1.0);gl_FragColor=vec4(clamp(col,0.0,a),a);}",{t:{value:null},b:{value:null},k:{value:.8}});
+  const opt={minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat,depthBuffer:false};
+  o.size=(w,h)=>{if(o.w==w&&o.h==h)return;o.w=w;o.h=h;if(o.main){o.main.dispose();o.a.dispose();o.b.dispose()}
+    o.main=new THREE.WebGLMultisampleRenderTarget(w,h,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,format:THREE.RGBAFormat});o.main.samples=4;
+    const qw=Math.max(1,w>>2),qh=Math.max(1,h>>2);o.a=new THREE.WebGLRenderTarget(qw,qh,Object.assign({},opt,{depthBuffer:true}));o.b=new THREE.WebGLRenderTarget(qw,qh,opt);o.qw=qw;o.qh=qh};
+  const pass=(m,to)=>{quad.material=m;ren.setRenderTarget(to);ren.render(q,oc)};
+  o.render=(scene,camera)=>{const v=ren.getDrawingBufferSize(new THREE.Vector2());o.size(v.x,v.y);
+    ren.setRenderTarget(o.main);ren.render(scene,camera);
+    sw.length=0;scene.traverse(m=>{if(m.isMesh&&m.visible&&!Array.isArray(m.material)&&!glows(m.material)){sw.push(m,m.material);m.material=BLK}});
+    const bg=scene.background,au=ren.shadowMap.autoUpdate,cc=ren.getClearColor(new THREE.Color()),ca=ren.getClearAlpha();scene.background=bg0;ren.shadowMap.autoUpdate=false;ren.setClearColor(0,1);
+    ren.setRenderTarget(o.a);ren.clear();ren.render(scene,camera);
+    scene.background=bg;ren.shadowMap.autoUpdate=au;ren.setClearColor(cc,ca);for(let i=0;i<sw.length;i+=2)sw[i].material=sw[i+1];sw.length=0;
+    for(let i=0;i<2;i++){o.blur.uniforms.t.value=o.a.texture;o.blur.uniforms.dir.value.set((1+i)/o.qw,0);pass(o.blur,o.b);o.blur.uniforms.t.value=o.b.texture;o.blur.uniforms.dir.value.set(0,(1+i)/o.qh);pass(o.blur,o.a)}
+    o.comp.uniforms.t.value=o.main.texture;o.comp.uniforms.b.value=o.a.texture;pass(o.comp,null)};
+  return o})();
+let postOff=false;
+function draw(scene,camera){if(POST&&QL>1&&!postOff){try{POST.render(scene,camera);return}catch(e){postOff=true;ren.setRenderTarget(null)}}ren.render(scene,camera)}
 addEventListener("resize",()=>{rs();if(typeof layout=="function")layout()});
 function camStep(dt){const k=1-Math.exp(-CAM.k*dt);CAM.p.lerp(CAM.tp,k);CAM.l.lerp(CAM.tl,k);CAM.shake*=Math.pow(.015,dt);
   cam.position.set(CAM.p.x+rnd(-1,1)*CAM.shake,CAM.p.y+rnd(-1,1)*CAM.shake,CAM.p.z);cam.lookAt(CAM.l)}

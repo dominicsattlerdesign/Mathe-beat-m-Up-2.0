@@ -68,7 +68,8 @@ const limb=(r0,r1,r2,L)=>[[0,-L-r2*.55],[r2*.75,-L-r2*.3],[r2,-L],[lerp(r2,r1,.6
 /* Herzform (für Mimi Tus und Herz-Effekte), zeigt nach vorne (z) */
 const heartGeo=()=>geo("heart",()=>{const h=new THREE.Shape();h.moveTo(0,-.5);h.bezierCurveTo(-.15,-.32,-.55,-.12,-.55,.18);h.bezierCurveTo(-.55,.45,-.3,.58,-.12,.5);h.bezierCurveTo(-.05,.47,0,.4,0,.34);
   h.bezierCurveTo(0,.4,.05,.47,.12,.5);h.bezierCurveTo(.3,.58,.55,.45,.55,.18);h.bezierCurveTo(.55,-.12,.15,-.32,0,-.5);const g=new THREE.ExtrudeGeometry(h,{depth:.18,bevelEnabled:true,bevelSize:.06,bevelThickness:.06,bevelSegments:2,curveSegments:10});g.center();return g});
-function buildFighter(ch,o){if(o)ch=outfit(ch,1);
+function buildFighter(ch,o){SEGM=QL>0?1.6:1;try{return buildFighter_(ch,o)}finally{SEGM=1}}
+function buildFighter_(ch,o){if(o)ch=outfit(ch,1);
   const b=ch.b||{},W=b.w||1,S=b.h||1,CL="cloth",SK="skin",ME="metal",HA="hair";
   const root=new THREE.Group(),turn=new THREE.Group(),piv=new THREE.Group(),model=new THREE.Group();
   root.add(turn);turn.add(piv);piv.add(model);piv.position.y=1.6*S;model.position.y=-1.6*S;model.scale.setScalar(S);turn.rotation.y=FACE;
@@ -171,20 +172,25 @@ function buildFighter(ch,o){if(o)ch=outfit(ch,1);
   };
   H.hair(ch.hair[0],ch.hair[1]);ch.acc&&ch.acc(H);J.hd.scale.setScalar(.9);
   const sh=new THREE.Mesh(gC(1,1,.02,18),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.22,depthWrite:false}));sh.position.y=.03;sh.scale.set(.85*W,1,.55);root.add(sh);
+  const fs=["fL","fR"].map(()=>{const m=new THREE.Mesh(FSG,new THREE.MeshBasicMaterial({map:FST(),transparent:true,opacity:.5,depthWrite:false,color:0x000000}));m.rotation.x=-Math.PI/2;m.scale.set(.42*W*S,.3*S,1);m.renderOrder=1;root.add(m);return m});
   const cur={};for(const j of JN)cur[j]=[0,0,0];
-  return{ch,root,turn,piv,model,J,flaps,cur,tp:STP[ch.id]||POSE.idle,ps:14,sc:S,grounded:true,run:false,sh,ph:rnd(6),bs:(STANCE[ch.id]?STANCE[ch.id].bs:2.4)+rnd(.6),sw:!!(STANCE[ch.id]&&STANCE[ch.id].sw)};
+  return{ch,root,turn,piv,model,J,flaps,cur,tp:STP[ch.id]||POSE.idle,ps:14,sc:S,fs,vel:{},grounded:true,run:false,sh,ph:rnd(6),bs:(STANCE[ch.id]?STANCE[ch.id].bs:2.4)+rnd(.6),sw:!!(STANCE[ch.id]&&STANCE[ch.id].sw)};
 }
 const _v1=new THREE.Vector3(),_v2=new THREE.Vector3();
+/* weicher dunkler Fleck direkt unter jedem Fuss (Kontaktschatten) */
+const FSG=new THREE.PlaneGeometry(1,1);let _fst;const FST=()=>_fst||(_fst=ctex(64,64,(g,w,h)=>{const r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,"rgba(255,255,255,1)");r.addColorStop(.5,"rgba(255,255,255,.55)");r.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=r;g.fillRect(0,0,w,h)}));
 function animFighter(f,dt,T){
   const k=1-Math.exp(-f.ps*dt),J=f.J,tp=f.tp;
-  for(const j of JN){const t=tp[j]||Z3,c=f.cur[j];c[0]+=(t[0]-c[0])*k;c[1]+=(t[1]-c[1])*k;c[2]+=(t[2]-c[2])*k;J[j].rotation.set(c[0],c[1],c[2])}
+  const w=f.ps*1.6,e=Math.exp(-w*dt),vl=f.vel||(f.vel={});
+  for(const j of JN){const t=tp[j]||Z3,c=f.cur[j],v=vl[j]||(vl[j]=[0,0,0]);for(let i=0;i<3;i++){const x0=c[i]-t[i],tm=(v[i]+w*x0)*dt;v[i]=(v[i]-w*tm)*e;c[i]=t[i]+(x0+tm)*e}J[j].rotation.set(c[0],c[1],c[2])}
   if(f.run){const s=Math.sin(T*24+f.ph),c=Math.cos(T*24+f.ph);J.lL.rotation.x=-.5+s*1;J.kL.rotation.x=1-c*.7;J.lR.rotation.x=-.5-s*1;J.kR.rotation.x=1+c*.7}
   else if(tp===POSE.idle||tp===STP[f.ch.id]){const s=Math.sin(T*f.bs+f.ph);if(f.sw){const w=Math.sin(T*1.7+f.ph);J.sp.rotation.z+=w*.12;J.hd.rotation.z-=w*.15;J.ch.rotation.y+=w*.08}J.sp.rotation.x+=s*.035;J.kL.rotation.x+=s*.07;J.kR.rotation.x+=s*.06;J.lL.rotation.x-=s*.035;J.aL.rotation.x+=s*.07;J.aR.rotation.x-=s*.05;J.hd.rotation.x-=s*.02}
   else if(tp===POSE.dizzy){const s=Math.sin(T*4+f.ph),c=Math.cos(T*4+f.ph);J.sp.rotation.z+=s*.22;J.sp.rotation.x+=c*.16;J.hd.rotation.z-=s*.3;J.aL.rotation.x+=c*.3;J.aR.rotation.x-=c*.3;J.kL.rotation.x+=s*.12}
   for(const fl of f.flaps){if(fl.spin){fl.m.rotation.y+=fl.spin*dt;continue}if(fl.pulse){const q=1+Math.sin(T*14+fl.ph)*.22;fl.m.scale.set(q,1.1+Math.sin(T*19+fl.ph)*.3,q);continue}fl.m.rotation[fl.ax||"x"]=fl.b+Math.sin(T*fl.sp+fl.ph)*fl.amp+(f.run&&!fl.ax?.5:0)}
   J.hp.position.y=1.58;
   if(f.grounded){f.root.updateMatrixWorld(true);const a=_v1.setFromMatrixPosition(J.fL.matrixWorld).y,b=_v2.setFromMatrixPosition(J.fR.matrixWorld).y;J.hp.position.y-=(Math.min(a,b)-f.root.position.y-.082*f.sc)/f.sc}
-  f.sh.position.y=.03-f.root.position.y;const q=clamp(1-f.root.position.y*.12,.3,1);f.sh.scale.set(.85*q,1,.55*q);
+  f.sh.position.y=.03-f.root.position.y;
+  if(f.fs){f.root.updateMatrixWorld(true);for(let i=0;i<2;i++){const m=f.fs[i],p=_v1.setFromMatrixPosition(J[i?"fR":"fL"].matrixWorld);const h=Math.max(0,p.y-.08*f.sc);f.root.worldToLocal(p);m.position.set(p.x,.035-f.root.position.y,p.z+.05);m.material.opacity=.6*clamp(1-h/.7,0,1);m.visible=m.material.opacity>.02&&f.sh.visible}}const q=clamp(1-f.root.position.y*.12,.3,1);f.sh.scale.set(.85*q,1,.55*q);
 }
 /* Eigene Kampfhaltung (Startpose) je Kämpfer: überschreibt einzelne Gelenke der Grundhaltung "idle".
    bs = Tempo des Wippens, sw = seitliches Schwanken (Mimi Tus). */
@@ -239,7 +245,7 @@ const IPOSE={
 for(const id in IPOSE)POSE["in_"+id]=["raiko","shade","mika"].includes(id)?IPOSE[id]:levelFeet(IPOSE[id]);
 const introPose=f=>POSE["in_"+f.ch.id]?"in_"+f.ch.id:"win";
 function pose(f,n,sp){f.tp=n=="idle"?idleOf(f):POSE[n];if(sp)f.ps=sp}
-function snapPose(f){for(const j of JN){const t=f.tp[j]||Z3;f.cur[j]=[t[0],t[1],t[2]]}}
+function snapPose(f){f.vel={};for(const j of JN){const t=f.tp[j]||Z3;f.cur[j]=[t[0],t[1],t[2]]}}
 
 /* ---------- Die 15 Kämpfer ----------
    sig = Spezial-Attacke, fin = Finisher, q = Kampfspruch. Die ersten fünf sind von Anfang an spielbar. */
@@ -363,7 +369,7 @@ let PS=null;
 function shoot(ch,o){
   if(!PS){const ps=new THREE.Scene(),pc=new THREE.PerspectiveCamera(30,1,.1,50);ps.add(new THREE.HemisphereLight(0xffffff,0x444466,.7));const d=new THREE.DirectionalLight(0xffffff,.8);d.position.set(3,6,8);ps.add(d);PS={ps,pc}}
   const{ps,pc}=PS,f=buildFighter(ch,o),k=o?"2":"";ren.setPixelRatio(1);ren.setClearColor(0,0);
-  f.turn.rotation.y=.45;snapPose(f);animFighter(f,1,0);ps.add(f.root);f.sh.visible=false;
+  f.turn.rotation.y=.45;snapPose(f);animFighter(f,1,0);ps.add(f.root);f.sh.visible=false;f.fs.forEach(m=>m.visible=false);
   /* Brustbild: Kamera auf die echte Kopfposition richten (die Kampfhaltungen sind unterschiedlich hoch, z. B. geduckt) */
   f.root.updateMatrixWorld(true);const hc=new THREE.Vector3().setFromMatrixPosition(f.J.hd.children[0].matrixWorld),ly=hc.y-.22*f.sc;
   ren.setSize(300,375,false);pc.aspect=.8;pc.fov=26;pc.updateProjectionMatrix();pc.position.set(hc.x+.5,ly+.02,hc.z+3.6);pc.lookAt(hc.x+.02,ly,hc.z);

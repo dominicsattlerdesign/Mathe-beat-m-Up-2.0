@@ -382,7 +382,7 @@ document.addEventListener("visibilitychange",()=>{if(AU.ctx){if(document.hidden)
 function camFight(){const a=fx_(pl),b=fx_(en),mx=(a.x+b.x)/2,span=Math.abs(a.x-b.x)/2+2.3,tan=Math.tan(cam.fov*Math.PI/360),top=Math.min(9,Math.max(a.y,b.y,0));
   const z=clamp(Math.max(span/(tan*cam.aspect*VO.fw),(2.7+top*.72)/(tan*VO.fh)),8,38);CAM.tp.set(mx*.7,2.4+z*.07+top*.3,z);CAM.tl.set(mx*.7,2.05+top*.4,0)}
 function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000);last=n;
-  if(paused){ren.render(sc,cam);return}
+  if(paused){draw(sc,cam);return}
   const wd=dt*(hs>0?.02:TSb);hs-=dt;T+=wd;
   stepTw(rtw,dt);stepTw(tws,wd);for(const f of fighters)animFighter(f,wd,T);stepFx(wd,dt);stepStage(dt,T);
   if(pl&&!over){
@@ -398,7 +398,7 @@ function loop(n){requestAnimationFrame(loop);const dt=Math.min(.05,(n-last)/1000
   /* Lichtshow: beim Finisher wandern die Kampflichter durch alle Farben */
   if(document.body.classList.contains("cine")){const h=(n/1400)%1;colA.color.setHSL(h,1,.55);colB.color.setHSL((h+.45)%1,1,.55);colA.intensity=colB.intensity=1.5;loop.show=1}
   else if(loop.show){loop.show=0;colA.color.setHex(STL.c[0]);colB.color.setHex(STL.c[1])}
-  camStep(dt);ren.render(sc,cam)}
+  camStep(dt);draw(sc,cam)}
 
 /* ----- Start ----- */
 setQuality(SAVE.q);AU.muted=SAVE.mute;AU.vol={m:SAVE.vol.m,s:SAVE.vol.s};AU.track=Math.min(SAVE.track||0,TRK.length-1);applyLang();sndUi();rs();makePortraits();attract();
