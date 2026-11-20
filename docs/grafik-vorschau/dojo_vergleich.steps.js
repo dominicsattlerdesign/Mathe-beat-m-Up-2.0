@@ -1,0 +1,13 @@
+await p.setViewportSize({width:1600,height:900});
+await p.evaluate(()=>{LANG=SAVE.lang="de";applyLang();SAVE.unl=CH.map(c=>c.id);SAVE.q=2;setQuality(2);window._err=[];addEventListener("error",e=>_err.push(e.message))});
+await p.evaluate(()=>{paused=false;over=true;mode="a";pickC=CH.findIndex(x=>x.id=="tetsu");SAVE.opp=CH.findIndex(x=>x.id=="akane");SAVE.arena=0;SAVE.diff=2;startFight()});
+await p.waitForFunction(()=>pl&&$("#menu").hidden,null,{timeout:500000});await p.evaluate(()=>skipIntro());await p.waitForFunction(()=>!over,null,{timeout:500000});
+await p.evaluate(()=>{en.iv=1e9;en.timer=1e9});await p.waitForTimeout(1500);
+await p.evaluate(()=>{paused=true;const st=document.createElement("style");st.textContent="body>*:not(#c){display:none!important}";document.head.appendChild(st);window._cam0={p:cam.position.clone(),q:cam.quaternion.clone()}});
+console.log(await p.evaluate(()=>[STG.indexOf(STG.find(s=>s.n==$("#stn")?.textContent))||0, en.ch.id, cam.position.toArray().map(v=>v.toFixed(2)).join(","), CAM.l.toArray().map(v=>v.toFixed(2)).join(",")]));
+const view=async(name,w)=>{await p.evaluate(w=>{if(w){cam.position.set(0,5.8,18);cam.lookAt(0,3.6,-5)}else{cam.position.copy(_cam0.p);cam.quaternion.copy(_cam0.q)}},w);await p.waitForTimeout(400);await p.screenshot({path:__dirname+'/'+name+'.png'})};
+await view('ar_before',0);await view('ar_before_w',1);
+const imp=require('fs').readFileSync(__dirname+'/dojo_verbessert.js','utf8');
+await p.evaluate(imp);await p.waitForTimeout(500);
+await view('ar_after',0);await view('ar_after_w',1);
+console.log('Fehler',await p.evaluate(()=>_err));
