@@ -11,10 +11,8 @@ if(!Array.isArray(SAVE.unl)){SAVE.unl=CH.filter((c,i)=>i>=5&&SAVE.done>=i-4).map
 /* Rokka war früher ein Start-Kämpfer: wer schon gespielt hat, behält ihn samt Piratenbucht */
 if(!SAVE.m2){if((SAVE.name||SAVE.done)&&!SAVE.unl.includes("rokka")){SAVE.unl.push("rokka");if(!SAVE.ars.includes("rokka"))SAVE.ars.push("rokka")}SAVE.m2=1;save()}
 const unlocked=ch=>!ch.lock||SAVE.unl.includes(ch.id);
-/* Nächster Kämpfer nach einem Story-Sieg, immer zufällig aus den gesperrten:
-   in "Mittel" aus allen (Bosse inklusive), in den anderen Stufen nur aus den normalen Kämpfern */
-const nextUnl=d=>{const free=CH.filter(c=>c.lock&&!unlocked(c)&&(d==2||!c.boss));return free.length?P(free):null};
-/* Zweites Outfit: frei, wenn die Story mit dieser Figur geschafft wurde. useAlt = Spieler hat es gewählt. */
+/* Freispielen: Kämpfer, Outfits und Arenen über Herausforderungen (challenges.js). Die Story gibt nur 4 feste Dinge (siehe result()). */
+/* Zweites Outfit: frei über die Herausforderung des Kämpfers. useAlt = Spieler hat es gewählt. */
 const altOk=c=>SAVE.alts.includes(c.id),useAlt=i=>!!(SAVE.of[CH[i].id]&&altOk(CH[i]));
 const pic=(i,k,o=useAlt(i))=>o?(altPics(CH[i]),CH[i][k+"2"]):CH[i][k];
 let lastUnl={c:[],o:null,s:null},lives=2;
@@ -272,12 +270,11 @@ function result(win){if(win)ST.win(mode);
   if(win&&s&&lvl<10){lvl++;SAVE.story={c:pickC,lvl,t:storyT,lv:lives};save();
     menu(`<h2>${L("Sieg","Victory")} ${sc_}</h2><p>${L(`Kampf ${lvl-1} von 10 geschafft. Kampfzeit bisher: ${fmtT(storyT)}`,`Fight ${lvl-1} of 10 done. Fight time so far: ${fmtT(storyT)}`,`Combat ${lvl-1} sur 10 réussi. Temps de combat : ${fmtT(storyT)}`,`Combate ${lvl-1} de 10 superado. Tiempo de combate: ${fmtT(storyT)}`)}</p><button class="btn" data-a="next">${L("Weiter zu Kampf ","On to fight ")+lvl}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button>`,1)}
   else if(win&&s){SAVE.done++;SAVE.story=null;const e={n:SAVE.name||HERO(),d:SAVE.diff,t:Math.round(storyT),c:pickC};SAVE.lb.push(e);SAVE.lb.sort((a,b)=>a.t-b.t);
-    const rank=SAVE.lb.filter(x=>x.d==e.d).indexOf(e)+1;SAVE.lb=SAVE.lb.filter(x=>SAVE.lb.filter(y=>y.d==x.d).indexOf(x)<20);const pc=CH[pickC],hasO=!pc.alt||SAVE.alts.includes(pc.id),ai=arenaOf(pc),hasA=stageOk(ai);let no=false,na=null;
-    if(!hasO&&!hasA){if(Math.random()<.5)no=true;else na=ai}else if(!hasO)no=true;else if(!hasA)na=ai;
-    if(no)SAVE.alts.push(pc.id);if(na!=null)SAVE.ars.push(pc.id);
-    const nc=nextUnl(e.d);if(nc)SAVE.unl.push(nc.id);
-    const ns=e.d==3?STG.findIndex((x,i)=>x.bonus&&!SAVE.bst.includes(i)):-1;if(ns>=0)SAVE.bst.push(ns);
-    lastUnl={c:nc?[nc]:[],o:no?CH[pickC]:null,s:ns>=0?ns:null,a:na};save();const nu=lastUnl.c.length||no||ns>=0||na!=null;
+    const rank=SAVE.lb.filter(x=>x.d==e.d).indexOf(e)+1;SAVE.lb=SAVE.lb.filter(x=>SAVE.lb.filter(y=>y.d==x.d).indexOf(x)<20);/* Story-Belohnungen (nur noch 4 feste Dinge, alles andere über Herausforderungen):
+       1× geschafft: Bonus-Arena Kinderzimmer, 3× geschafft: Bonus-Arena Spielhalle, auf Mittel/Schwer: Kaiser Null, auf Schwer: Mathemagus */
+    const nc=[];let ns=-1;for(const[n,ok]of[["Playroom",SAVE.done>=1],["Arcade Hall",SAVE.done>=3]]){const k=STG.findIndex(x=>x.bonus&&x.en==n);if(ok&&ns<0&&k>=0&&!SAVE.bst.includes(k)){SAVE.bst.push(k);ns=k}}
+    for(const[id,ok]of[["kaiser",e.d>=2],["magus",e.d==3]])if(ok&&!SAVE.unl.includes(id)){SAVE.unl.push(id);nc.push(CH.find(c=>c.id==id))}
+    lastUnl={c:nc,o:null,s:ns>=0?ns:null,a:null};save();const nu=nc.length||ns>=0;
     menu(`<p class="tag">${L("Story geschafft","Story cleared")} · ${DIFFS[e.d][0]}</p><h1 class="logo"><span>${L("Du bist","You are the")}</span>${L("Champion!","Champion!","Champion !","¡Campeón!")}</h1><p>${L(`${esc(e.n)} hat mit ${CH[pickC].n} alle zehn Gegner besiegt. Kampfzeit ${fmtT(e.t)}, das ist Platz ${rank} der Rangliste.`,`${esc(e.n)} beat all ten opponents with ${CH[pickC].n}. Fight time ${fmtT(e.t)}, that’s rank ${rank} on the leaderboard.`,`${esc(e.n)} a battu les dix adversaires avec ${CH[pickC].n}. Temps de combat ${fmtT(e.t)}, c’est la place ${rank} du classement.`,`${esc(e.n)} venció a los diez rivales con ${CH[pickC].n}. Tiempo de combate ${fmtT(e.t)}, puesto ${rank} en la clasificación.`)}</p><div class="rowb">${nu?`<button class="btn gold" data-a="unlock">${L("Was ist das …?","What’s that …?")}</button>`:""}<button class="btn alt" data-a="lb" data-i="${e.d}">${L("Rangliste","Leaderboard")}</button>${nu?"":`<button class="btn" data-a="home">${L("Hauptmenü","Main menu")}</button>`}</div>`,1)}
   else if(win)menu(`<h2>${L("Gewonnen","You won")} ${sc_}</h2><div class="rowb"><button class="btn" data-a="arcade">${L("Nochmal","Again")}</button><button class="btn alt" data-a="home">${L("Hauptmenü","Main menu")}</button></div>`,1);
   else if(s&&lives>1){lives--;SAVE.story={c:pickC,lvl,t:storyT,lv:lives};save();
@@ -332,7 +329,7 @@ function oppScreen(){if(mode=="a")return tagOppScreen();const cur=CH.findIndex(c
    <button class="btn alt sm pback" data-a="pickBack">${L("Zurück","Back")}</button>`,1)}
 function arenaScreen(){const cur=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:-1;
   const tile=(x,i)=>{const o=owner(i);if(stageOk(i))return`<button type="button" class="ar${cur==i?" on":""}" data-a="arena" data-i="${i}" style="${arStyle(i)}">${x.bonus?`<i>BONUS</i>`:o?`<img src="${o.bust}" alt="">`:""}<span>${x.n}</span></button>`;
-    return`<div class="ar lk"><b>?</b><span>${x.bonus?L("Bonus-Arena","Bonus arena"):(unlocked(o)?L("Arena von ","Arena of ")+o.n:"???")}</span><small>${(x.bonus?L("Story auf „Schwer“ schaffen","Clear the story on “Hard”"):unlocked(o)?L(`Story mit ${o.n} schaffen`,`Clear the story with ${o.n}`,`Termine l’histoire avec ${o.n}`,`Supera la historia con ${o.n}`):L("Kämpfer noch gesperrt","Fighter still locked"))+" · "+L("oder Herausforderung","or challenge","ou défi","o reto")}</small></div>`};
+    return`<div class="ar lk"><b>?</b><span>${x.bonus?L("Bonus-Arena","Bonus arena"):(unlocked(o)?L("Arena von ","Arena of ")+o.n:"???")}</span><small>${x.bonus?chHint("b",x.en):chHint("a",o.id)}</small></div>`};
   const order=STG.map((x,i)=>i).sort((a,b)=>(STG[a].bonus?1:0)-(STG[b].bonus?1:0)||(owner(a)?CH.indexOf(owner(a)):0)-(owner(b)?CH.indexOf(owner(b)):0));
   menu(`<h2>${L("Wähle die Arena","Choose the arena")}</h2><div class="arenas">
    <button type="button" class="ar rnd${cur<0?" on":""}" data-a="arena" data-i="-1"><b>?</b><span>${L("Zufall","Random")}</span></button>${order.map(i=>tile(STG[i],i)).join("")}</div>
@@ -342,11 +339,10 @@ function selChar(){if(!unlocked(CH[selC]))selC=0;
 function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt(i)?1:0,o=pv==null?cur:pv,lockO=o==1&&!ao;
   document.querySelectorAll(".tile").forEach(t=>{const j=+t.dataset.i;t.classList.toggle("on",j==i);if(j==i&&u)t.querySelector("img").src=pic(i,"bust")});
   const seg=!c.alt?"":`<div class="seg osel">${[L("Outfit 1","Outfit 1"),ao?L(c.alt.on[0],c.alt.on[1]):L("Outfit 2 · gesperrt","Outfit 2 · locked")].map((t,k)=>`<button type="button" data-a="outfit" data-o="${k}" class="${o==k?"on":""}">${t}</button>`).join("")}</div>`;
-  $("#det").innerHTML=`<img src="${u?pic(i,"full",o==1):c.full}" alt="" class="${u&&!lockO?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3>${seg}<p>${lockO?L(`Schaffe die Story mit ${c.n}, um dieses Outfit freizuschalten.`,`Clear the story with ${c.n} to unlock this outfit.`,`Termine l’histoire avec ${c.n} pour débloquer cette tenue.`,`Supera la historia con ${c.n} para desbloquear este traje.`):c.d}</p>
+  $("#det").innerHTML=`<img src="${u?pic(i,"full",o==1):c.full}" alt="" class="${u&&!lockO?"":"lk"}"><div class="info">`+(u?`<div class="ti">${c.ti}</div><h3>${c.n}</h3>${seg}<p>${lockO?chHint("o",c.id):c.d}</p>
     <div class="st">${L(["Kraft","Leben","Spezial"],["Power","Health","Special"]).map((s,k)=>`<span>${s}</span><div>${[1,2,3,4,5].map(n=>`<i class="${n<=c.st[k]?"f":""}"></i>`).join("")}</div>`).join("")}</div>
     <div class="fn"><small>${L("SPEZIAL-ATTACKE","SPECIAL ATTACK")}</small>${(o==1&&ao?outfit(c,1):c).sig}</div><div class="fn"><small>FINISHER</small>${(o==1&&ao?outfit(c,1):c).fin}</div><button class="btn" data-a="go">${L("Kämpfen!","Fight!")}</button>`
-   :`<div class="ti">${c.boss?L("Boss · noch gesperrt","Boss · locked"):L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${c.boss?L(`Boss-Kämpfer: nur über die Story in der Stufe „${DIFFS[2][0]}“ freizuschalten. Dort wird bei jedem Durchgang ein zufälliger gesperrter Kämpfer frei, die Bosse eingeschlossen.`,`Boss fighter: only unlockable through the story on “${DIFFS[2][0]}”. Each clear there unlocks a random locked fighter, bosses included.`,`Combattant boss : à débloquer uniquement via l’histoire en « ${DIFFS[2][0]} ». Chaque victoire y débloque un combattant au hasard, boss compris.`,`Luchador jefe: solo se desbloquea con la historia en «${DIFFS[2][0]}». Cada vez que la superas se desbloquea un luchador al azar, jefes incluidos.`)
-      :L(`Schaffe die Story, dann kommt der nächste Kämpfer dazu. Jeder Durchgang schaltet einen Kämpfer frei. Bisher geschafft: ${SAVE.done}×. Oder schaffe die passende Herausforderung im Hauptmenü.`,`Clear the story to unlock the next fighter. Every clear unlocks one fighter. Cleared so far: ${SAVE.done}×. Or complete the matching challenge in the main menu.`,`Termine l’histoire pour débloquer le combattant suivant. Chaque victoire en débloque un. Réussie jusqu’ici : ${SAVE.done}×. Ou réussis le défi correspondant dans le menu principal.`,`Supera la historia para desbloquear al siguiente luchador. Cada vez se desbloquea uno. Superada hasta ahora: ${SAVE.done}×. O supera el reto correspondiente en el menú principal.`)}</p><button class="btn" disabled>${L("Gesperrt","Locked")}</button>`)+`</div>`}
+   :`<div class="ti">${c.boss?L("Boss · noch gesperrt","Boss · locked"):L("Noch gesperrt","Locked")}</div><h3>???</h3><p>${chHint("f",c.id)}</p><button class="btn" disabled>${L("Gesperrt","Locked")}</button>`)+`</div>`}
 const ACTIONS={
   start(){const n=$("#pname");if(n){SAVE.name=n.value.trim().slice(0,12)||HERO();save()}auInit();try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock("landscape").catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request("screen").catch(()=>{})}catch(e){}home()},
   name(){startScreen();const n=$("#pname");n&&n.focus()},lb(b){lbScreen(+b.dataset.i)},

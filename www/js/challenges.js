@@ -23,15 +23,15 @@ const CHL=[
   {id:"f_oni",r:["f","oni"],need:5,v:()=>STD().fin,t:()=>L("Schaffe 5 Finisher","Land 5 finishers","Réussis 5 finishers","Consigue 5 remates")},
   {id:"f_seraph",r:["f","seraph"],need:3,v:()=>STD().flaw,t:()=>L("Gewinne 3 Kämpfe ohne falsche Antwort","Win 3 fights without a wrong answer","Gagne 3 combats sans erreur","Gana 3 combates sin fallar")},
   {id:"f_mimi",r:["f","mimi"],need:10,v:()=>atkSum("sig"),t:()=>L("Setze 10 Spezialattacken ein","Use 10 special attacks","Utilise 10 attaques spéciales","Usa 10 ataques especiales")},
-  {id:"f_kaiser",r:["f","kaiser"],need:3,v:()=>STD().hard,t:()=>L("Gewinne 3 Kämpfe auf Schwer","Win 3 fights on Hard","Gagne 3 combats en Difficile","Gana 3 combates en Difícil")},
-  {id:"f_magus",r:["f","magus"],need:500,v:()=>STD().ok,t:()=>L("Löse 500 Aufgaben richtig","Solve 500 problems correctly","Résous 500 calculs justes","Resuelve 500 cuentas bien")},
+  {id:"f_kaiser",r:["",""],need:3,v:()=>STD().hard,t:()=>L("Gewinne 3 Kämpfe auf Schwer","Win 3 fights on Hard","Gagne 3 combats en Difficile","Gana 3 combates en Difícil")},
+  {id:"f_magus",r:["",""],need:500,v:()=>STD().ok,t:()=>L("Löse 500 Aufgaben richtig","Solve 500 problems correctly","Résous 500 calculs justes","Resuelve 500 cuentas bien")},
   /* zweite Outfits: 25× die Lieblingsattacke mit genau diesem Kämpfer */
   ...Object.entries(OUTK).map(([id,k])=>({id:"o_"+id,r:["o",id],need:25,v:()=>atkOf(id,k),t:()=>L(`Nutze mit ${cn(id)} 25× ${an(k)}`,`Use ${an(k)} 25× with ${cn(id)}`,`Utilise ${an(k)} 25× avec ${cn(id)}`,`Usa ${an(k)} 25× con ${cn(id)}`)})),
   /* Arenen der freispielbaren Kämpfer: den Besitzer zweimal besiegen */
   ...["rokka","volt","goro","shade","mika","drako","oni","seraph","kaiser","magus","mimi"].map(id=>({id:"a_"+id,r:["a",id],need:2,v:()=>STD().def[id]||0,t:()=>L(`Besiege ${cn(id)} 2×`,`Beat ${cn(id)} 2×`,`Bats ${cn(id)} 2×`,`Vence a ${cn(id)} 2×`)})),
   /* Bonus-Arenen über Rechen-Aufgaben (gibt es in Mittel und Schwer) */
-  {id:"b_play",r:["b","Playroom"],need:30,v:()=>STD().k.ph||0,t:()=>L("Löse 30 Platzhalter-Aufgaben","Solve 30 missing-number problems","Résous 30 calculs à trou","Resuelve 30 cuentas con hueco")},
-  {id:"b_arc",r:["b","Arcade Hall"],need:30,v:()=>STD().k.sym||0,t:()=>L("Löse 30 Symbol-Rätsel","Solve 30 symbol puzzles","Résous 30 énigmes de symboles","Resuelve 30 acertijos de símbolos")},
+  {id:"b_play",r:["",""],need:30,v:()=>STD().k.ph||0,t:()=>L("Löse 30 Platzhalter-Aufgaben","Solve 30 missing-number problems","Résous 30 calculs à trou","Resuelve 30 cuentas con hueco")},
+  {id:"b_arc",r:["",""],need:30,v:()=>STD().k.sym||0,t:()=>L("Löse 30 Symbol-Rätsel","Solve 30 symbol puzzles","Résous 30 énigmes de symboles","Resuelve 30 acertijos de símbolos")},
   {id:"b_neon",r:["b","Neon Alley"],need:30,v:()=>STD().k.seq||0,t:()=>L("Löse 30 Zahlenfolgen","Solve 30 number patterns","Résous 30 suites de nombres","Resuelve 30 series de números")},
   /* Trophäen ohne Belohnung */
   {id:"t_v5",r:["",""],need:5,v:()=>STD().winV,t:()=>L("Gewinne 5 Versus-Spiele","Win 5 versus matches","Gagne 5 matchs en versus","Gana 5 partidas versus")},
@@ -50,6 +50,14 @@ function rwGive(r){const[t,id]=r;if(t=="f"&&!SAVE.unl.includes(id))SAVE.unl.push
 function chCheck(){let n=0;for(const c of CHL){if(SAVE.chd.includes(c.id)||c.v()<c.need)continue;const info=rwInfo(c.r);SAVE.chd.push(c.id);rwGive(c.r);n++;
   toast(L("Herausforderung geschafft!","Challenge complete!","Défi réussi !","¡Reto superado!"),c.t()+(c.r[0]&&!info.has?" → "+info.what+(c.r[0]=="o"?"":": ")+(c.r[0]=="o"?"":info.n):""),c.r[0]=="f"||c.r[0]=="o"?info.img:null)}
   if(n){save();sfx("unlock")}}
+/* Hinweis, wie man etwas Gesperrtes freispielt (mit Fortschritt) */
+function chHint(t,id){
+  if(t=="f"&&id=="kaiser")return L("Schaffe die Story auf Mittel oder Schwer.","Clear the story on Medium or Hard.","Termine l’histoire en Moyen ou Difficile.","Supera la historia en Medio o Difícil.");
+  if(t=="f"&&id=="magus")return L("Schaffe die Story auf Schwer.","Clear the story on Hard.","Termine l’histoire en Difficile.","Supera la historia en Difícil.");
+  if(t=="b"&&id=="Playroom")return L("Story 1× schaffen","Clear the story once","Termine l’histoire 1×","Supera la historia 1×");
+  if(t=="b"&&id=="Arcade Hall")return L(`Story 3× schaffen (${Math.min(3,SAVE.done)}/3)`,`Clear the story 3× (${Math.min(3,SAVE.done)}/3)`,`Termine l’histoire 3× (${Math.min(3,SAVE.done)}/3)`,`Supera la historia 3× (${Math.min(3,SAVE.done)}/3)`);
+  const c=CHL.find(c=>c.r[0]==t&&c.r[1]==id);if(!c)return L("Noch gesperrt","Locked");
+  return L("Herausforderung","Challenge","Défi","Reto")+": "+c.t()+` (${Math.min(c.v(),c.need)}/${c.need})`}
 /* Statistik-Ereignisse aus dem Spiel */
 const ST={
   ok(id,k,mu,kind){const s=STD();s.ok++;s.streak++;s.best=Math.max(s.best,s.streak);if(mu>1.4)s.blitz++;if(kind)s.k[kind]=(s.k[kind]||0)+1;
