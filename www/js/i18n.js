@@ -26,7 +26,7 @@
 ["Solve · Fight · Win","Calculer · Combattre · Gagner","Calcula · Lucha · Gana"],["10 FIGHTS TO THE MATHEMAGUS","10 COMBATS JUSQU’AU MATHÉMAGE","10 COMBATES HASTA EL MATEMAGO"],
 ["Continue","Continuer","Continuar"],["FIGHT","COMBAT","COMBATE"],["Free Fight","Combat libre","Combate libre"],["ONE OPPONENT, ONE ARENA","UN ADVERSAIRE, UNE ARÈNE","UN RIVAL, UNA ARENA"],
 ["2 PLAYERS · ONE TABLET","2 JOUEURS · UNE TABLETTE","2 JUGADORES · UNA TABLETA"],["Player","Joueur","Jugador"],["Settings","Réglages","Ajustes"],
-["Game idea & game design","Idée et game design","Idea y diseño del juego"],["by","par","de"],
+["Game idea & game design","Idée et game design","Idea y diseño del juego"],["Programmed with","Programmé avec","Programado con"],["by","par","de"],
 ["Music","Musique","Música"],["Sound effects","Effets sonores","Efectos de sonido"],["Visual effects","Effets visuels","Efectos visuales"],
 ["“Low” for older tablets and phones","« Bas » pour les tablettes et téléphones plus anciens","«Bajo» para tabletas y móviles antiguos"],["Low","Bas","Bajo"],["Medium","Moyen","Medio"],["High","Élevé","Alto"],
 ["Music track","Morceau","Canción"],["Language","Langue","Idioma"],["Back","Retour","Atrás"],["Reset progress","Réinitialiser la progression","Reiniciar el progreso"],

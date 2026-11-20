@@ -297,7 +297,7 @@ function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=n
 const langSeg=()=>`<div class="seg" role="group" aria-label="Sprache / Language">${LANGS.map(([k,t])=>`<button type="button" data-a="lang" data-l="${k}" class="${LANG==k?"on":""}">${t}</button>`).join("")}</div>`;
 function startScreen(){const v=$("#pname")?$("#pname").value:SAVE.name;menu(logo()+`<label class="nmf" for="pname"><input id="pname" aria-label="Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="${L("Name","Name","Nom","Nombre")}" value="${esc(v)}"></label><button class="btn blink" data-a="start">${L("Start","Start","Jouer","Jugar")}</button>${langSeg()}${credits()}`)}
 /* Mitwirkende: Idee und Spieldesign, Programmierung */
-const credits=()=>`<p class="credits">${L("Spielidee & Game Design","Game idea & game design")}: <b>Dominic Sattler</b></p>`;
+const credits=()=>`<p class="credits">${L("Spielidee & Game Design","Game idea & game design")}: <b>Dominic Sattler</b><span> · </span>${L("Programmiert mit","Programmed with")} <b>Claude Code</b> ${L("von","by")} Anthropic</p>`;
 /* Einstellungen: Lautstärke für Musik und Effekte, Sprache. back = wohin "Zurück" führt */
 let setBack="home";
 function settings(back){setBack=back||setBack;const v=k=>Math.round(SAVE.vol[k]*100);
