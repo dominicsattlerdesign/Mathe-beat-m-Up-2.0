@@ -27,6 +27,6 @@ Nur gesammelt, noch nicht umgesetzt.
    - **Finisher und Spezial:** „Schaffe 10 Finisher“, „Setze mit Volt-7 5× die Spezialattacke ein“
    - **Versus:** „Gewinne 5 Versus-Spiele“, „Löse 3 Zusammenpralle aus“
    - **Story:** bleibt eine Quelle, aber nicht mehr die einzige
-   - **Zuordnungsidee:** Kämpfer über Story und Gegner-Herausforderungen, zweite Outfits über Attacken-Herausforderungen mit genau diesem Kämpfer, Arenen über Kämpfe in der Nähe dieser Arena oder Rechen-Herausforderungen, Musik über Versus
+   - **Zuordnungsidee:** Kämpfer über Story und Gegner-Herausforderungen, zweite Outfits über Attacken-Herausforderungen mit genau diesem Kämpfer, Arenen über Siege gegen den Besitzer der Arena oder über Rechen-Herausforderungen, Musik über Versus
    - Eigener Bildschirm „Herausforderungen“ mit Fortschrittsbalken (z. B. 17/25) und einer Meldung im Kampf, wenn eine geschafft ist
    - Fortschritt wird auf dem Gerät gespeichert, bisher Freigeschaltetes bleibt frei
