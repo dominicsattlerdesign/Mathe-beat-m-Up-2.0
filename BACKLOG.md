@@ -19,3 +19,14 @@ Nur gesammelt, noch nicht umgesetzt.
    - Gemeinsames Intro für beide Kämpfer eines Teams, für jede mögliche Paarung ein eigenes, auch mit zweiten Outfits
    - Pro Team nur ein Banner mit beiden Namen und Köpfen
 6. **Arena-Auswahl:** Nicht alle Kästchen sind gleich gross, die obere Reihe ist grösser als die darunter.
+7. **Freischalten über Herausforderungen statt nur über die Story.** Mehr Abwechslung: Kämpfer, Outfits, Arenen und Musik über eigene Aufgaben freispielen.
+   Vorschläge (noch offen):
+   - **Attacken-Herausforderungen:** „Nutze mit Theo 25× die Wurfattacke“, „Lande 50 Kicks mit Mika“, „Löse 20 Aufgaben blitzschnell (×1,5)“
+   - **Gegner-Herausforderungen:** „Besiege mit Akane den Kämpfer Drako 3× auf Schwer“, „Besiege jeden Start-Kämpfer einmal“
+   - **Rechen-Herausforderungen:** „10 richtige Antworten am Stück“, „Gewinne einen Kampf ohne falsche Antwort“, „Löse 30 Platzhalter-Aufgaben“
+   - **Finisher und Spezial:** „Schaffe 10 Finisher“, „Setze mit Volt-7 5× die Spezialattacke ein“
+   - **Versus:** „Gewinne 5 Versus-Spiele“, „Löse 3 Zusammenpralle aus“
+   - **Story:** bleibt eine Quelle, aber nicht mehr die einzige
+   - **Zuordnungsidee:** Kämpfer über Story und Gegner-Herausforderungen, zweite Outfits über Attacken-Herausforderungen mit genau diesem Kämpfer, Arenen über Kämpfe in der Nähe dieser Arena oder Rechen-Herausforderungen, Musik über Versus
+   - Eigener Bildschirm „Herausforderungen“ mit Fortschrittsbalken (z. B. 17/25) und einer Meldung im Kampf, wenn eine geschafft ist
+   - Fortschritt wird auf dem Gerät gespeichert, bisher Freigeschaltetes bleibt frei
