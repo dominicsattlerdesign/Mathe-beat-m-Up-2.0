@@ -197,8 +197,8 @@ const STANCE={
   volt:{sp:[0,0,0],ch:[0,-.25,0],hd:[0,.25,0],aL:[-.6,0,-.25],eL:[-1.57,0,0],aR:[-.6,0,.25],eR:[-1.57,0,0],lL:[-.18,0,-.08],kL:[.22,0,0],lR:[.18,0,.12],kR:[.18,0,0],bs:1.4},
   luna:{sp:[0,0,0],ch:[0,-.2,0],hd:[-.08,.2,.1],aL:[-.85,0,-.12],eL:[-.95,0,0],aR:[-.15,0,.45],eR:[-.7,0,0],lL:[-.2,0,-.06],kL:[.3,0,0],lR:[.2,0,.1],kR:[.35,0,0],bs:1.5},
   goro:{sp:[.22,0,0],ch:[.08,-.2,0],hd:[-.1,.2,0],aL:[-.35,0,-.75],eL:[-.6,0,0],aR:[-.25,0,.85],eR:[-.6,0,0],lL:[-.45,0,-.45],kL:[.75,0,0],lR:[.35,0,.48],kR:[.65,0,0],bs:1.2},
-  shade:{sp:[.5,0,0],ch:[.1,-.4,0],hd:[-.3,.4,0],aL:[-1.2,0,-.55],eL:[-.4,0,0],aR:[.65,0,.4],eR:[-.5,0,0],lL:[-1.1,0,-.12],kL:[1.6,0,0],lR:[.6,0,.22],kR:[1.3,0,0],bs:3.8},
-  mika:{sp:[.08,0,0],ch:[0,-.3,0],hd:[-.05,.3,0],aL:[-1.45,0,-.85],eL:[-.3,0,0],aR:[-1.25,0,.95],eR:[-.3,0,0],lL:[-1.25,0,-.1],kL:[1.8,0,0],lR:[.05,0,.1],kR:[.15,0,0],bs:3.2},
+  shade:{sp:[.5,0,0],ch:[.1,-.4,0],hd:[-.3,.4,0],aL:[-1.2,0,-.55],eL:[-.4,0,0],aR:[.65,0,.4],eR:[-.5,0,0],lL:[-.75,0,-.12],kL:[1.1,0,0],lR:[.45,0,.22],kR:[.8,0,0],bs:3.8},
+  mika:{sp:[.08,0,0],ch:[0,-.3,0],hd:[-.05,.3,0],aL:[-1.45,0,-.85],eL:[-.3,0,0],aR:[-1.25,0,.95],eR:[-.3,0,0],lL:[-.75,0,-.12],kL:[1.05,0,0],lR:[.3,0,.12],kR:[.45,0,0],bs:3.2},
   drako:{sp:[.3,0,0],ch:[.1,-.35,0],hd:[-.2,.35,0],aL:[-1.1,0,-.45],eL:[-1.05,0,0],aR:[-.9,0,.55],eR:[-1.1,0,0],lL:[-.6,0,-.15],kL:[.85,0,0],lR:[.42,0,.25],kR:[.5,0,0],bs:1.7},
   oni:{sp:[.12,0,0],ch:[0,-.3,0],hd:[-.15,.3,0],aL:[-2.3,0,-.35],eL:[-1.9,0,0],aR:[.3,0,.95],eR:[-1.85,0,0],lL:[-.45,0,-.35],kL:[.6,0,0],lR:[.35,0,.4],kR:[.5,0,0],bs:1.3},
   seraph:{sp:[-.05,0,0],ch:[0,-.25,0],hd:[-.15,.25,0],aL:[-1.35,0,-.1],eL:[-.6,0,0],aR:[.2,0,.5],eR:[-.3,0,0],lL:[-.3,0,-.1],kL:[.35,0,0],lR:[.25,0,.15],kR:[.2,0,0],bs:1.6},
@@ -206,7 +206,16 @@ const STANCE={
   magus:{sp:[.05,0,0],ch:[0,-.25,0],hd:[-.1,.3,0],aL:[-2.25,0,-.2],eL:[-.55,0,0],aR:[-.5,0,.4],eR:[-1.6,0,0],lL:[-.3,0,-.08],kL:[.35,0,0],lR:[.25,0,.15],kR:[.3,0,0],bs:1.5},
   mimi:{sp:[.2,0,.15],ch:[.05,-.2,.1],hd:[.12,.3,.25],aL:[-.55,0,-.6],eL:[-1.2,0,0],aR:[-.2,0,.9],eR:[-.9,0,0],lL:[-.3,0,-.2],kL:[.5,0,0],lR:[.45,0,.1],kR:[.65,0,0],bs:1.9,sw:1},
 };
-const STP={};for(const id in STANCE){const o=Object.assign({},POSE.idle);for(const j of JN)if(STANCE[id][j])o[j]=STANCE[id][j];STP[id]=o}
+/* Beide Füsse auf den Boden: das tiefer hängende Bein wird etwas mehr gebeugt, bis beide Füsse gleich hoch sind
+   (sonst setzt die Hüfte auf den tieferen Fuss und der andere schwebt, dann sieht es aus wie auf einem Bein). */
+const _eu=new THREE.Euler(),_fv=new THREE.Vector3();
+function footY(l,k){_fv.set(0,-.7,0).applyEuler(_eu.set(k[0],k[1],k[2]));_fv.y-=.72;return _fv.applyEuler(_eu.set(l[0],l[1],l[2])).y}
+function levelFeet(o){const L=o.lL||Z3,KL=o.kL||Z3,R=o.lR||Z3,KR=o.kR||Z3,yL=footY(L,KL),yR=footY(R,KR);if(Math.abs(yL-yR)<.01)return o;
+  const[l,k,lk,kk,yo]=yL<yR?[L,KL,"lL","kL",yR]:[R,KR,"lR","kR",yL];let lo=0,hi=1.6;
+  for(let i=0;i<24;i++){const d=(lo+hi)/2;if(footY([l[0]-d/2,l[1],l[2]],[k[0]+d,k[1],k[2]])<yo)lo=d;else hi=d}
+  o[lk]=[l[0]-lo/2,l[1],l[2]];o[kk]=[k[0]+lo,k[1],k[2]];return o}
+levelFeet(POSE.idle);
+const STP={};for(const id in STANCE){const o=Object.assign({},POSE.idle);for(const j of JN)if(STANCE[id][j])o[j]=STANCE[id][j];STP[id]=levelFeet(o)}
 const idleOf=f=>STP[f.ch.id]||POSE.idle;
 /* Eigene Pose am Ende des Auftritts (statt der gleichen Siegerpose für alle) */
 const IPOSE={
@@ -227,7 +236,7 @@ const IPOSE={
   magus:{sp:[-.1,0,0],ch:[0,0,0],hd:[-.35,0,0],aL:[-2.3,0,-.75],eL:[-.3,0,0],aR:[-2.3,0,.75],eR:[-.3,0,0],lL:[-.15,0,-.12],kL:[.25,0,0],lR:[.15,0,.12],kR:[.25,0,0]},
   mimi:{sp:[.12,0,.1],ch:[0,-.1,0],hd:[.2,.2,.35],aL:[-1,0,.55],eL:[-2.1,0,0],aR:[-1,0,-.55],eR:[-2.1,0,0],lL:[-.15,0,.15],kL:[.55,0,0],lR:[.2,0,.05],kR:[.3,0,0]},
 };
-for(const id in IPOSE)POSE["in_"+id]=IPOSE[id];
+for(const id in IPOSE)POSE["in_"+id]=["raiko","shade","mika"].includes(id)?IPOSE[id]:levelFeet(IPOSE[id]);
 const introPose=f=>POSE["in_"+f.ch.id]?"in_"+f.ch.id:"win";
 function pose(f,n,sp){f.tp=n=="idle"?idleOf(f):POSE[n];if(sp)f.ps=sp}
 function snapPose(f){for(const j of JN){const t=f.tp[j]||Z3;f.cur[j]=[t[0],t[1],t[2]]}}
