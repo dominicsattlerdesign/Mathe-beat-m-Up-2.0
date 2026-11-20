@@ -96,7 +96,7 @@ async function duoIntro(f1,ci2,isP){const f2=isP?mkTP(ci2):mkF(CH[ci2],f1.side,f
   rmF(f2);fighters.splice(fighters.indexOf(f2),1);settle(f1);pose(f1,"idle",12)}
 async function duoIntros(){const id=++WI.id;WI.active=true;const vo={x:VO.x,y:VO.y,fw:VO.fw,fh:VO.fh};VO.x=VO.y=0;VO.fw=VO.fh=1;applyOff();
   document.body.classList.add("cine","intro");CAM.mode="cine";en.root.visible=false;
-  if(WI.id===id)await duoIntro(pl,TG.p[1],true);if(WI.id===id)await duoIntro(en,TG.e[1],false);
+  if(WI.id===id)await duoIntro(pl,TG.p[1],true);/* beim Intro des Gegnerteams ist vom eigenen Team niemand zu sehen */pl.root.visible=false;if(WI.id===id)await duoIntro(en,TG.e[1],false);
   WI.active=false;$("#cut").className="";clearTemp();for(const f of[pl,en]){settle(f);pose(f,"idle",12)}fighters=[pl,en];
   document.body.classList.remove("cine","intro");Object.assign(VO,vo);layout();CAM.mode="fight";CAM.k=4}
 
