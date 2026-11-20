@@ -59,7 +59,7 @@ function hud(){if(mode=="v")return vHud();$("#ph").style.width=$("#pht").style.w
   const full=pl.mt>=100;$("#pmb").classList.toggle("full",full);const f=$("#fin");f.classList.toggle("rdy",full);f.classList.toggle("sel",sel=="sig");f.firstElementChild.style.width=pl.mt+"%";
   $("#fint").textContent=full?ATK.sig.n+" · "+pl.ch.sig.toUpperCase():ATK.sig.n+" "+Math.round(pl.mt)+" %";$("#finq").textContent=full?cards.sig.q[0]:"";if(full)fitBox($("#fin"),"b");
   const er=en.mt>=100;$("#ecb").classList.toggle("full",er);$("#elbl").textContent=er?L("SPEZIAL BEREIT!","SPECIAL READY!"):L("GEGNER-ANGRIFF","ENEMY ATTACK");
-  for(const[id,n]of[["#pw",wins.p],["#ew",wins.e]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<n))}
+  for(const[id,n]of mode=="a"?[["#pw",2-TG.ko.p],["#ew",2-TG.ko.e]]:[["#pw",wins.p],["#ew",wins.e]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<n))}
 const newCard=k=>({q:task(k,SAVE.diff),t0:0});
 /* Rechnungen immer ganz zeigen (kleine Handys, grosse Systemschrift): Schrift schrittweise verkleinern, bis nichts mehr überläuft */
 function fitCards(root){if(!root)return;root.querySelectorAll(".card").forEach(cd=>{const q=cd.querySelector(".q"),b=cd.querySelector("b");if(!q||!b||!cd.clientWidth)return;q.style.fontSize="";
@@ -223,9 +223,10 @@ async function attack(a,b,k,mu){if(over)return;
   else await ACT[k](a,b,/* Gegner: dieselbe Attacke macht 88 % des Spielerschadens */ATK[k].dm*a.dm*(a.isP||mode=="v"?mu:enF()*(a.tdm||1)));
   if(b.hp>0){await recover(a,b);
     /* Finisher gibt es nur im Matchball: der Spieler führt 1 Runde und der Gegner hat höchstens 10 % Leben */
-    if(a.isP&&fo=="none"&&wins.p==1&&b.hp<=b.max*.1&&!over)offerFin();return}
+    if(a.isP&&fo=="none"&&(mode=="a"?TG.ko.e==1:wins.p==1)&&b.hp<=b.max*.1&&!over)offerFin();return}
   /* Versus: K.O. heisst Kämpferwechsel, bis ein Team leer ist */
   if(mode=="v")return vKO(a,b);
+  if(mode=="a")return tKO(a,b);
   /* Runde vorbei: gekämpft wird, bis jemand zwei Runden gewonnen hat */
   if(fo=="on")endOffer();
   if(!b.downed)await launch(b,b.side*5.6,2,.75,1);pose(b,"down",20);await backHop(a);a.turn.rotation.y=FACE;pose(a,"win",10);
@@ -243,7 +244,7 @@ function layout(){if(mode=="v"&&!$("#panel2").hidden)return vLayout();const p=$(
   else{r.setProperty("--cl","0px");r.setProperty("--cr","0px");const hh=($("#hud").offsetHeight||70)*UIH,dk=Math.max(0,p.offsetHeight-22)*UIP;
     VO.x=0;VO.y=(dk-hh*.9)/2;VO.fw=1;VO.fh=(GH-hh-dk)/GH}
   applyOff()}
-function startFight(){if(mode=="v")return vStart();
+function startFight(){if(mode=="v")return vStart();if(mode=="a")return tStart();
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
   const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):(()=>{const i=CH.findIndex(c=>c.id==SAVE.opp);return i>=0&&i!=pickC&&unlocked(CH[i])?i:P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i])))})(),LV=story?lvl:[2,3,5,8][SAVE.diff];
   stageI=story?arenaOf(CH[oi]):SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:P(okStages());
@@ -323,7 +324,7 @@ function lbScreen(d){const rows=SAVE.lb.filter(x=>x.d==d).slice(0,10);
 /* Arena-Auswahl im Freien Kampf. Gesperrte Bonus-Arenen zeigen, wie man sie bekommt. */
 const arStyle=i=>{const[c1,c2]=STG[i].cols;return`background:linear-gradient(150deg,${hex(STG[i].fog)} 0%,${hex(c1)} 120%),${hex(c2)}`};
 /* Gegner-Wahl im Freien Kampf: alle freigespielten Kämpfer außer dem eigenen, oder Zufall */
-function oppScreen(){const cur=CH.findIndex(c=>c.id==SAVE.opp),ok=cur>=0&&cur!=pickC&&unlocked(CH[cur]);
+function oppScreen(){if(mode=="a")return tagOppScreen();const cur=CH.findIndex(c=>c.id==SAVE.opp),ok=cur>=0&&cur!=pickC&&unlocked(CH[cur]);
   menu(`<h2>${L("Wähle deinen Gegner","Choose your opponent")}</h2><div class="grid opp">
    <button type="button" class="tile rnd${ok?"":" on"}" data-a="opp" data-id=""><b>?</b><span>${L("Zufall","Random")}</span></button>
    ${ORDER.map(i=>CH[i]).map((c,_,a,i=CH.indexOf(c))=>i==pickC?"":unlocked(c)?`<button type="button" class="tile${ok&&cur==i?" on":""}" data-a="opp" data-id="${c.id}"><img src="${c.bust}" alt=""><span>${c.n}</span></button>`:`<div class="tile lock"><img src="${c.bust}" alt=""><span>???</span></div>`).join("")}</div>
@@ -336,7 +337,7 @@ function arenaScreen(){const cur=SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:-
    <button type="button" class="ar rnd${cur<0?" on":""}" data-a="arena" data-i="-1"><b>?</b><span>${L("Zufall","Random")}</span></button>${order.map(i=>tile(STG[i],i)).join("")}</div>
    <button class="btn alt sm pback" data-a="oppBack">${L("Zurück","Back")}</button>`,1)}
 function selChar(){if(!unlocked(CH[selC]))selC=0;
-  menu(`<h2 class="pickh">${L("Wähle deinen Kämpfer","Choose your fighter")}</h2><div class="pick"><div class="grid">${ORDER.map(i=>[CH[i],i]).map(([c,i])=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt pback" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
+  menu(`${mode=="a"?tagHead():`<h2 class="pickh">${L("Wähle deinen Kämpfer","Choose your fighter")}</h2>`}<div class="pick"><div class="grid">${ORDER.map(i=>[CH[i],i]).map(([c,i])=>`<button type="button" class="tile${unlocked(c)?"":" lock"}${i==selC?" on":""}" data-a="tile" data-i="${i}"><img src="${unlocked(c)?pic(i,"bust"):c.bust}" alt=""><span>${unlocked(c)?c.n:"???"}</span></button>`).join("")}</div><div class="det" id="det"></div></div><button class="btn alt pback" data-a="home" style="font-size:20px;min-height:48px;padding:8px 24px">${L("Zurück","Back")}</button>`,1);showDet(selC)}
 function showDet(i,pv){selC=i;const c=CH[i],u=unlocked(c),ao=altOk(c),cur=useAlt(i)?1:0,o=pv==null?cur:pv,lockO=o==1&&!ao;
   document.querySelectorAll(".tile").forEach(t=>{const j=+t.dataset.i;t.classList.toggle("on",j==i);if(j==i&&u)t.querySelector("img").src=pic(i,"bust")});
   const seg=!c.alt?"":`<div class="seg osel">${[L("Outfit 1","Outfit 1"),ao?L(c.alt.on[0],c.alt.on[1]):L("Outfit 2 · gesperrt","Outfit 2 · locked")].map((t,k)=>`<button type="button" data-a="outfit" data-o="${k}" class="${o==k?"on":""}">${t}</button>`).join("")}</div>`;
@@ -350,11 +351,11 @@ const ACTIONS={
   name(){startScreen();const n=$("#pname");n&&n.focus()},lb(b){lbScreen(+b.dataset.i)},
   settings(){settings("home")},back(){setBack=="pause"?pauseMenu():home()},
   lang(b){LANG=SAVE.lang=b.dataset.l;save();applyLang();if($("#pname"))startScreen();else settings()},
-  story(){mode="s";lvl=1;selChar()},arcade(){mode="a";if(pl){endFightUi();musicOn();attract();pl=en=null}selChar()},
+  story(){mode="s";lvl=1;selChar()},arcade(){mode="a";TG.p=[];TG.e=[];if(pl){endFightUi();musicOn();attract();pl=en=null}selChar()},
   cont(){const s=SAVE.story;mode="s";pickC=s.c;lvl=s.lvl;storyT=s.t||0;lives=s.lv||2;startFight()},
   diff(b){SAVE.diff=+b.dataset.i;save();document.querySelectorAll("#dseg button").forEach((x,i)=>x.classList.toggle("on",i==SAVE.diff))},
-  tile(b){showDet(+b.dataset.i)},go(){pickC=selC;if(mode=="s"){SAVE.story=null;storyT=0;lives=2;save();startFight()}else oppScreen()},
-  arena(b){SAVE.arena=+b.dataset.i;save();startFight()},pickBack(){selChar()},oppBack(){mode=="v"?vPickScreen(1):oppScreen()},
+  tile(b){showDet(+b.dataset.i)},go(){if(mode=="a")return tagGo();pickC=selC;if(mode=="s"){SAVE.story=null;storyT=0;lives=2;save();startFight()}else oppScreen()},
+  arena(b){SAVE.arena=+b.dataset.i;save();startFight()},pickBack(){if(mode=="a"&&TG.p.length)TG.p.pop();selChar()},oppBack(){mode=="v"?vPickScreen(1):oppScreen()},
   opp(b){SAVE.opp=b.dataset.id;save();arenaScreen()},
   next(){startFight()},again(){startFight()},home(){home()},
   unlock(){const{c:cs,o,s:ns,a:na}=lastUnl;sfx("unlock");flash("#fff");if(o)altPics(o);if(na!=null||ns!=null)attract(na!=null?na:ns);

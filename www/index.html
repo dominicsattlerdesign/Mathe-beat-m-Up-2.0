@@ -304,6 +304,13 @@ body.phone .credits{font-size:15px!important}
 #vsi.out{opacity:0;transition:opacity .25s}
 @keyframes tbl{from{transform:translateX(-120vw) skewX(-10deg)}}@keyframes tbr{from{transform:translateX(120vw) rotate(180deg) skewX(-10deg)}}@keyframes vvp{from{transform:scale(3);opacity:0}}
 body.vsi #hud,body.vsi .pnl{opacity:0;pointer-events:none}
+/* Tag Team: Kopfzeile in der Auswahl und Gegner-Banner ohne Drehung */
+.tagh{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}.tagh>b{font:400 30px var(--disp);color:var(--gold);text-shadow:3px 3px 0 var(--line);letter-spacing:.04em}
+.tagh small{font:700 12px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:#fff;text-shadow:1px 1px 0 var(--line)}
+.tslot{width:46px;height:46px;border:3px dashed var(--dim);display:grid;place-items:center;font:400 22px var(--disp);color:var(--dim);background:var(--panel);transform:skewX(-6deg);overflow:hidden}
+.tslot.f{border-style:solid;border-color:var(--gold)}.tslot img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+.grid.opp .tile .no{position:absolute;right:6px;top:4px;font:400 22px var(--disp);color:var(--gold);text-shadow:2px 2px 0 var(--line)}.grid.opp .tile{position:relative}
+#vsi.go .tb.p4{animation:tbr4 .45s .15s cubic-bezier(.2,1.4,.4,1) both}@keyframes tbr4{from{transform:translateX(120vw) skewX(-10deg)}}
 /* ---------- Versus: zweites Steuerpult oben, um 180° gedreht (die Drehung setzt vLayout per JS) ---------- */
 #panel2{top:0;bottom:auto;transform-origin:0 0}
 #menu.flip{transform:rotate(180deg)}
@@ -343,4 +350,5 @@ body.vsi #hud,body.vsi .pnl{opacity:0;pointer-events:none}
 <script src="js/styles.js"></script>
 <script src="js/mimi.js"></script>
 <script src="js/versus.js"></script>
+<script src="js/tag.js"></script>
 </body></html>
