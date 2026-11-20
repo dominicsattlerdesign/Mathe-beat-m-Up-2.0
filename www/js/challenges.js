@@ -33,9 +33,7 @@ const CHL=[
   {id:"b_play",r:["",""],need:30,v:()=>STD().k.ph||0,t:()=>L("Löse 30 Platzhalter-Aufgaben","Solve 30 missing-number problems","Résous 30 calculs à trou","Resuelve 30 cuentas con hueco")},
   {id:"b_arc",r:["",""],need:30,v:()=>STD().k.sym||0,t:()=>L("Löse 30 Symbol-Rätsel","Solve 30 symbol puzzles","Résous 30 énigmes de symboles","Resuelve 30 acertijos de símbolos")},
   {id:"b_neon",r:["b","Neon Alley"],need:30,v:()=>STD().k.seq||0,t:()=>L("Löse 30 Zahlenfolgen","Solve 30 number patterns","Résous 30 suites de nombres","Resuelve 30 series de números")},
-  /* Trophäen ohne Belohnung */
-  {id:"t_v5",r:["",""],need:5,v:()=>STD().winV,t:()=>L("Gewinne 5 Versus-Spiele","Win 5 versus matches","Gagne 5 matchs en versus","Gana 5 partidas versus")},
-  {id:"t_clash",r:["",""],need:3,v:()=>STD().clash,t:()=>L("Löse 3 Zusammenpralle aus","Trigger 3 clashes","Déclenche 3 chocs","Provoca 3 choques")},
+  /* Trophäe ohne Belohnung (Versus zählt für keine Herausforderung) */
   {id:"t_1000",r:["",""],need:1000,v:()=>STD().ok,t:()=>L("Löse 1000 Aufgaben richtig","Solve 1000 problems correctly","Résous 1000 calculs justes","Resuelve 1000 cuentas bien")},
 ];
 /* Belohnung: Name, Bild und ob sie schon frei ist */
@@ -64,8 +62,7 @@ const ST={
     if(k=="fin")s.fin++;else{const a=s.atk[id]=s.atk[id]||{};a[k]=(a[k]||0)+1}FW.ok++;chCheck();save()},
   bad(){STD().streak=0;FW.bad++;save()},
   ko(eid){const s=STD();s.def[eid]=(s.def[eid]||0)+1;if(SAVE.diff>=2)s.defM[eid]=(s.defM[eid]||0)+1;chCheck();save()},
-  win(m){const s=STD();if(m=="a")s.winA++;if(m=="v")s.winV++;if(m!="v"){if(FW.bad==0&&FW.ok>0)s.flaw++;if(SAVE.diff==3)s.hard++}chCheck();save()},
-  clash(){STD().clash++;chCheck();save()},
+  win(m){const s=STD();if(m=="v")return;if(m=="a")s.winA++;if(FW.bad==0&&FW.ok>0)s.flaw++;if(SAVE.diff==3)s.hard++;chCheck();save()},
   fight(){FW.ok=0;FW.bad=0},
 };
 const FW={ok:0,bad:0};

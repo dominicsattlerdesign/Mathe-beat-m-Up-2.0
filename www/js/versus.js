@@ -98,8 +98,8 @@ function vSubmit(p){const c=V.c[p];if(!c.sel||c.inp==="")return;
     if(ok&&cd.lock&&k!=cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
     if(cd.n>=3){cd.lock=k;cd.left=2;cd.n=0;cd.last=null;note=L(` Dreimal ${ATK[k].n}: Der macht jetzt Pause.`,` Three ${ATK[k].n}es: it needs a rest now.`,` Trois ${ATK[k].n} : il doit se reposer.`,` Tres ${ATK[k].n}: ahora necesita descansar.`)}}
   else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
-  if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");ST.ok(f.ch.id,k,mu,card.q[2]);vMsg(c,(mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")f.mt=0;vOk(p,k,mu)}
-  else{sfx("wrong");ST.bad();vib([70,60,70]);vMsg(c,`${P(QUIPS.bad)} ${unk(card.q[0])} = ${card.q[1]}.`+note);pop("?!","#a79fc7",fx_(f).x,4);if(busy==0)pose(f,"stumble",20);
+  if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");vMsg(c,(mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")f.mt=0;vOk(p,k,mu)}
+  else{sfx("wrong");vib([70,60,70]);vMsg(c,`${P(QUIPS.bad)} ${unk(card.q[0])} = ${card.q[1]}.`+note);pop("?!","#a79fc7",fx_(f).x,4);if(busy==0)pose(f,"stumble",20);
     /* falsche Antwort: gut eine Sekunde Pause für dieses Pult */
     c.wrong=true;setTimeout(()=>{c.wrong=false;if(g!=V.gen)return;c.lock=false;if(busy==0&&!over&&vF(p)==f)pose(f,"idle",12);vRender(c)},1100)}
   vRender(c);vHud()}
@@ -115,7 +115,7 @@ function vOk(p,k,mu){const o=V.pend[1-p],me={p,k,mu,t:performance.now()};
   if(!wait)return go();
   V.pend[p]=me;const f=vF(p);if(busy==0)pose(f,"windup",20);pop("!",hex(f.ch.c),fx_(f).x,4.4*f.sc);
   me.to=setTimeout(function chk(){if(V.pend[p]!==me)return;if(paused){me.to=setTimeout(chk,100);return}V.pend[p]=null;if(over){V.c[p].lock=false;vRender(V.c[p]);return}go()},CLASH_T)}
-async function clash(A,B){ST.clash();const a=pl,b=en;
+async function clash(A,B){const a=pl,b=en;
   await Promise.all([a,b].map(async f=>{if(f.downed)await getUp(f)}));
   sfx("warn");pose(a,"windup",22);pose(b,"windup",22);await wait(.22);
   const mid=(fx_(a).x+fx_(b).x)/2;await Promise.all([dash(a,mid-.8,.2),dash(b,mid+.8,.2)]);pose(a,"cross",60);pose(b,"cross",60);
@@ -162,7 +162,7 @@ async function vEnter(f){const id=++WI.id;WI.active=true;const vo={x:VO.x,y:VO.y
   await walkIn(f);
   WI.active=false;$("#cut").className="";clearTemp();settle(f);pose(f,"idle",12);
   document.body.classList.remove("cine","intro");Object.assign(VO,vo);layout();CAM.mode="fight";CAM.k=4}
-function vResult(w){ST.win("v");over=true;endFightUi();sfx("win");const t=V.team[w],lt=V.team[1-w];
+function vResult(w){over=true;endFightUi();sfx("win");const t=V.team[w],lt=V.team[1-w];
   menu(`<p class="tag">Versus · ${DIFFS[SAVE.diff][0]} · ${L("Runden","Rounds")} ${V.rw[0]} : ${V.rw[1]}</p><h1 class="logo"><span>${PN(w)}</span>${L("gewinnt!","wins!")}</h1>
    <div class="vres">${t.map((i,n)=>`<img src="${pic(i,"full")}" alt="" class="${n<V.cur[w]?"ko":""}">`).join("")}</div>
    <p>${L(`${CH[t[V.cur[w]]].n} steht als Letzter im Ring. ${CH[lt[0]].n} und ${CH[lt[1]].n} sind K.O.`,`${CH[t[V.cur[w]]].n} is the last one standing. ${CH[lt[0]].n} and ${CH[lt[1]].n} are knocked out.`,`${CH[t[V.cur[w]]].n} est le dernier debout. ${CH[lt[0]].n} et ${CH[lt[1]].n} sont K.-O.`,`${CH[t[V.cur[w]]].n} es el último en pie. ${CH[lt[0]].n} y ${CH[lt[1]].n} están K.O.`)}</p>

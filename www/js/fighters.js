@@ -333,8 +333,10 @@ let PS=null;
 function shoot(ch,o){
   if(!PS){const ps=new THREE.Scene(),pc=new THREE.PerspectiveCamera(30,1,.1,50);ps.add(new THREE.HemisphereLight(0xffffff,0x444466,.7));const d=new THREE.DirectionalLight(0xffffff,.8);d.position.set(3,6,8);ps.add(d);PS={ps,pc}}
   const{ps,pc}=PS,f=buildFighter(ch,o),k=o?"2":"";ren.setPixelRatio(1);ren.setClearColor(0,0);
-  f.turn.rotation.y=.45;snapPose(f);animFighter(f,1,0);ps.add(f.root);f.sh.visible=false;const top=3.35*f.sc;
-  ren.setSize(300,375,false);pc.aspect=.8;pc.fov=26;pc.updateProjectionMatrix();pc.position.set(.5,top-.5,3.6);pc.lookAt(.02,top-.52,0);
+  f.turn.rotation.y=.45;snapPose(f);animFighter(f,1,0);ps.add(f.root);f.sh.visible=false;
+  /* Brustbild: Kamera auf die echte Kopfposition richten (die Kampfhaltungen sind unterschiedlich hoch, z. B. geduckt) */
+  f.root.updateMatrixWorld(true);const hc=new THREE.Vector3().setFromMatrixPosition(f.J.hd.children[0].matrixWorld),ly=hc.y-.22*f.sc;
+  ren.setSize(300,375,false);pc.aspect=.8;pc.fov=26;pc.updateProjectionMatrix();pc.position.set(hc.x+.5,ly+.02,hc.z+3.6);pc.lookAt(hc.x+.02,ly,hc.z);
   ps.background=new THREE.Color(ch.c).multiplyScalar(.38);ren.render(ps,pc);ch["bust"+k]=cv.toDataURL("image/jpeg",.88);
   ren.setSize(420,560,false);pc.aspect=.75;pc.fov=30;pc.updateProjectionMatrix();pc.position.set(1.2,2.3,7.6);pc.lookAt(0,1.8*f.sc,0);
   ps.background=null;ren.render(ps,pc);ch["full"+k]=cv.toDataURL("image/png");
