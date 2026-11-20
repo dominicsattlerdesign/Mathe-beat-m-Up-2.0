@@ -1,6 +1,6 @@
 # Mathbrawl – Sammelliste aus dem Nutzertest
 
-Nur gesammelt, noch nicht umgesetzt.
+Punkte 1–9 sind umgesetzt (Test-APK Version 1.3). Neue Punkte unten anhängen.
 
 1. **Mehr Rechnungen.** Die Aufgaben wiederholen sich zu oft (vor allem Kick / Einmaleins: Leicht 117, Mittel 299, Schwer 600 verschiedene Rechnungen).
 2. **Eigene Startpose für jeden Kämpfer.** Im Moment haben alle dieselbe.

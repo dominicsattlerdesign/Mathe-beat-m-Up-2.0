@@ -89,17 +89,17 @@ function endOffer(t){fo="used";$("#fo").hidden=true;en.dizzy=false;if(busy==0&&e
 function submit(){if(!sel||inp===""||lock||over)return;
   const k=sel,c=cards[k],ok=+inp==c.q[1],el=(performance.now()-c.t0)/1000,th=BONUS[k];sel=null;inp="";lock=true;
   if(k=="fin"){fo="used";$("#fo").hidden=true;
-    if(ok){sfx("ok");msg("Finisher!");q(async()=>{await attack(pl,en,"fin",1);lock=false;if(!over)render()})}
-    else{sfx("wrong");vib([70,60,70]);endOffer(L(`Daneben! ${unk(c.q[0])} = ${c.q[1]}. Der Finisher ist futsch, jetzt normal zu Ende kämpfen.`,`Missed! ${unk(c.q[0])} = ${c.q[1]}. The finisher is gone, win the fight the normal way.`,`Raté ! ${unk(c.q[0])} = ${c.q[1]}. Le finisher est perdu, termine le combat normalement.`,`¡Fallaste! ${unk(c.q[0])} = ${c.q[1]}. El remate se perdió, termina el combate de forma normal.`));q(async()=>{pose(pl,"stumble",20);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
+    if(ok){sfx("ok");ST.ok(pl.ch.id,"fin",1,null);msg("Finisher!");q(async()=>{await attack(pl,en,"fin",1);lock=false;if(!over)render()})}
+    else{sfx("wrong");ST.bad();vib([70,60,70]);endOffer(L(`Daneben! ${unk(c.q[0])} = ${c.q[1]}. Der Finisher ist futsch, jetzt normal zu Ende kämpfen.`,`Missed! ${unk(c.q[0])} = ${c.q[1]}. The finisher is gone, win the fight the normal way.`,`Raté ! ${unk(c.q[0])} = ${c.q[1]}. Le finisher est perdu, termine le combat normalement.`,`¡Fallaste! ${unk(c.q[0])} = ${c.q[1]}. El remate se perdió, termina el combate de forma normal.`));q(async()=>{pose(pl,"stumble",20);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
     return render()}
   cards[k]=newCard(k);let note="";
   if(k!="sig"){if(cd.last==k)cd.n++;else{cd.last=k;cd.n=1}
     if(ok&&cd.lock&&k!=cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
     if(cd.n>=3){cd.lock=k;cd.left=2;cd.n=0;cd.last=null;note=L(` Dreimal ${ATK[k].n} am Stück: Der macht jetzt Pause, bis du 2 andere Attacken schaffst.`,` Three ${ATK[k].n}es in a row: it rests until you land 2 other attacks.`,` Trois ${ATK[k].n} d’affilée : il se repose jusqu’à ce que tu réussisses 2 autres attaques.`,` Tres ${ATK[k].n} seguidos: descansa hasta que aciertes 2 ataques distintos.`)}}
   else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
-  if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");msg((mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")pl.mt=0;
+  if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");ST.ok(pl.ch.id,k,mu,c.q[2]);msg((mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")pl.mt=0;
     q(async()=>{await attack(pl,en,k,mu);lock=false;if(!over)render()})}
-  else{sfx("wrong");vib([70,60,70]);msg(`${P(QUIPS.bad)} ${unk(c.q[0])} = ${c.q[1]}.`+note);en.timer-=en.iv*.15;
+  else{sfx("wrong");ST.bad();vib([70,60,70]);msg(`${P(QUIPS.bad)} ${unk(c.q[0])} = ${c.q[1]}.`+note);en.timer-=en.iv*.15;
     q(async()=>{pose(pl,"stumble",20);pop("?!","#a79fc7",pl.root.position.x,4);await wait(.65);pose(pl,"idle",12);lock=false;if(!over)render()})}
   render()}
 $("#pad").innerHTML=["1","2","3","4","5","6","7","8","9","0","del","ok"].map(k=>`<button type="button" class="k${k=="ok"?" ok":k=="del"?" del":""}" data-k="${k}">${k=="del"?"⌫":k=="ok"?"OK":k}</button>`).join("");
@@ -225,6 +225,7 @@ async function attack(a,b,k,mu){if(over)return;
     /* Finisher gibt es nur im Matchball: der Spieler führt 1 Runde und der Gegner hat höchstens 10 % Leben */
     if(a.isP&&fo=="none"&&(mode=="a"?TG.ko.e==1:wins.p==1)&&b.hp<=b.max*.1&&!over)offerFin();return}
   /* Versus: K.O. heisst Kämpferwechsel, bis ein Team leer ist */
+  if(mode!="v"&&!b.isP)ST.ko(b.ch.id);
   if(mode=="v")return vKO(a,b);
   if(mode=="a")return tKO(a,b);
   /* Runde vorbei: gekämpft wird, bis jemand zwei Runden gewonnen hat */
@@ -244,7 +245,7 @@ function layout(){if(mode=="v"&&!$("#panel2").hidden)return vLayout();const p=$(
   else{r.setProperty("--cl","0px");r.setProperty("--cr","0px");const hh=($("#hud").offsetHeight||70)*UIH,dk=Math.max(0,p.offsetHeight-22)*UIP;
     VO.x=0;VO.y=(dk-hh*.9)/2;VO.fw=1;VO.fh=(GH-hh-dk)/GH}
   applyOff()}
-function startFight(){if(mode=="v")return vStart();if(mode=="a")return tStart();
+function startFight(){ST.fight();if(mode=="v")return vStart();if(mode=="a")return tStart();
   fid++;tws.length=0;rtw.length=0;TSb=1;hs=0;cine(false);speed(false);musicOff();
   const story=mode=="s",boss=story&&(lvl==10||lvl==5),oi=story?storyOpp(lvl):(()=>{const i=CH.findIndex(c=>c.id==SAVE.opp);return i>=0&&i!=pickC&&unlocked(CH[i])?i:P(CH.map((c,i)=>i).filter(i=>i!=pickC&&unlocked(CH[i])))})(),LV=story?lvl:[2,3,5,8][SAVE.diff];
   stageI=story?arenaOf(CH[oi]):SAVE.arena>=0&&stageOk(SAVE.arena)?SAVE.arena:P(okStages());
@@ -265,7 +266,7 @@ function startFight(){if(mode=="v")return vStart();if(mode=="a")return tStart();
   },60);
 }
 function endFightUi(){$("#panel").hidden=true;$("#panel2").hidden=true;$("#hud").style.top="";$("#hud").hidden=true;$("#fo").hidden=true;cine(false);speed(false);layout();CAM.mode="menu"}
-function result(win){
+function result(win){if(win)ST.win(mode);
   over=true;endFightUi();const s=mode=="s";sfx(win?"win":"lose");
   const sc_=`${wins.p} : ${wins.e}`;
   if(win&&s&&lvl<10){lvl++;SAVE.story={c:pickC,lvl,t:storyT,lv:lives};save();
@@ -297,7 +298,7 @@ const logo=()=>`<h1 class="logo"><span>Math</span>brawl</h1><p class="tag">${L("
 function home(){endFightUi();musicOn();if(!fighters.length||pl)attract();pl=en=null;const st=SAVE.story;
   menu(logo()+`<div class="rowb"><button class="btn" data-a="story">${L("Story","Story","Histoire","Historia")}<small>${L("10 KÄMPFE BIS ZUM MATHEMAGUS","10 FIGHTS TO THE MATHEMAGUS")}</small></button>${st?`<button class="btn gold" data-a="cont">${L("Weiterkämpfen","Continue")}<small>${CH[st.c].n.toUpperCase()} · ${L("KAMPF","FIGHT")} ${st.lvl}/10 · ${"♥".repeat(st.lv||2)}</small></button>`:""}<button class="btn alt" data-a="arcade">${L("Freier Kampf","Free Fight")}<small>${L("EIN GEGNER, EINE ARENA","ONE OPPONENT, ONE ARENA")}</small></button>${VS_OK()?`<button class="btn alt" data-a="versus">Versus<small>${L("2 SPIELER · EIN TABLET","2 PLAYERS · ONE TABLET")}</small></button>`:""}</div>
    <div class="seg" id="dseg">${DIFFS.map((d,i)=>`<button type="button" data-a="diff" data-i="${i}" class="${SAVE.diff==i?"on":""}">${d[0]}<small>${d[1]}</small></button>`).join("")}</div>
-   <div class="rowb"><button class="btn alt sm" data-a="lb" data-i="${SAVE.diff}">${L("Rangliste","Leaderboard")}</button><button class="btn alt sm" data-a="name">${L("Spieler","Player")}: ${esc(SAVE.name||HERO())}</button><button class="btn alt sm" data-a="settings">${L("Einstellungen","Settings")}</button></div>
+   <div class="rowb"><button class="btn alt sm" data-a="chal">${L("Herausforderungen","Challenges","Défis","Retos")} ${SAVE.chd.length}/${CHL.length}</button><button class="btn alt sm" data-a="lb" data-i="${SAVE.diff}">${L("Rangliste","Leaderboard")}</button><button class="btn alt sm" data-a="name">${L("Spieler","Player")}: ${esc(SAVE.name||HERO())}</button><button class="btn alt sm" data-a="settings">${L("Einstellungen","Settings")}</button></div>
    <p class="tag">${L("Story geschafft","Story cleared")}: ${SAVE.done}×</p>`)}
 const langSeg=()=>`<div class="seg" role="group" aria-label="Sprache / Language">${LANGS.map(([k,t])=>`<button type="button" data-a="lang" data-l="${k}" class="${LANG==k?"on":""}">${t}</button>`).join("")}</div>`;
 function startScreen(){const v=$("#pname")?$("#pname").value:SAVE.name;menu(logo()+`<label class="nmf" for="pname"><input id="pname" aria-label="Name" type="text" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false" placeholder="${L("Name","Name","Nom","Nombre")}" value="${esc(v)}"></label><button class="btn blink" data-a="start">${L("Start","Start","Jouer","Jugar")}</button>${langSeg()}${credits()}`)}
@@ -368,7 +369,7 @@ const ACTIONS={
    <p>${L("Alle freigespielten Kämpfer, Outfits und Arenen, der Story-Fortschritt und die komplette Rangliste werden gelöscht. Das lässt sich nicht rückgängig machen.","All unlocked fighters, outfits and arenas, your story progress and the whole leaderboard will be deleted. This cannot be undone.")}</p>
    <div class="rowb"><button class="btn alt" data-a="resetNo">${L("Nein, behalten","No, keep it")}</button><button class="btn danger" data-a="resetYes">${L("Ja, alles zurücksetzen","Yes, reset everything")}</button></div>`,1)},
   resetNo(){settings()},
-  resetYes(){Object.assign(SAVE,{done:0,story:null,lb:[],unl:[],alts:[],of:{},bst:[],ars:[],arena:-1,opp:""});save();lives=2;storyT=0;lastUnl={c:[],o:null,s:null,a:null};sfx("ko");
+  resetYes(){Object.assign(SAVE,{done:0,story:null,lb:[],unl:[],alts:[],of:{},bst:[],ars:[],arena:-1,opp:"",st:{},chd:[]});save();lives=2;storyT=0;lastUnl={c:[],o:null,s:null,a:null};sfx("ko");
     paused=false;fighters.length=0;home();menu(`<h2>${L("Fortschritt zurückgesetzt","Progress reset")}</h2><p>${L("Alles beginnt von vorn: 5 Kämpfer und ihre Arenen sind frei, der Rest wartet darauf, freigespielt zu werden.","Everything starts over: 5 fighters and their arenas are unlocked, the rest is waiting to be earned.")}</p><button class="btn" data-a="home">${L("Zum Hauptmenü","To main menu")}</button>`,1)},
   vib(b){SAVE.vib=b.dataset.i=="1";save();if(SAVE.vib)vib(80);settings()},
   qual(b){SAVE.q=+b.dataset.i;save();setQuality(SAVE.q);settings()},

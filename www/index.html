@@ -304,6 +304,22 @@ body.phone .credits{font-size:15px!important}
 #vsi.out{opacity:0;transition:opacity .25s}
 @keyframes tbl{from{transform:translateX(-120vw) skewX(-10deg)}}@keyframes tbr{from{transform:translateX(120vw) rotate(180deg) skewX(-10deg)}}@keyframes vvp{from{transform:scale(3);opacity:0}}
 body.vsi #hud,body.vsi .pnl{opacity:0;pointer-events:none}
+/* Herausforderungen: Liste mit Fortschritt und Meldung oben im Bild */
+.chl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:min(98%,1100px)}
+.chr{display:flex;align-items:center;gap:10px;padding:6px 10px;border:3px solid var(--line);background:var(--panel);box-shadow:3px 3px 0 var(--line);text-align:left;min-width:0}
+.chr.ok{background:linear-gradient(90deg,#2a4a2a,var(--panel))}
+.chr>img,.chr>.cst,.chr>i{flex:none;width:44px;height:44px;border:2px solid var(--line);object-fit:cover;object-position:50% 12%;background:var(--panel2)}
+.chr>i{display:grid;place-items:center;font:400 26px var(--disp);color:var(--gold);font-style:normal}
+.cht{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.cht b{font:700 13px/1.2 var(--ui);color:#fff}.cht small{font:700 10px var(--ui);letter-spacing:.06em;color:var(--dim);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chb{height:7px;background:#1b1830;border:2px solid var(--line)}.chb i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold))}
+.chv{flex:none;font:400 18px var(--disp);color:var(--gold);min-width:52px;text-align:right}
+body.phone .chl{grid-template-columns:1fr}
+#toast{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));z-index:9;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;max-width:min(92vw,560px);
+  background:linear-gradient(90deg,var(--gold),#fff3a8);color:var(--line);border:3px solid var(--line);box-shadow:4px 4px 0 var(--line);transform:translate(-50%,-160%);pointer-events:none}
+#toast img{width:46px;height:46px;object-fit:cover;object-position:50% 12%;border:2px solid var(--line)}#toast>i{font:400 30px var(--disp);font-style:normal;width:40px;text-align:center}
+#toast b{display:block;font:400 20px var(--disp);letter-spacing:.04em}#toast span{display:block;font:700 13px/1.25 var(--ui)}
+#toast.go{animation:tin .35s cubic-bezier(.2,1.4,.4,1) forwards}#toast.out{transform:translate(-50%,0);animation:tout .35s forwards}
+@keyframes tin{to{transform:translate(-50%,0)}}@keyframes tout{to{transform:translate(-50%,-160%)}}
 /* Tag Team: Kopfzeile in der Auswahl und Gegner-Banner ohne Drehung */
 .tagh{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}.tagh>b{font:400 30px var(--disp);color:var(--gold);text-shadow:3px 3px 0 var(--line);letter-spacing:.04em}
 .tagh small{font:700 12px var(--ui);letter-spacing:.14em;text-transform:uppercase;color:#fff;text-shadow:1px 1px 0 var(--line)}
@@ -351,4 +367,5 @@ body.vsi #hud,body.vsi .pnl{opacity:0;pointer-events:none}
 <script src="js/mimi.js"></script>
 <script src="js/versus.js"></script>
 <script src="js/tag.js"></script>
+<script src="js/challenges.js"></script>
 </body></html>
