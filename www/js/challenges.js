@@ -1,6 +1,6 @@
 /* ---------- Herausforderungen: Freischalten nicht nur über die Story ----------
    Statistik in SAVE.st, geschaffte Herausforderungen in SAVE.chd. Belohnung: f = Kämpfer, o = zweites Outfit, a = Arena (Besitzer-ID),
-   b = Bonus-Arena (Index in STG), "" = nur Trophäe. Was schon frei ist, bleibt frei. */
+   b = Bonus-Arena (Index in STG). Was schon frei ist, bleibt frei. */
 if(!SAVE.st)SAVE.st={};if(!Array.isArray(SAVE.chd))SAVE.chd=[];
 const STD=()=>{const s=SAVE.st;s.atk=s.atk||{};s.k=s.k||{};s.def=s.def||{};s.defM=s.defM||{};for(const k of["ok","blitz","streak","best","fin","winA","winV","clash","flaw","hard"])s[k]=s[k]||0;return s};
 const atkOf=(id,k)=>((STD().atk[id]||{})[k]||0),atkSum=k=>Object.values(STD().atk).reduce((n,a)=>n+(a[k]||0),0);
@@ -23,18 +23,12 @@ const CHL=[
   {id:"f_oni",r:["f","oni"],need:5,v:()=>STD().fin,t:()=>L("Schaffe 5 Finisher","Land 5 finishers","Réussis 5 finishers","Consigue 5 remates")},
   {id:"f_seraph",r:["f","seraph"],need:3,v:()=>STD().flaw,t:()=>L("Gewinne 3 Kämpfe ohne falsche Antwort","Win 3 fights without a wrong answer","Gagne 3 combats sans erreur","Gana 3 combates sin fallar")},
   {id:"f_mimi",r:["f","mimi"],need:10,v:()=>atkSum("sig"),t:()=>L("Setze 10 Spezialattacken ein","Use 10 special attacks","Utilise 10 attaques spéciales","Usa 10 ataques especiales")},
-  {id:"f_kaiser",r:["",""],need:3,v:()=>STD().hard,t:()=>L("Gewinne 3 Kämpfe auf Schwer","Win 3 fights on Hard","Gagne 3 combats en Difficile","Gana 3 combates en Difícil")},
-  {id:"f_magus",r:["",""],need:500,v:()=>STD().ok,t:()=>L("Löse 500 Aufgaben richtig","Solve 500 problems correctly","Résous 500 calculs justes","Resuelve 500 cuentas bien")},
   /* zweite Outfits: 25× die Lieblingsattacke mit genau diesem Kämpfer */
   ...Object.entries(OUTK).map(([id,k])=>({id:"o_"+id,r:["o",id],need:25,v:()=>atkOf(id,k),t:()=>L(`Nutze mit ${cn(id)} 25× ${an(k)}`,`Use ${an(k)} 25× with ${cn(id)}`,`Utilise ${an(k)} 25× avec ${cn(id)}`,`Usa ${an(k)} 25× con ${cn(id)}`)})),
   /* Arenen der freispielbaren Kämpfer: den Besitzer zweimal besiegen */
   ...["rokka","volt","goro","shade","mika","drako","oni","seraph","kaiser","magus","mimi"].map(id=>({id:"a_"+id,r:["a",id],need:2,v:()=>STD().def[id]||0,t:()=>L(`Besiege ${cn(id)} 2×`,`Beat ${cn(id)} 2×`,`Bats ${cn(id)} 2×`,`Vence a ${cn(id)} 2×`)})),
   /* Bonus-Arenen über Rechen-Aufgaben (gibt es in Mittel und Schwer) */
-  {id:"b_play",r:["",""],need:30,v:()=>STD().k.ph||0,t:()=>L("Löse 30 Platzhalter-Aufgaben","Solve 30 missing-number problems","Résous 30 calculs à trou","Resuelve 30 cuentas con hueco")},
-  {id:"b_arc",r:["",""],need:30,v:()=>STD().k.sym||0,t:()=>L("Löse 30 Symbol-Rätsel","Solve 30 symbol puzzles","Résous 30 énigmes de symboles","Resuelve 30 acertijos de símbolos")},
   {id:"b_neon",r:["b","Neon Alley"],need:30,v:()=>STD().k.seq||0,t:()=>L("Löse 30 Zahlenfolgen","Solve 30 number patterns","Résous 30 suites de nombres","Resuelve 30 series de números")},
-  /* Trophäe ohne Belohnung (Versus zählt für keine Herausforderung) */
-  {id:"t_1000",r:["",""],need:1000,v:()=>STD().ok,t:()=>L("Löse 1000 Aufgaben richtig","Solve 1000 problems correctly","Résous 1000 calculs justes","Resuelve 1000 cuentas bien")},
 ];
 /* Belohnung: Name, Bild und ob sie schon frei ist */
 function rwInfo(r){const[t,id]=r;
