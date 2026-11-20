@@ -140,4 +140,10 @@
 ["Fallen Angel","Ange déchu","Ángel caído"],["White Emperor","Empereur blanc","Emperador blanco"],["Professor Chalk","Professeur Craie","Profesor Tiza"],
 ["Arrr!","Arrr !","¡Arrr!"],["Ta-da!","Ta-da !","¡Tachán!"],["Beep. Battle mode.","Bip. Mode combat.","Bip. Modo combate."],["HA! HA! HA!","HA ! HA ! HA !","¡JA! ¡JA! ¡JA!"],["Aye aye!","À vos ordres !","¡A la orden!"],
 ["Applause, please!","Applaudissements, s’il vous plaît !","¡Aplausos, por favor!"],["Upgrade complete.","Mise à jour terminée.","Actualización completada."],["Dosukoi!","Dosukoi !","¡Dosukoi!"],["Hm-hm. Correct.","Hm-hm. Exact.","Mm-hm. Correcto."],
+/* Mimi Tus und Liebespalast */
+["The Lovesick","Le Cœur brisé","El Enamorado"],
+["Fights like he just ate three plates of candy floss. Cries at every love film and every hit.","Se bat comme après trois assiettes de barbe à papa. Pleure à chaque film d’amour et à chaque coup.","Lucha como tras tres platos de algodón de azúcar. Llora con cada película de amor y con cada golpe."],
+["I only do this for love … *sniff*","Je fais ça seulement par amour … *snif*","Solo lo hago por amor … *snif*"],
+["Heartbreaker","Brise-cœur","Rompecorazones"],["Heartache","Chagrin d’amour","Mal de amores"],["Love Palace","Palais de l’amour","Palacio del amor"],
+["*sob*","*sniff*","*sollozo*"],["I’m fine … love hurts!","Ça va … l’amour, ça fait mal !","Estoy bien … ¡el amor duele!"],
 ].forEach(([en,fr,es])=>{TR.fr[en]=fr;TR.es[en]=es});

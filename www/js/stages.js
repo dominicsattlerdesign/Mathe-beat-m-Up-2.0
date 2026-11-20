@@ -279,7 +279,22 @@ const STG=[
    BG(gB(70,.2,30),0x2a1a10,0,-.62,-8);for(const x of[-10.5,10.5]){BG(gB(3.2,8,1.2),0x3a2414,x,3.4,-6.6);for(let r=0;r<5;r++){BG(gB(3,.1,1),0x2a1a0e,x,.2+r*1.6,-6.5);for(let j=0;j<7;j++)BG(gB(.3,1.1-((r+j)%3)*.15,.8),KIDC[(r+j)%6],x-1.2+j*.4,.8+r*1.6,-6.4)}}
    for(const[t,x,y]of[["π",-5,6.2],["∑",5,6.6],["÷",-2,7.4],["√",2.4,7],["∞",0,5.6]])neon(t,0x3dffd0,x,y,-6,1.6,0,120);
    [["books",-5.6,-2.2],["board",5.6,-2.2],["globe",-3.4,-2.6],["crystal",3.4,-2.6,1,0,0x3dffd0],["books",-1.6,-2.8,.8],["lantern",1.6,-2.8],["board",-7.6,-.8,1,1.2],["globe",7.6,-.6],["books",6.8,.9,.9],["urn",-6.8,.9,.9],
-    ["crystal",-7.9,-2.5,.9,0,0x3dffd0],["books",7.9,-2.5,.9],["globe",4.6,-2.9,.8],["books",-4.6,-2.9,.7],["crystal",2.8,2.5,.55,0,0x3dffd0],["books",-2.7,2.5,.6]].forEach(a=>addProp(...a))}}
+    ["crystal",-7.9,-2.5,.9,0,0x3dffd0],["books",7.9,-2.5,.9],["globe",4.6,-2.9,.8],["books",-4.6,-2.9,.7],["crystal",2.8,2.5,.55,0,0x3dffd0],["books",-2.7,2.5,.6]].forEach(a=>addProp(...a))}},
+ /* Arena von Mimi Tus: rosa Liebespalast mit Herzballons */
+ {n:"Liebespalast",en:"Love Palace",own:"mimi",bgk:"stone",cols:[0xff5ca8,0xffc21a],fog:0xffd6e8,fn:28,ff:100,hemi:[0xfff0f6,0x8a4a6a,.74],sun:[0xfff0f0,.8],rim:0xff9ac8,floor:["#f7c4da","#c45a8a","slab"],base:0x8a3a5e,trim:0xff5ca8,amb:[0xff8ac8,70,"fall"],
+  build(){layer(sky([[0,"#ff9ac8"],[.55,"#ffd0e4"],[1,"#fff2f8"]],(g,w,h)=>{clouds(g,w,h,"rgba(255,255,255,.8)",7,.12,.4);disc(g,w*.5,h*.4,110,"#fff6fa","rgba(255,180,210,.6)");
+      g.fillStyle="rgba(255,90,168,.35)";for(let i=0;i<14;i++){const x=rnd(w),y=rnd(h*.7),r=rnd(10,26);g.beginPath();g.moveTo(x,y+r*.6);g.bezierCurveTo(x-r*1.2,y-r*.2,x-r*.5,y-r,x,y-r*.35);g.bezierCurveTo(x+r*.5,y-r,x+r*1.2,y-r*.2,x,y+r*.6);g.fill()}}),260,120,0,32,-90,{opaque:1});
+   BG(gB(70,.2,30),0xf2b0cc,0,-.62,-8);
+   /* Palast: Mittelbau, Türme mit rosa Spitzdächern, Herzfenster */
+   BG(gB(9,5,2.4),0xfff2f6,0,2,-9.5);BG(gB(9.4,.4,2.6),0xff9ac8,0,4.6,-9.5);
+   for(const x of[-5.4,5.4,-2.6,2.6]){const big=Math.abs(x)>4;BG(gC(big?1.1:.8,big?1.1:.8,big?7:6,16),0xfff2f6,x,big?2.9:2.4,-9.2);const r=BG(gK(big?1.4:1.05,big?2.6:2,16),0xff5ca8,x,big?7.7:6.4,-9.2)}
+   const hw=M(heartGeo(),0xff5ca8,[0,2.6,-8.2],stage,1,0x8a1a4a);hw.scale.setScalar(1.6);
+   for(const x of[-1.4,1.4]){const w=M(heartGeo(),0xffc21a,[x*2.2,3.4,-8.25],stage,0,0x8a5a10);w.scale.setScalar(.6)}
+   /* Herzballons an Schnüren */
+   for(const[x,y,z,c]of[[-9,6.2,-5,0xff5ca8],[-7.4,7.4,-6,0xff3b5c],[8.6,6.6,-5.4,0xff8ac8],[7,7.8,-6.2,0xff5ca8],[-3.8,8.2,-7,0xffc21a],[4.2,8.6,-7.2,0xff3b5c]]){const b=M(heartGeo(),c,[x,y,z],stage,1,0x551030);b.scale.setScalar(1.1);b.rotation.y=rnd(-.4,.4);BG(gC(.02,.02,y-.2,4),0xffffff,x,y/2-.3,z)}
+   neon("♥ LOVE ♥",0xff5ca8,0,7.6,-8,4.4,0,110);
+   [["vase",-5.6,-2.2,1,0],["crystal",5.6,-2.2,1.1,0,0xff8ac8],["teddy",-3.4,-2.6],["urn",3.4,-2.6],["slantern",-1.6,-2.8,.9],["slantern",1.6,-2.8,.9],["crystal",-7.6,-.8,1,0,0xff5ca8],["teddy",7.6,-.8,1,3.14],["vase",6.8,.9,.9],["urn",-6.8,.9,.8],
+    ["crystal",-7.9,-2.5,.9,0,0xffc21a],["vase",7.9,-2.5,.9],["toyball",4.6,-2.9,.8],["teddy",-4.6,-2.9,.7],["crystal",2.8,2.5,.55,0,0xff8ac8],["vase",-2.7,2.5,.6]].forEach(a=>addProp(...a))}}
 ];
 STG.forEach(s=>bi(s,"n",s.n,s.en));
 function buildStage(si){

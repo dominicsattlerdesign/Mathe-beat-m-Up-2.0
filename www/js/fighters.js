@@ -65,6 +65,9 @@ function faceTex(ch){const o=ch.face||{};return ctex(1024,512,g=>{g.scale(2,2);
 const HEADG=(()=>{const n=24,pts=[];for(let i=0;i<=n;i++){const th=i/n*Math.PI,t=Math.max(0,(Math.PI/2-th)/(Math.PI/2));pts.push(new THREE.Vector2(Math.max(.0005,.3*Math.sin(th)*(1-.3*Math.pow(t,1.4))),-.3*Math.cos(th)*(1.12+.16*t)))}
   const g=new THREE.LatheGeometry(pts,28);g.rotateY(-Math.PI/2);return g})();
 const limb=(r0,r1,r2,L)=>[[0,-L-r2*.55],[r2*.75,-L-r2*.3],[r2,-L],[lerp(r2,r1,.6),-L*.72],[r1,-L*.4],[lerp(r1,r0,.7),-L*.15],[r0,0],[r0*.8,r0*.45],[0,r0*.7]].map(p=>[+p[0].toFixed(4),+p[1].toFixed(4)]);
+/* Herzform (für Mimi Tus und Herz-Effekte), zeigt nach vorne (z) */
+const heartGeo=()=>geo("heart",()=>{const h=new THREE.Shape();h.moveTo(0,-.5);h.bezierCurveTo(-.15,-.32,-.55,-.12,-.55,.18);h.bezierCurveTo(-.55,.45,-.3,.58,-.12,.5);h.bezierCurveTo(-.05,.47,0,.4,0,.34);
+  h.bezierCurveTo(0,.4,.05,.47,.12,.5);h.bezierCurveTo(.3,.58,.55,.45,.55,.18);h.bezierCurveTo(.55,-.12,.15,-.32,0,-.5);const g=new THREE.ExtrudeGeometry(h,{depth:.18,bevelEnabled:true,bevelSize:.06,bevelThickness:.06,bevelSegments:2,curveSegments:10});g.center();return g});
 function buildFighter(ch,o){if(o)ch=outfit(ch,1);
   const b=ch.b||{},W=b.w||1,S=b.h||1,CL="cloth",SK="skin",ME="metal",HA="hair";
   const root=new THREE.Group(),turn=new THREE.Group(),piv=new THREE.Group(),model=new THREE.Group();
@@ -241,10 +244,25 @@ const CH=[
   c:0x9a3cff,sig:"Schwarzes Loch",fin:"Schwarze Sonne",st:[5,3,3],acc(H){H.crown(0xffc21a);H.cape(0x15131a,1.7,1.1,0x8a1a3a);H.pads(0x5a2ea6,.24,0xffc21a);H.plate(0x5a2ea6);H.collar(0x15131a);H.belt(0xffc21a,0xff2a4a);H.scythe("L")}},
  {id:"magus",n:"Mathemagus",ti:"Herr der Zahlen",d:"Der Endgegner. Kennt jede Formel und fürchtet nur eines: die richtige Antwort.",q:"Zeig mir dein Ergebnis … wenn du dich traust!",noEars:1,skin:0x1a1626,hair:["bald",0],eye:0x3dffd0,face:{glow:0x3dffd0,mask:0x1a1626},top:0x2a5f96,belly:0x163450,pants:0x163450,glove:0x163450,sleeve:"long",wide:1,b:{w:1.05,h:1.14},
   c:0x3dffd0,sig:"Zahlenhagel",fin:"Division durch Null",st:[4,4,4],acc(H){H.hood(0x2a5f96);H.horns(0xffc21a,.5,.75);H.formulaStaff("L",0x3dffd0);H.cape(0x163450,1.7,1.05,0x0f8f7a);H.pads(0xffc21a,.2);H.belt(0xffc21a,0x3dffd0);H.skirt(0x2a5f96,.8);H.orbit(0x3dffd0)}},
+ {id:"mimi",n:"Mimi Tus",ti:"Der Liebeskranke",d:"Kämpft wie nach drei Tellern Zuckerwatte. Weint bei jedem Liebesfilm und bei jedem Treffer.",q:"Ich mach das nur aus Liebe … *schnief*",skin:0xf2c9a0,hair:["short",0xf5d76e],eye:0x3a7ad6,top:0xff7aa8,belly:0xff7aa8,pants:0x3a3a4a,boots:0xf4f0e6,sleeve:"long",
+  c:0xff5ca8,sig:"Herzensbrecher",fin:"Liebeskummer",st:[3,3,4],acc(H){const J=H.J;
+   /* schwarzes Basecap mit Schirm nach vorn, blonde Strähnen schauen darunter hervor */
+   const cp=M(geo("bcap",()=>new THREE.SphereGeometry(.345,24,14,0,6.2832,0,1.25)),0x15131a,[0,.42,-.03],J.hd,1,0,"cloth");cp.rotation.x=-.3;cp.scale.set(1.03,1,1.05);
+   /* blonde Strähnen an den Seiten und hinten, unter dem Cap */
+   const BL=0xf5d76e;for(const s of[-1,1]){for(let i=0;i<3;i++){const t=M(gB(.09,.26-i*.04,.12),BL,[s*(.3-i*.02),.24-i*.03,.05-i*.12],J.hd,1,0,"hair");t.rotation.z=s*.25}}
+   for(let i=-2;i<=2;i++){const t=M(gB(.13,.24,.08),BL,[i*.11,.22,-.3],J.hd,1,0,"hair");t.rotation.x=.25}
+   for(let i=-2;i<=2;i++){const t=M(gK(.07,.2,5),BL,[i*.09,.37,.28],J.hd,1,0,"hair");t.rotation.x=2.6}
+   const br=M(gC(.29,.3,.04,22),0x15131a,[0,.52,.28],J.hd,1,0,"cloth");br.scale.set(1,1,.85);br.rotation.x=.18;
+   const ch=M(heartGeo(),0xff5ca8,[0,.66,.25],J.hd,0,0x8a1a4a);ch.scale.setScalar(.16);ch.rotation.x=-.5;
+   /* Hoodie: Kapuze hinten am Nacken, Kordeln, Bauchtasche, Herz auf der Brust */
+   const hd=M(gT(.2,.1,8,18),0xff7aa8,[0,.6,-.13],J.ch,1,0,"cloth");hd.rotation.x=1.25;
+   for(const s of[-1,1]){const k=M(gC(.018,.018,.22,6),0xf4f0e6,[s*.08,.47,.23],J.ch,0);k.rotation.x=-.15}
+   M(gB(.36,.15,.05),0xe0608c,[0,.12,.235],J.ch,1);
+   const hh=M(heartGeo(),0xffffff,[.12,.36,.25],J.ch,0,0x553040);hh.scale.setScalar(.14)}},
 ];
 /* Kampfstil als KI-Gegner: Tempo 1 (schwer, langsam) bis 5 (leicht, flink).
    Flinke Gegner greifen öfter an und treffen etwas schwächer, schwere seltener und härter. Gilt nur für Gegner, nicht für den Spieler. */
-const TEMPO={raiko:5,akane:4,rokka:3,zeno:4,tetsu:3,volt:2,luna:4,goro:1,shade:5,mika:5,drako:2,oni:1,seraph:3,kaiser:2,magus:3};
+const TEMPO={mimi:3,raiko:5,akane:4,rokka:3,zeno:4,tetsu:3,volt:2,luna:4,goro:1,shade:5,mika:5,drako:2,oni:1,seraph:3,kaiser:2,magus:3};
 /* Englische Texte je Figur. Die Felder schalten mit der Sprache um. */
 const CH_EN={
  raiko:{ti:"Lightning Ninja",d:"Faster than thunder. Still oversleeps every Monday.",q:"Don’t blink, or you’ll miss me!",sig:"Lightning Chain",fin:"Thunder Grill"},
@@ -261,6 +279,7 @@ const CH_EN={
  oni:{ti:"Red Demon",d:"Laughs at every hit. Even at his own bruises.",q:"HA! HA! HA! … What were we doing?",sig:"Thunder Drum",fin:"Home Run"},
  seraph:{ti:"Blade of Heaven",d:"His sword is pure light. So is his electricity bill.",q:"Fear not. Okay, maybe a little.",sig:"Light Lances",fin:"Heaven Elevator"},
  kaiser:{ti:"Lord of the Void",d:"Swallowed a whole empire. Had a tummy ache afterwards.",q:"Bow down. Or just fall over.",sig:"Black Hole",fin:"Black Sun"},
+ mimi:{ti:"The Lovesick",d:"Fights like he just ate three plates of candy floss. Cries at every love film and every hit.",q:"I only do this for love … *sniff*",sig:"Heartbreaker",fin:"Heartache"},
  magus:{ti:"Lord of Numbers",d:"The final boss. Knows every formula and fears only one thing: the right answer.",q:"Show me your answer … if you dare!",sig:"Number Hail",fin:"Division by Zero"},
 };
 CH.forEach(c=>{const e=CH_EN[c.id];for(const k in e)bi(c,k,c[k],e[k])});
