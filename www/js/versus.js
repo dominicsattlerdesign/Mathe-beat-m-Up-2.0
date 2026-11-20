@@ -66,14 +66,14 @@ function vHud(){if(!pl||!en)return;$("#ph").style.width=$("#pht").style.width=pl
   for(const[id,p]of[["#pw",0],["#ew",1]])document.querySelectorAll(id+" i").forEach((e,i)=>e.classList.toggle("w",i<2-V.ko[p]));
   for(const c of V.c)if(c.cards)vFin(c)}
 function vFin(c){const f=vF(c.p);if(!f)return;const full=f.mt>=100,b=c.el.fin;b.classList.toggle("rdy",full);b.classList.toggle("sel",c.sel=="sig");b.firstElementChild.style.width=f.mt+"%";
-  b.querySelector("span").textContent=full?ATK.sig.n+" · "+f.ch.sig.toUpperCase():ATK.sig.n+" "+Math.round(f.mt)+" %";b.querySelector("b").textContent=full?c.cards.sig.q[0]:""}
+  b.querySelector("span").textContent=full?ATK.sig.n+" · "+f.ch.sig.toUpperCase():ATK.sig.n+" "+Math.round(f.mt)+" %";b.querySelector("b").textContent=full?c.cards.sig.q[0]:"";if(full)fitBox(b,"b")}
 function vRender(c){const lb=LABELS[SAVE.diff?1:0];
   c.el.cards.innerHTML=["hieb","kick","wurf"].map(k=>{const LK=c.cd.lock==k,q=c.cards[k].q;return`<button type="button" class="card ${k}${c.sel==k?" sel":""}${LK?" cdl":""}" data-k="${k}"><span class="kj">${ATK[k].kj}</span><b>${ATK[k].n}</b><small>${LK?L("Pause · noch "+c.cd.left+" andere","Resting · "+c.cd.left+" more","Repos · encore "+c.cd.left,"Descanso · faltan "+c.cd.left):(q[2]?L(...KINDS[q[2]]):lb[k])}</small><div class="q${q[0].length>19?" xl":q[0].length>13?" lg":""}">${LK?L("gesperrt","locked"):q[0]}</div></button>`}).join("");
-  c.el.root.classList.toggle("lk",c.lock);vFin(c);vAns(c)}
+  fitCards(c.el.cards);c.el.root.classList.toggle("lk",c.lock);vFin(c);vAns(c)}
 function vAns(c){const t=c.sel&&c.cards[c.sel].q[0],em=`<em>${c.inp||"?"}</em>`;let h;
   if(!c.sel)h=`<span class="hint">${c.wrong?L("Kurz durchatmen …","Take a breath …"):c.lock?L("Dein Kämpfer greift an …","Your fighter attacks …"):L("Attacke antippen, dann rechnen.","Tap an attack, then solve it.")}</span>`;
   else{const pt=t.split("▢"),sy=!t.includes("▢")&&unk(t)!==t?unk(t):null;h=(sy?`<span>${sy} =</span>${em}`:pt.length>1?`<span>${pt[0]}</span>${em}<span>${pt[1]}</span>`:`<span>${t} =</span>${em}`)+`<u></u><i class="pbon"></i>`}
-  c.el.ans.innerHTML=h}
+  c.el.ans.innerHTML=h;fitAns(c.el.ans)}
 const vRenderAll=()=>{for(const c of V.c)vRender(c);vHud()};
 /* Tempo-Bonus-Balken für beide Pulte */
 function vTick(){for(const c of V.c){if(!c.sel)continue;const el=(performance.now()-c.cards[c.sel].t0)/1000,th=BONUS[c.sel],u=c.el.ans.querySelector("u"),bo=c.el.ans.querySelector(".pbon");
@@ -99,7 +99,7 @@ function vSubmit(p){const c=V.c[p];if(!c.sel||c.inp==="")return;
     if(cd.n>=3){cd.lock=k;cd.left=2;cd.n=0;cd.last=null;note=L(` Dreimal ${ATK[k].n}: Der macht jetzt Pause.`,` Three ${ATK[k].n}es: it needs a rest now.`,` Trois ${ATK[k].n} : il doit se reposer.`,` Tres ${ATK[k].n}: ahora necesita descansar.`)}}
   else if(ok&&cd.lock&&--cd.left<=0){note=L(` ${ATK[cd.lock].n} ist wieder frei.`,` ${ATK[cd.lock].n} is ready again.`,` ${ATK[cd.lock].n} est de nouveau prêt.`,` ${ATK[cd.lock].n} vuelve a estar listo.`);cd.lock=null}
   if(ok){const mu=el<=th[0]?1.5:el<=th[1]?1.25:1;sfx("ok");vMsg(c,(mu>1.4?L("Blitzschnell! Schaden ×1,5.","Lightning fast! Damage ×1.5."):mu>1?L("Schnell gerechnet! Schaden ×1,25.","Quick maths! Damage ×1.25."):L("Richtig!","Correct!"))+note);if(k=="sig")f.mt=0;vOk(p,k,mu)}
-  else{sfx("wrong");vMsg(c,`${P(QUIPS.bad)} ${unk(card.q[0])} = ${card.q[1]}.`+note);pop("?!","#a79fc7",fx_(f).x,4);if(busy==0)pose(f,"stumble",20);
+  else{sfx("wrong");vib([70,60,70]);vMsg(c,`${P(QUIPS.bad)} ${unk(card.q[0])} = ${card.q[1]}.`+note);pop("?!","#a79fc7",fx_(f).x,4);if(busy==0)pose(f,"stumble",20);
     /* falsche Antwort: gut eine Sekunde Pause für dieses Pult */
     c.wrong=true;setTimeout(()=>{c.wrong=false;if(g!=V.gen)return;c.lock=false;if(busy==0&&!over&&vF(p)==f)pose(f,"idle",12);vRender(c)},1100)}
   vRender(c);vHud()}

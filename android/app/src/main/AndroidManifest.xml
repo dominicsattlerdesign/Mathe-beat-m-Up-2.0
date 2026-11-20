@@ -40,6 +40,7 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Querformat ist erwünscht, aber kein Muss: so bleibt die App auf allen Geräten installierbar (Play Console) -->
     <uses-feature android:name="android.hardware.screen.landscape" android:required="false" />
     <uses-feature android:name="android.hardware.screen.portrait" android:required="false" />

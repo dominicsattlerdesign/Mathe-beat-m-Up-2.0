@@ -124,7 +124,8 @@ function buildFighter(ch,o){if(o)ch=outfit(ch,1);
     gaunt(c,r=.19,k){for(const n of["L","R"]){M(gC(.14*W,.12*W,.36,12),c,[0,-.32,0],J["e"+n],1,0,k||ME);M(gS(r*W,14,10),c,[0,-.58,0],J["e"+n],1,0,k||ME)}},
     wraps(c){for(const n of["L","R"])for(let i=0;i<4;i++)M(gC(.1*W,.092*W,.06,12),c,[0,-.12-i*.11,0],J["e"+n],0,0,CL)},
     /* --- Waffen: jede Figur hat ihr eigenes Stück --- */
-    katana(n){const g=hilt(n,0xffc21a,.46);M(gC(.1,.1,.025,14),0x2a2030,[0,.25,0],g,1,0,ME);let y=.27;for(let i=0;i<4;i++){const m=M(gB(.02,.4,.07-i*.006),0xeef4ff,[0,y+.2,-i*i*.012],g,1,0,ME);m.rotation.x=-i*.045;y+=.39}const t=M(gK(.035,.16,4),0xeef4ff,[0,y+.06,-.19],g,0,0,ME);t.scale.x=.3;t.rotation.x=-.2},
+    /* Theos Katana: breite, lange Klinge (5 Segmente, leicht gebogen) */
+    katana(n){const g=hilt(n,0xffc21a,.5);M(gC(.13,.13,.03,14),0x2a2030,[0,.26,0],g,1,0,ME);let y=.28,z=0;for(let i=0;i<5;i++){z=-i*i*.011;const m=M(gB(.026,.44,.115-i*.008),0xeef4ff,[0,y+.22,z],g,1,0,ME);m.rotation.x=-i*.04;y+=.43}const t=M(gK(.05,.22,4),0xeef4ff,[0,y+.08,z-.05],g,0,0,ME);t.scale.x=.35;t.rotation.x=-.2},
     cutlass(n){const g=hilt(n,0x8a1a22,.34);const b=M(gT(.12,.022,6,14,3.4),0xffc21a,[0,.08,.1],g,0,0,ME);b.rotation.y=Math.PI/2;b.rotation.z=-1.7;M(gB(.2,.04,.08),0xffc21a,[0,.19,0],g,0,0,ME);
       let y=.2;for(let i=0;i<4;i++){const m=M(gB(.025,.34,.12+i*.018),0xdfe7f2,[0,y+.17,-i*i*.022],g,1,0,ME);m.rotation.x=-i*.09;y+=.32}const t=M(gK(.09,.26,4),0xdfe7f2,[0,y+.08,-.36],g,0,0,ME);t.scale.x=.2;t.rotation.x=-.5},
     kunai(n,c=0xffd83a){const g=hilt(n,c,.24);M(gT(.055,.016,6,12),0x8a94a8,[0,-.19,0],g,0,0,ME);const b=M(gK(.085,.44,4),0xcfd8e8,[0,.36,0],g,1,0,ME);b.scale.z=.3;const e=M(gK(.03,.4,4),c,[0,.34,0],g,0,c);e.scale.z=.5},
@@ -168,21 +169,43 @@ function buildFighter(ch,o){if(o)ch=outfit(ch,1);
   H.hair(ch.hair[0],ch.hair[1]);ch.acc&&ch.acc(H);J.hd.scale.setScalar(.9);
   const sh=new THREE.Mesh(gC(1,1,.02,18),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.22,depthWrite:false}));sh.position.y=.03;sh.scale.set(.85*W,1,.55);root.add(sh);
   const cur={};for(const j of JN)cur[j]=[0,0,0];
-  return{ch,root,turn,piv,model,J,flaps,cur,tp:POSE.idle,ps:14,sc:S,grounded:true,run:false,sh,ph:rnd(6),bs:2.4+rnd(1.2)};
+  return{ch,root,turn,piv,model,J,flaps,cur,tp:STP[ch.id]||POSE.idle,ps:14,sc:S,grounded:true,run:false,sh,ph:rnd(6),bs:(STANCE[ch.id]?STANCE[ch.id].bs:2.4)+rnd(.6),sw:!!(STANCE[ch.id]&&STANCE[ch.id].sw)};
 }
 const _v1=new THREE.Vector3(),_v2=new THREE.Vector3();
 function animFighter(f,dt,T){
   const k=1-Math.exp(-f.ps*dt),J=f.J,tp=f.tp;
   for(const j of JN){const t=tp[j]||Z3,c=f.cur[j];c[0]+=(t[0]-c[0])*k;c[1]+=(t[1]-c[1])*k;c[2]+=(t[2]-c[2])*k;J[j].rotation.set(c[0],c[1],c[2])}
   if(f.run){const s=Math.sin(T*24+f.ph),c=Math.cos(T*24+f.ph);J.lL.rotation.x=-.5+s*1;J.kL.rotation.x=1-c*.7;J.lR.rotation.x=-.5-s*1;J.kR.rotation.x=1+c*.7}
-  else if(tp===POSE.idle){const s=Math.sin(T*f.bs+f.ph);J.sp.rotation.x+=s*.035;J.kL.rotation.x+=s*.07;J.kR.rotation.x+=s*.06;J.lL.rotation.x-=s*.035;J.aL.rotation.x+=s*.07;J.aR.rotation.x-=s*.05;J.hd.rotation.x-=s*.02}
+  else if(tp===POSE.idle||tp===STP[f.ch.id]){const s=Math.sin(T*f.bs+f.ph);if(f.sw){const w=Math.sin(T*1.7+f.ph);J.sp.rotation.z+=w*.12;J.hd.rotation.z-=w*.15;J.ch.rotation.y+=w*.08}J.sp.rotation.x+=s*.035;J.kL.rotation.x+=s*.07;J.kR.rotation.x+=s*.06;J.lL.rotation.x-=s*.035;J.aL.rotation.x+=s*.07;J.aR.rotation.x-=s*.05;J.hd.rotation.x-=s*.02}
   else if(tp===POSE.dizzy){const s=Math.sin(T*4+f.ph),c=Math.cos(T*4+f.ph);J.sp.rotation.z+=s*.22;J.sp.rotation.x+=c*.16;J.hd.rotation.z-=s*.3;J.aL.rotation.x+=c*.3;J.aR.rotation.x-=c*.3;J.kL.rotation.x+=s*.12}
   for(const fl of f.flaps){if(fl.spin){fl.m.rotation.y+=fl.spin*dt;continue}if(fl.pulse){const q=1+Math.sin(T*14+fl.ph)*.22;fl.m.scale.set(q,1.1+Math.sin(T*19+fl.ph)*.3,q);continue}fl.m.rotation[fl.ax||"x"]=fl.b+Math.sin(T*fl.sp+fl.ph)*fl.amp+(f.run&&!fl.ax?.5:0)}
   J.hp.position.y=1.58;
   if(f.grounded){f.root.updateMatrixWorld(true);const a=_v1.setFromMatrixPosition(J.fL.matrixWorld).y,b=_v2.setFromMatrixPosition(J.fR.matrixWorld).y;J.hp.position.y-=(Math.min(a,b)-f.root.position.y-.082*f.sc)/f.sc}
   f.sh.position.y=.03-f.root.position.y;const q=clamp(1-f.root.position.y*.12,.3,1);f.sh.scale.set(.85*q,1,.55*q);
 }
-function pose(f,n,sp){f.tp=POSE[n];if(sp)f.ps=sp}
+/* Eigene Kampfhaltung (Startpose) je Kämpfer: überschreibt einzelne Gelenke der Grundhaltung "idle".
+   bs = Tempo des Wippens, sw = seitliches Schwanken (Mimi Tus). */
+const STANCE={
+  raiko:{sp:[.28,0,0],ch:[.05,-.4,0],aL:[-1.45,0,-.2],eL:[-.7,0,0],aR:[.45,0,.45],eR:[-.35,0,0],lL:[-.85,0,-.1],kL:[1.25,0,0],lR:[.55,0,.2],kR:[.85,0,0],bs:3.4},
+  akane:{sp:[.16,0,0],ch:[.06,-.35,0],hd:[.08,.3,0],aL:[-1.25,0,-.35],eL:[-2.15,0,0],aR:[-1.05,0,.35],eR:[-2.25,0,0],lL:[-.55,0,-.12],kL:[.75,0,0],lR:[.4,0,.22],kR:[.4,0,0],bs:3.6},
+  rokka:{sp:[-.04,0,0],ch:[0,-.5,0],hd:[-.12,.35,0],aL:[-.35,0,-.45],eL:[-.45,0,0],aR:[.35,0,.95],eR:[-1.9,0,0],lL:[-.3,0,-.28],kL:[.3,0,0],lR:[.22,0,.32],kR:[.2,0,0],bs:1.8},
+  zeno:{sp:[.02,0,0],ch:[0,-.2,0],hd:[-.1,.3,.08],aL:[-1.25,0,-.35],eL:[-1.15,0,0],aR:[.5,0,.25],eR:[-1.5,0,0],lL:[-.25,0,-.05],kL:[.3,0,0],lR:[.25,0,.12],kR:[.25,0,0],bs:2.2},
+  tetsu:{sp:[.3,0,0],ch:[.05,-.55,0],hd:[-.05,.5,0],aL:[-.45,0,.3],eL:[-1.6,0,0],aR:[-.25,0,.55],eR:[-1.45,0,0],lL:[-.75,0,-.2],kL:[.95,0,0],lR:[.6,0,.25],kR:[.45,0,0],bs:1.6},
+  volt:{sp:[0,0,0],ch:[0,-.25,0],hd:[0,.25,0],aL:[-.6,0,-.25],eL:[-1.57,0,0],aR:[-.6,0,.25],eR:[-1.57,0,0],lL:[-.18,0,-.08],kL:[.22,0,0],lR:[.18,0,.12],kR:[.18,0,0],bs:1.4},
+  luna:{sp:[0,0,0],ch:[0,-.2,0],hd:[-.08,.2,.1],aL:[-.85,0,-.12],eL:[-.95,0,0],aR:[-.15,0,.45],eR:[-.7,0,0],lL:[-.2,0,-.06],kL:[.3,0,0],lR:[.2,0,.1],kR:[.35,0,0],bs:1.5},
+  goro:{sp:[.22,0,0],ch:[.08,-.2,0],hd:[-.1,.2,0],aL:[-.35,0,-.75],eL:[-.6,0,0],aR:[-.25,0,.85],eR:[-.6,0,0],lL:[-.45,0,-.45],kL:[.75,0,0],lR:[.35,0,.48],kR:[.65,0,0],bs:1.2},
+  shade:{sp:[.5,0,0],ch:[.1,-.4,0],hd:[-.3,.4,0],aL:[-1.2,0,-.55],eL:[-.4,0,0],aR:[.65,0,.4],eR:[-.5,0,0],lL:[-1.1,0,-.12],kL:[1.6,0,0],lR:[.6,0,.22],kR:[1.3,0,0],bs:3.8},
+  mika:{sp:[.08,0,0],ch:[0,-.3,0],hd:[-.05,.3,0],aL:[-1.45,0,-.85],eL:[-.3,0,0],aR:[-1.25,0,.95],eR:[-.3,0,0],lL:[-1.25,0,-.1],kL:[1.8,0,0],lR:[.05,0,.1],kR:[.15,0,0],bs:3.2},
+  drako:{sp:[.3,0,0],ch:[.1,-.35,0],hd:[-.2,.35,0],aL:[-1.1,0,-.45],eL:[-1.05,0,0],aR:[-.9,0,.55],eR:[-1.1,0,0],lL:[-.6,0,-.15],kL:[.85,0,0],lR:[.42,0,.25],kR:[.5,0,0],bs:1.7},
+  oni:{sp:[.12,0,0],ch:[0,-.3,0],hd:[-.15,.3,0],aL:[-2.3,0,-.35],eL:[-1.9,0,0],aR:[.3,0,.95],eR:[-1.85,0,0],lL:[-.45,0,-.35],kL:[.6,0,0],lR:[.35,0,.4],kR:[.5,0,0],bs:1.3},
+  seraph:{sp:[-.05,0,0],ch:[0,-.25,0],hd:[-.15,.25,0],aL:[-1.35,0,-.1],eL:[-.6,0,0],aR:[.2,0,.5],eR:[-.3,0,0],lL:[-.3,0,-.1],kL:[.35,0,0],lR:[.25,0,.15],kR:[.2,0,0],bs:1.6},
+  kaiser:{sp:[-.08,0,0],ch:[0,-.15,0],hd:[-.22,.2,0],aL:[-1.05,0,.65],eL:[-2,0,0],aR:[-1.05,0,-.35],eR:[-2,0,0],lL:[-.2,0,-.12],kL:[.2,0,0],lR:[.2,0,.15],kR:[.15,0,0],bs:1.1},
+  magus:{sp:[.05,0,0],ch:[0,-.25,0],hd:[-.1,.3,0],aL:[-2.25,0,-.2],eL:[-.55,0,0],aR:[-.5,0,.4],eR:[-1.6,0,0],lL:[-.3,0,-.08],kL:[.35,0,0],lR:[.25,0,.15],kR:[.3,0,0],bs:1.5},
+  mimi:{sp:[.2,0,.15],ch:[.05,-.2,.1],hd:[.12,.3,.25],aL:[-.55,0,-.6],eL:[-1.2,0,0],aR:[-.2,0,.9],eR:[-.9,0,0],lL:[-.3,0,-.2],kL:[.5,0,0],lR:[.45,0,.1],kR:[.65,0,0],bs:1.9,sw:1},
+};
+const STP={};for(const id in STANCE){const o=Object.assign({},POSE.idle);for(const j of JN)if(STANCE[id][j])o[j]=STANCE[id][j];STP[id]=o}
+const idleOf=f=>STP[f.ch.id]||POSE.idle;
+function pose(f,n,sp){f.tp=n=="idle"?idleOf(f):POSE[n];if(sp)f.ps=sp}
 function snapPose(f){for(const j of JN){const t=f.tp[j]||Z3;f.cur[j]=[t[0],t[1],t[2]]}}
 
 /* ---------- Die 15 Kämpfer ----------

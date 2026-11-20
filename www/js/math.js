@@ -77,7 +77,7 @@ const TASKS={
     [()=>{const a=rI(2,8),b=rI(2,8),c=rI(2,6);return[`(${a} + ${b}) × ${c}`,(a+b)*c]},
      ()=>{const a=rI(3,9),b=rI(6,12),c=rI(2,5);return[`${a} × (${b} − ${c})`,a*(b-c)]},
      ()=>{const c=rI(2,6),r=rI(3,9),a=rI(2,c*r-2);return[`(${a} + ${c*r-a}) ÷ ${c}`,r]},
-     ()=>{const a=rI(4,9),b=rI(4,9),c=rI(2,9),d=rI(2,9);return[`(${a} × ${b}) − (${c} + ${d})`,a*b-c-d]},
+     ()=>{const a=rI(4,9),b=rI(4,9),c=rI(2,9),d=rI(2,Math.min(9,a*b-c-1));return[`(${a} × ${b}) − (${c} + ${d})`,a*b-c-d]},
      ()=>{const b=rI(3,8),c=rI(3,9);return[`100 − (${b} × ${c})`,100-b*c]},
      ()=>{const a=rI(20,50),b=rI(3,9),c=rI(3,9);return[`${a} + (${b} × ${c})`,a+b*c]},
      ()=>{const c=rI(3,9),r=rI(3,9),b=rI(2,8);return[`(${c*r} ÷ ${c}) + ${b}`,r+b]},
@@ -89,16 +89,16 @@ const TASKS={
      ()=>{const c=rI(4,9),r=rI(6,15),a=rI(8,c*r-8),d=rI(12,60);return[`(${a} + ${c*r-a}) ÷ ${c} + ${d}`,r+d]},
      ()=>{const a=rI(2,5),b=rI(2,6),c=rI(2,5),d=rI(2,6);return[`${a} × (${b} + ${c} × ${d})`,a*(b+c*d)]},
      ()=>{const a=rI(200,500),b=rI(6,9),c=rI(11,19);return[`${a} − (${b} × ${c})`,a-b*c]},
-     ()=>{const c=rI(3,9),r=rI(11,25),d=rI(3,9),e=rI(3,9);return[`(${c*r} ÷ ${c}) − (${d} + ${e})`,r-d-e]}]],
+     ()=>{const c=rI(3,9),r=rI(19,30),d=rI(3,9),e=rI(3,9);return[`(${c*r} ÷ ${c}) − (${d} + ${e})`,r-d-e]}]],
   fin:[
     [()=>{const a=rI(4,9),b=rI(3,20-a>9?9:20-a),c=rI(2,a+b-2),d=rI(1,20-(a+b-c)>9?9:20-(a+b-c));return[`${a} + ${b} − ${c} + ${d}`,a+b-c+d]},
      ()=>{const a=rI(14,20),b=rI(2,6),c=rI(2,a-b-3),d=rI(1,20-(a-b-c)>9?9:20-(a-b-c));return[`${a} − ${b} − ${c} + ${d}`,a-b-c+d]},
      ()=>{const a=rI(2,6),b=rI(2,6),c=rI(2,6),d=rI(1,a+b+c-1);return[`${a} + ${b} + ${c} − ${d}`,a+b+c-d]},
      ()=>{const a=rI(3,9),c=rI(1,5),e=rI(a+3,19);return[`${a} + ▢ − ${c} = ${e-c}`,e-a]}],
     [()=>{const a=rI(8,15),b=rI(4,9),c=rI(2,5),d=rI(2,5);return[`(${a} + ${b}) − (${c} + ${d})`,a+b-c-d]},
-     ()=>{const a=rI(2,5),b=rI(2,5),c=rP([2,5,10]),d=rI(3,9);return[`(${a} + ${b}) × ${c} − ${d}`,(a+b)*c-d]},
+     ()=>{const a=rI(2,5),b=rI(2,5),c=rP([2,5,10]),d=rI(3,Math.min(9,(a+b)*c-1));return[`(${a} + ${b}) × ${c} − ${d}`,(a+b)*c-d]},
      ()=>{const a=rI(2,5),b=rP([2,5,10]),c=rI(2,5),d=rP([2,5,10]);return[`(${a} × ${b}) + (${c} × ${d})`,a*b+c*d]}],
-    [()=>{const a=rI(3,9),b=rI(3,9),c=rI(3,8),d=rI(5,20);return[`(${a} + ${b}) × ${c} − ${d}`,(a+b)*c-d]},
+    [()=>{const a=rI(3,9),b=rI(3,9),c=rI(3,8),d=rI(5,Math.min(20,(a+b)*c-1));return[`(${a} + ${b}) × ${c} − ${d}`,(a+b)*c-d]},
      ()=>{const a=rI(4,9),b=rI(4,9),c=rI(3,9),d=rI(3,9);return[`(${a} × ${b}) + (${c} × ${d})`,a*b+c*d]},
      ()=>{const a=rI(5,9),b=rI(12,20),c=rI(3,9);return[`${a} × (${b} − ${c}) + ${c}`,a*(b-c)+c]},
      ()=>{const a=rI(6,9),b=rI(6,9),c=rI(3,6),d=rI(3,6);return[`(${a} × ${b}) − (${c} × ${d})`,a*b-c*d]}],
@@ -140,9 +140,51 @@ TASKS.fin[2]=TASKS.fin[2].concat([ALG.mid[0],ALG.mid[4]]);TASKS.fin[3]=TASKS.fin
 const KINDS={ph:["Platzhalter","missing number"],sym:["Symbol-Rätsel","symbol puzzle"],seq:["Zahlenfolge","number pattern"]};
 /* Was gesucht ist, kurz für Anzeige und Fehlermeldung: ▢, ★, ● oder die ganze Aufgabe */
 const unk=t=>t.includes("▢")?"▢":t.includes("★")?"★":t.includes("●")?"●":t;
+/* ---------- Mehr Abwechslung (Nutzertest): zusätzliche Vorlagen je Attacke und Stufe ---------- */
+const MORE={
+  hieb:[
+    [()=>{const a=rI(11,15),b=rI(2,5);return[`${a} + ${b}`,a+b]},()=>{const a=rI(1,6),b=rI(1,6),c=rI(1,6);return[`${a} + ${b} + ${c}`,a+b+c]},
+     ()=>{const c=rI(5,20),a=rI(1,c-1);return[`▢ + ${a} = ${c}`,c-a]},()=>{const a=rI(1,6);return[`${a} + ${a} + ${a}`,3*a]}],
+    [()=>{const a=rI(21,45),b=rI(4,9);return[`${a} + ${b}`,a+b]},()=>{const a=rI(31,60),b=rI(4,9);return[`${a} − ${b}`,a-b]},
+     ()=>{const a=rI(2,9)*10,b=rI(2,9);return[`${a} + ${b}`,a+b]},()=>{const c=rI(12,40),a=rI(3,c-3);return[`▢ + ${a} = ${c}`,c-a]},
+     ()=>{const a=rI(4,9),c=rI(3,20);return[`▢ − ${a} = ${c}`,a+c]},()=>{const a=rI(3,9)*10,b=rI(1,a/10-1)*10;return[`${a} − ${b}`,a-b]}],
+    [()=>{const a=rI(25,75),b=rI(25,75);return[`${a} + ${b}`,a+b]},()=>{const a=rI(110,250),b=rI(25,95);return[`${a} + ${b}`,a+b]},
+     ()=>{const a=rI(60,99),b=rI(11,24),c=rI(11,Math.min(24,a-b-1));return[`${a} − ${b} − ${c}`,a-b-c]},()=>{const a=rI(2,9)*100,b=rI(15,85);return[`${a} − ${b}`,a-b]},
+     ()=>{const a=rI(15,45),b=rI(15,45),c=rI(10,25);return[`${a} + ${b} + ${c}`,a+b+c]}],
+    [()=>{const a=rI(250,750),b=rI(150,249);return[`${a} + ${b}`,a+b]},()=>{const a=rI(500,999),b=rI(150,a-100);return[`${a} − ${b}`,a-b]},
+     ()=>{const b=rI(120,480),c=rI(150,500);return[`▢ − ${b} = ${c}`,b+c]},()=>{const a=rI(6,9)*100+rI(1,9)*10,b=rI(1,5)*100+rI(1,9)*10;return[`${a} − ${b}`,a-b]},
+     ()=>{const a=rI(600,999),b=rI(110,250),c=rI(110,250);return[`${a} − ${b} − ${c}`,a-b-c]}]],
+  kick:[
+    [()=>{const a=rI(13,20),b=rI(2,a-11);return[`${a} − ${b}`,a-b]},()=>{const a=rI(12,20),b=rI(1,4),c=rI(1,4);return[`${a} − ${b} − ${c}`,a-b-c]},
+     ()=>{const c=rI(1,18);return[`20 − ▢ = ${c}`,20-c]},()=>{const a=rI(6,10);return[`${a} − ${a}`,0]}],
+    [()=>{const a=rI(1,10),b=rI(1,10);return[`${a} × ${b}`,a*b]},()=>{const a=rI(2,10),b=rI(2,10);return[`${a*b} ÷ ${a}`,b]},
+     ()=>{const a=rI(2,10),b=rI(2,10);return[`${a} × ▢ = ${a*b}`,b]},()=>{const a=rI(2,10),b=rI(2,10);return[`▢ ÷ ${a} = ${b}`,a*b]},
+     ()=>{const a=rI(6,25);return[`2 × ${a}`,2*a]},()=>{const a=rI(6,25)*2;return[`${a} ÷ 2`,a/2]},()=>{const a=rI(2,10);return[`${a} × 10`,a*10]}],
+    [()=>{const a=rI(11,19),b=rI(2,6);return[`${a} × ${b}`,a*b]},()=>{const a=rI(3,9),b=rI(11,19);return[`${a*b} ÷ ${a}`,b]},
+     ()=>{const a=rI(3,9),b=rI(3,10);return[`▢ ÷ ${a} = ${b}`,a*b]},()=>{const a=rI(3,9),b=rI(3,10);return[`${a} × ▢ = ${a*b}`,b]},
+     ()=>{const a=rI(2,9);return[`${a} × 11`,a*11]},()=>{const a=rI(2,8);return[`25 × ${a}`,25*a]},
+     ()=>{const a=rI(2,9),b=rI(2,9);return[`${a} × ${b} × 2`,a*b*2]},()=>{const a=rI(2,9)*10,b=rI(2,9);return[`${a*b} ÷ ${b}`,a]}],
+    [()=>{const a=rI(12,29),b=rI(11,19);return[`${a} × ${b}`,a*b]},()=>{const a=rI(3,9),b=rI(26,99);return[`${a*b} ÷ ${a}`,b]},
+     ()=>{const a=rI(2,9),b=rI(2,9);return[`${a*b*100} ÷ 100`,a*b]},()=>{const a=rI(16,20);return[`${a} × ${a}`,a*a]},
+     ()=>{const a=rI(6,12),b=rI(11,40);return[`▢ ÷ ${a} = ${b}`,a*b]},()=>{const a=rI(2,8);return[`125 × ${a}`,125*a]},
+     ()=>{const a=rI(11,25),b=rI(4,9);return[`${a} × ▢ = ${a*b}`,b]},()=>{const a=rI(3,9),b=rI(11,25),c=rI(2,4);return[`${a} × ${b} × ${c}`,a*b*c]}]],
+  fin:[
+    [()=>{const a=rI(5,9),b=rI(5,9),c=rI(1,a+b-1);return[`${a} + ${b} − ${c}`,a+b-c]},()=>{const a=rI(2,9),c=rI(2,9),e=rI(1,Math.min(9,a+c));return[`${a} + ${c} − ▢ = ${a+c-e}`,e]}],
+    [()=>{const a=rI(2,9),b=rI(2,9),c=rI(5,20);return[`${a} × ${b} + ${c}`,a*b+c]},()=>{const a=rI(4,9),b=rI(3,9),c=rI(2,9);return[`${a*b} ÷ ${a} + ${c}`,b+c]},
+     ()=>{const a=rI(26,50),b=rI(2,5),c=rI(2,5);return[`${a} − ${b} × ${c}`,a-b*c]}],
+    [()=>{const a=rI(30,90),b=rI(3,9),c=rI(3,9);return[`${a} + ${b} × ${c}`,a+b*c]},()=>{const a=rI(3,9),b=rI(3,9),c=rI(3,9);return[`${a*b} ÷ ${a} × ${c}`,b*c]},
+     ()=>{const a=rI(3,9),b=rI(3,9),c=rI(3,9),d=rI(1,9);return[`(${a} + ${b}) × ${c} + ${d}`,(a+b)*c+d]}],
+    [()=>{const a=rI(12,25),b=rI(11,19),c=rI(50,120);return[`${a} × ${b} − ${c}`,a*b-c]},()=>{const a=rI(4,9),b=rI(30,90),c=rI(11,40);return[`${a} × ${b} + ${c}`,a*b+c]},
+     ()=>{const c=rI(4,9),r=rI(15,40),d=rI(5,9),e=rI(5,9);return[`${c*r} ÷ ${c} + ${d} × ${e}`,r+d*e]}]],
+};
+for(const k in MORE)MORE[k].forEach((L_,d)=>{TASKS[k][d]=TASKS[k][d].concat(L_)});
 TASKS.sig=[0,1,2,3].map(d=>TASKS.wurf[d].concat(TASKS.kick[d].slice(-3),TASKS.hieb[d].slice(-2)));
 /* Stufe Schwer: 75 % der Aufgaben aus Mittel, 25 % aus Schwer */
-function task(type,d){if(d==3&&Math.random()<.75)d=2;for(let i=0;i<20;i++){const t=rP(TASKS[type][d])();if(t[1]>=0&&Number.isInteger(t[1]))return t}return["2 + 2",4]}
+/* Zuletzt gestellte Aufgaben merken (je Attacke 40), damit sich nichts kurz hintereinander wiederholt */
+const RECENT={};
+function task(type,d){if(d==3&&Math.random()<.75)d=2;const R=RECENT[type]=RECENT[type]||[];let t=null;
+  for(let i=0;i<30;i++){const c=rP(TASKS[type][d])();if(!(c[1]>=0&&Number.isInteger(c[1])))continue;t=c;if(!R.includes(c[0]))break}
+  if(!t)t=["2 + 2",4];R.push(t[0]);if(R.length>40)R.shift();return t}
 /* Sekunden für Tempo-Bonus [×1.5, ×1.25] je Attacke */
 const BONUS={hieb:[5,10],kick:[7,14],wurf:[12,22],sig:[12,22],fin:[8,15]};
 const FIN_TIME=15;
