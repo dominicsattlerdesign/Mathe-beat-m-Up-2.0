@@ -48,3 +48,26 @@ Vorschau-Bild und Bau-Skript: `docs/grafik-vorschau/` (das Skript baut die verbe
     - Arme und Beine mit Muskelformen, sauberer Hals, Fäuste mit Knöcheln, Füsse mit Zehen, Bandagen
     - Schatten je Material: Haut warm, Stoff kühl, leichter Glanz auf Haar und Metall
 13. **Danach entscheiden:** Was davon für alle Kämpfer gilt (Körperformen, Hals, Hände, Füsse, Gesicht, Schattierung) und welche Figuren einzeln überarbeitet werden. Leistung auf echten Tablets und Handys messen (die Maximal-Akane hat etwa dreimal so viele Teile).
+14. **Arenen verbessern** (beschlossen), Vorbild: `docs/grafik-vorschau/dojo_vergleich.png` und `dojo_verbessert.js`.
+    Pro Arena mehr Tiefe und Details: Dächer/Gebäude statt flacher Wände, echte Bäume mit Ästen und Blütenwolken, Laternen mit Glühen, Banner, Lichtstrahlen, Nebelschichten, Blätter/Blüten auf dem Boden. Wiederverwendbare Bausteine für alle Arenen bauen (Baum, Lichtstrahl, Nebel, Bodenstreu, Laterne, geschwungenes Dach). Auf „Mittel“/„Niedrig“ weniger Details; Blüten sparsam zeichnen. In Etappen über alle 16 Arenen + 3 Bonus-Arenen, Leistung auf echten Geräten messen.
+15. **Unterschiedliche Körperformen** (Vorschlag, noch zu bestätigen): `docs/grafik-vorschau/koerperformen.png`.
+    Neue Körperwerte je Kämpfer zusätzlich zu Grösse (h) und Breite (w): Schultern (sh), Bauch (bel), Armdicke (arm), Beinlänge (leg), Kopfgrösse (hd). Vorschlag:
+    | Kämpfer | Idee | Werte |
+    |---|---|---|
+    | Raiko | schlank, lange Beine | leg 1.08, sh .94 |
+    | Akane | sportlich, etwas kleiner | h .94, leg 1.05, sh .94 |
+    | Käpt’n Rokka | klein und rund | h .86, w 1.18, bel 1.5, leg .82, hd 1.06 |
+    | Zeno | gross und dünn | h 1.12, w .88, leg 1.12, sh .9 |
+    | Theo | kräftige Schultern | h 1.03, sh 1.16, arm 1.12 |
+    | Volt-7 | sehr breite Schultern | h 1.04, sh 1.3, arm 1.2 |
+    | Ida | schlank | h 1.03, w .84, leg 1.06 |
+    | Goro | der Grösste und Breiteste | h 1.16, w 1.32, sh 1.35, bel 1.3, arm 1.38, hd .88 |
+    | Shade | hager, lange Glieder | h 1.05, w .86, leg 1.14, arm .86 |
+    | Mika | die Kleinste | h .84, leg .92, hd 1.1 |
+    | Drako | Ritter, breit | h 1.07, sh 1.2, arm 1.14 |
+    | Oni-Maru | gross und massig | h 1.15, w 1.28, sh 1.25, bel 1.3, arm 1.3, hd .92 |
+    | Seraph | gross und elegant | h 1.12, leg 1.1 |
+    | Kaiser Null | gross, mächtig | h 1.18, sh 1.22 |
+    | Mathemagus | alter Zauberer mit Bauch | h 1.04, bel 1.25, sh .88 |
+    | Mimi Tus | klein, etwas rundlich | h .86, w 1.06, bel 1.2, hd 1.1 |
+    Beim Umbau prüfen: Trefferhöhen, Würfe/Griffe, Waffen in der Hand, Kamera-Ausschnitt, Porträts.
