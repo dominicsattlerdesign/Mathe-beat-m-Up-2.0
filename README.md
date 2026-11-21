@@ -9,6 +9,8 @@ Ein Mathe-Kampfspiel für das Tablet im Querformat. Wer richtig rechnet, greift 
 - **16 Arenen, eine pro Figur**, mit Objekten, die im Kampf zu Bruch gehen, dazu 3 Bonus-Arenen. Die Arenen der fünf Start-Figuren sind von Anfang an frei, die anderen gibt es über Herausforderungen. Bonus-Arenen: Kinderzimmer (Story 1× geschafft), Spielhalle (Story 3× geschafft), Neon-Gasse (Herausforderung).
 - **Vier Stufen:** 1.–2. Klasse (Plus und Minus bis 20), Leicht, Mittel, Schwer. Schwer mischt 75 % Aufgaben aus Mittel mit 25 % grossen Zahlen, dafür haben die Gegner dort mehr Leben (+25 %, Story-Bosse +50 % und +75 %).
 - **Herausforderungen:** 36 Aufgaben (Versus zählt nicht mit), jede schaltet etwas frei: 9 Kämpfer, 15 zweite Outfits, 11 Arenen und die Bonus-Arena Neon-Gasse. Die Story gibt nur noch 4 feste Belohnungen (Kinderzimmer, Spielhalle, Kaiser Null, Mathemagus). Gesperrte Dinge zeigen direkt die passende Herausforderung mit Fortschritt (`www/js/challenges.js`).
+- **Grafik:** gleich dicke Umrisslinien, rundere Figuren, feiner Toon-Verlauf, Leuchten und Farbkorrektur auf „Hoch“, weiche Posenwechsel, Kontaktschatten. Jede Arena hat zusätzliche Details (`www/js/stageplus.js`), auf „Niedrig“ sparsamer.
+- **Körperformen:** Jeder Kämpfer hat eigene Proportionen (Grösse, Breite, Schultern, Bauch, Arme, Beine, Kopf), Tabelle `BODY` in `www/js/fighters.js`.
 - **Mimi Tus:** 16. Kämpfer (freispielbar), torkelnder Kampfstil, alles mit Herzen, eigene Arena „Liebespalast“ (`www/js/mimi.js`).
 - **Eigene Kampfhaltung** für jeden Kämpfer, lange Rechnungen werden automatisch verkleinert, damit sie immer ganz sichtbar sind.
 - **Vier Sprachen:** Deutsch, Englisch, Französisch und Spanisch. Beim ersten Start gilt die Sprache des Geräts, umstellen lässt sie sich auf dem Startbildschirm und in den Einstellungen. Neue Texte: `L(de,en)` schreiben und die französische und spanische Übersetzung in `www/js/i18n.js` eintragen (oder direkt `L(de,en,fr,es)`).
@@ -83,6 +85,7 @@ Spielstand, Name und Rangliste liegen im `localStorage` des Browsers.
 | `www/js/gfx.js` | Renderer, Schatten, Materialien, Kamera, Effekte |
 | `www/js/fighters.js` | Körper, Gesichter, Waffen, Posen und die 15 Kämpfer |
 | `www/js/stages.js` | Arenen und zerstörbare Objekte |
+| `www/js/stageplus.js` | Zusatz-Details je Arena (Bäume, Laternen, Wimpel, Lichtstrahlen, Nebel, Bodenstreu) |
 | `www/js/moves.js` | Spezial-Attacken und Finisher je Figur |
 | `www/js/styles.js` | Eigene Hiebe, Kicks und Würfe je Figur |
 | `www/js/versus.js` | Versus-Modus für zwei Spielende |

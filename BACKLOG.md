@@ -48,9 +48,9 @@ Vorschau-Bild und Bau-Skript: `docs/grafik-vorschau/` (das Skript baut die verbe
     - Arme und Beine mit Muskelformen, sauberer Hals, Fäuste mit Knöcheln, Füsse mit Zehen, Bandagen
     - Schatten je Material: Haut warm, Stoff kühl, leichter Glanz auf Haar und Metall
 13. **Danach entscheiden:** Was davon für alle Kämpfer gilt (Körperformen, Hals, Hände, Füsse, Gesicht, Schattierung) und welche Figuren einzeln überarbeitet werden. Leistung auf echten Tablets und Handys messen (die Maximal-Akane hat etwa dreimal so viele Teile).
-14. **Arenen verbessern** (beschlossen), Vorbild: `docs/grafik-vorschau/dojo_vergleich.png` und `dojo_verbessert.js`.
+14. **Arenen verbessern** (umgesetzt, Test-APK), Vorbild: `docs/grafik-vorschau/dojo_vergleich.png` und `dojo_verbessert.js`.
     Pro Arena mehr Tiefe und Details: Dächer/Gebäude statt flacher Wände, echte Bäume mit Ästen und Blütenwolken, Laternen mit Glühen, Banner, Lichtstrahlen, Nebelschichten, Blätter/Blüten auf dem Boden. Wiederverwendbare Bausteine für alle Arenen bauen (Baum, Lichtstrahl, Nebel, Bodenstreu, Laterne, geschwungenes Dach). Auf „Mittel“/„Niedrig“ weniger Details; Blüten sparsam zeichnen. In Etappen über alle 16 Arenen + 3 Bonus-Arenen, Leistung auf echten Geräten messen.
-15. **Unterschiedliche Körperformen** (Vorschlag, noch zu bestätigen): `docs/grafik-vorschau/koerperformen.png`.
+15. **Unterschiedliche Körperformen** (umgesetzt, Test-APK): `docs/grafik-vorschau/koerperformen.png`.
     Neue Körperwerte je Kämpfer zusätzlich zu Grösse (h) und Breite (w): Schultern (sh), Bauch (bel), Armdicke (arm), Beinlänge (leg), Kopfgrösse (hd). Vorschlag:
     | Kämpfer | Idee | Werte |
     |---|---|---|

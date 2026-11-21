@@ -174,7 +174,7 @@ function buildFighter_(ch,o){if(o)ch=outfit(ch,1);
   const sh=new THREE.Mesh(gC(1,1,.02,18),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.22,depthWrite:false}));sh.position.y=.03;sh.scale.set(.85*W,1,.55);root.add(sh);
   const fs=["fL","fR"].map(()=>{const m=new THREE.Mesh(FSG,new THREE.MeshBasicMaterial({map:FST(),transparent:true,opacity:.5,depthWrite:false,color:0x000000}));m.rotation.x=-Math.PI/2;m.scale.set(.42*W*S,.3*S,1);m.renderOrder=1;root.add(m);return m});
   const cur={};for(const j of JN)cur[j]=[0,0,0];
-  return{ch,root,turn,piv,model,J,flaps,cur,tp:STP[ch.id]||POSE.idle,ps:14,sc:S,fs,vel:{},grounded:true,run:false,sh,ph:rnd(6),bs:(STANCE[ch.id]?STANCE[ch.id].bs:2.4)+rnd(.6),sw:!!(STANCE[ch.id]&&STANCE[ch.id].sw)};
+  const F_={ch,root,turn,piv,model,J,flaps,cur,tp:STP[ch.id]||POSE.idle,ps:14,sc:S,fs,vel:{},grounded:true,run:false,sh,ph:rnd(6),bs:(STANCE[ch.id]?STANCE[ch.id].bs:2.4)+rnd(.6),sw:!!(STANCE[ch.id]&&STANCE[ch.id].sw)};bodyShape(F_);return F_;
 }
 const _v1=new THREE.Vector3(),_v2=new THREE.Vector3();
 /* weicher dunkler Fleck direkt unter jedem Fuss (Kontaktschatten) */
@@ -296,6 +296,18 @@ const CH=[
    M(gB(.36,.15,.05),0xe0608c,[0,.12,.235],J.ch,1);
    const hh=M(heartGeo(),0xffffff,[.12,.36,.25],J.ch,0,0x553040);hh.scale.setScalar(.14)}},
 ];
+/* Körperformen: h Grösse, w Breite, sh Schultern, bel Bauch, arm Armdicke, leg Beinlänge, hd Kopf (1 = normal) */
+const BODY={raiko:{h:1,leg:1.08,sh:.94},akane:{h:.94,leg:1.05,sh:.94},rokka:{h:.86,w:1.18,bel:1.5,leg:.82,hd:1.06},zeno:{h:1.12,w:.88,leg:1.12,sh:.9},
+ tetsu:{h:1.03,sh:1.16,arm:1.12},volt:{h:1.04,sh:1.3,arm:1.2},luna:{h:1.03,w:.84,leg:1.06},goro:{h:1.16,w:1.32,sh:1.35,bel:1.3,arm:1.38,hd:.88},
+ shade:{h:1.05,w:.86,leg:1.14,arm:.86},mika:{h:.84,leg:.92,hd:1.1},drako:{h:1.07,sh:1.2,arm:1.14},oni:{h:1.15,w:1.28,sh:1.25,bel:1.3,arm:1.3,hd:.92},
+ seraph:{h:1.12,leg:1.1,sh:1.02},kaiser:{h:1.18,sh:1.22},magus:{h:1.04,bel:1.25,sh:.88},mimi:{h:.86,w:1.06,bel:1.2,hd:1.1}};
+for(const c of CH){const B=BODY[c.id];if(B)c.b=Object.assign({},c.b,B.w?{w:B.w}:{},B.h?{h:B.h}:{})}
+function bodyShape(f){const B=BODY[f.ch.id];if(!B)return;const J=f.J,lat=g=>g.children.filter(m=>m.isMesh&&m.geometry.type=="LatheGeometry");
+  if(B.hd)J.hd.scale.multiplyScalar(B.hd);
+  if(B.sh){lat(J.ch).forEach(m=>m.scale.x*=B.sh);for(const n of["L","R"])J["a"+n].position.x*=B.sh}
+  if(B.bel){lat(J.sp).forEach(m=>{m.scale.x*=B.bel;m.scale.z*=B.bel});lat(J.hp).forEach(m=>{m.scale.x*=1+(B.bel-1)*.5;m.scale.z*=1+(B.bel-1)*.6})}
+  if(B.arm)for(const n of["L","R"])for(const g of[J["a"+n],J["e"+n]])lat(g).forEach(m=>{m.scale.x*=B.arm;m.scale.z*=B.arm});
+  if(B.leg)for(const n of["L","R"])J["l"+n].scale.y=B.leg}
 /* Kampfstil als KI-Gegner: Tempo 1 (schwer, langsam) bis 5 (leicht, flink).
    Flinke Gegner greifen öfter an und treffen etwas schwächer, schwere seltener und härter. Gilt nur für Gegner, nicht für den Spieler. */
 const TEMPO={mimi:3,raiko:5,akane:4,rokka:3,zeno:4,tetsu:3,volt:2,luna:4,goro:1,shade:5,mika:5,drako:2,oni:1,seraph:3,kaiser:2,magus:3};

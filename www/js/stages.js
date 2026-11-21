@@ -309,7 +309,7 @@ function buildStage(si){
   M(gB(NX*TW+.5,.5,NZ*TW+.5),s.trim,[0,-.52,0],stage);M(gB(NX*TW,1.6,NZ*TW),s.base,[0,-1.5,0],stage);M(gB(NX*TW-2,2,NZ*TW-1),s.base,[0,-3.2,0],stage);
   M(gB(NX*TW-.2,.06,NZ*TW-.2),bmat(s.te?0xff5a1a:0x07060a),[0,-.31,0],stage,0);
   for(let i=-3;i<=3;i++)M(gB(.5,.9,.1),s.trim,[i*2.4,-1.3,NZ*TW/2+.04],stage,0);
-  s.build();
+  s.build();if(typeof arenaPlus=="function")arenaPlus(si);
   /* Stimmungs-Partikel: Blütenblätter, Gischt, Glühwürmchen, Funken */
   const[c,n0,mode]=s.amb,n=Math.max(12,Math.round(n0*QF)),pos=new Float32Array(n*3);for(let i=0;i<n*3;i+=3){pos[i]=rnd(-14,14);pos[i+1]=rnd(0,11);pos[i+2]=rnd(-7,3)}
   const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.BufferAttribute(pos,3));
@@ -322,7 +322,7 @@ function stepStage(dt,T){
     else if(m=="rain"){p[k]-=.6*dt;p[k+1]-=(13+(i%5))*dt;if(p[k+1]<-.5){p[k+1]=12;p[k]=rnd(-15,15)}}
     else if(m=="rise"){p[k]+=Math.sin(T*2+i)*.5*dt;p[k+1]+=(1+(i%7)*.25)*dt;if(p[k+1]>11){p[k+1]=-1;p[k]=rnd(-14,14)}}
     else{p[k]+=Math.sin(T*.7+i*1.3)*.35*dt;p[k+1]+=Math.cos(T*.9+i)*.3*dt}}
-  a.needsUpdate=true;rim.intensity=.7+Math.sin(T*7)*.08;
+  a.needsUpdate=true;if(typeof plusStep=="function")plusStep(dt,T);rim.intensity=.7+Math.sin(T*7)*.08;
   if(STL.storm&&Math.random()<dt*.35){flashLight(0xcfe4ff,6,rnd(-8,8),9);STL.sky&&(STL.sky.material.color.setScalar(1.8),setTimeout(()=>STL.sky&&STL.sky.material.color.setScalar(1),90))}
   for(const n of NEONS){if(n.spin){n.spin.rotation.y+=dt*.4;continue}const f=Math.sin(T*3+n.ph)>.97?.35:1;n.m.material.opacity=f;n.h.material.opacity=.5*f}
 }
