@@ -69,6 +69,13 @@ const limb=(r0,r1,r2,L)=>[[0,-L-r2*.55],[r2*.75,-L-r2*.3],[r2,-L],[lerp(r2,r1,.6
 const heartGeo=()=>geo("heart",()=>{const h=new THREE.Shape();h.moveTo(0,-.5);h.bezierCurveTo(-.15,-.32,-.55,-.12,-.55,.18);h.bezierCurveTo(-.55,.45,-.3,.58,-.12,.5);h.bezierCurveTo(-.05,.47,0,.4,0,.34);
   h.bezierCurveTo(0,.4,.05,.47,.12,.5);h.bezierCurveTo(.3,.58,.55,.45,.55,.18);h.bezierCurveTo(.55,-.12,.15,-.32,0,-.5);const g=new THREE.ExtrudeGeometry(h,{depth:.18,bevelEnabled:true,bevelSize:.06,bevelThickness:.06,bevelSegments:2,curveSegments:10});g.center();return g});
 function buildFighter(ch,o){SEGM=QL>0?1.6:1;try{return buildFighter_(ch,o)}finally{SEGM=1}}
+/* Band, das schräg um den Oberkörper liegt (Schärpe): folgt dem Brustprofil, liegt überall an und verschwindet nirgends im Körper */
+const TORSO_F=[[.23,0],[.31,.16],[.345,.3],[.33,.45],[.2,.56]],TORSO_M=[[.26,0],[.33,.16],[.385,.34],[.37,.46],[.22,.57]];
+function torsoR(pr,y){y=clamp(y,pr[0][1],pr[pr.length-1][1]);for(let i=1;i<pr.length;i++)if(y<=pr[i][1]){const t=(y-pr[i-1][1])/(pr[i][1]-pr[i-1][1]);return lerp(pr[i-1][0],pr[i][0],t)}return pr[pr.length-1][0]}
+function torsoBand(par,pr,W,c,yc,amp,hw){const N=96,make=(off,w)=>{const pos=[],uv=[],idx=[];for(let i=0;i<=N;i++){const th=i/N*Math.PI*2,y=yc-amp*Math.sin(th);
+    for(const e of[-1,1]){const yy=y+e*w,r=torsoR(pr,yy)*W+off;pos.push(r*Math.sin(th),yy,r*Math.cos(th));uv.push(i/N*6,e>0?1:0)}if(i<N){const k=i*2;idx.push(k,k+1,k+2,k+1,k+3,k+2)}}
+    const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setAttribute("uv",new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g};
+  for(const[off,w,col]of[[.024,hw+.012,0x0b0912],[.034,hw,c]]){const m=new THREE.Mesh(make(off,w),col==c?mat(c,0,"cloth").clone():bmat(col));m.material.side=THREE.DoubleSide;m.castShadow=col==c;m.scale.z=.6;m.userData.torso=1;par.add(m)}}
 function buildFighter_(ch,o){if(o)ch=outfit(ch,1);
   const b=ch.b||{},W=b.w||1,S=b.h||1,CL="cloth",SK="skin",ME="metal",HA="hair";
   const root=new THREE.Group(),turn=new THREE.Group(),piv=new THREE.Group(),model=new THREE.Group();
@@ -123,7 +130,7 @@ function buildFighter_(ch,o){if(o)ch=outfit(ch,1);
     skirt(c,len=.5){const m=M(gL([[.5,-len],[.42,-len*.5],[.29,0],[.27,.04]],18,W),c,[0,.02,0],J.hp,1,0,CL);m.scale.z=.8;m.material.side=THREE.DoubleSide},
     plate(c,e){M(gL([[0,-.02],[.3,0],[.36,.2],[.34,.34],[0,.36]],14,W),c,[0,.12,.06],J.ch,1,e,ME).scale.z=.5;M(gB(.42*W,.2,.08),c,[0,.04,.2],J.ch,1,e,ME)},
     emblem(c,y=.34){const m=M(gC(.1,.1,.03,14),c,[0,y,.255],J.ch,0,c);m.rotation.x=Math.PI/2},
-    sash(c){const m=M(gB(.12,.86*W,.05),c,[0,.26,.25],J.ch,0,0,CL);m.rotation.z=.75;const n=M(gB(.12,.86*W,.05),c,[0,.26,-.25],J.ch,0,0,CL);n.rotation.z=-.75},
+    sash(c){torsoBand(J.ch,ch.fem?TORSO_F:TORSO_M,W,c,.29,.23,.055)},
     collar(c){for(const s of[-1,1]){const m=M(gB(.07,.3,.26),c,[s*.19,.68,-.02],J.ch,1,0,CL);m.rotation.z=-s*.25}},
     gaunt(c,r=.19,k){for(const n of["L","R"]){M(gC(.14*W,.12*W,.36,12),c,[0,-.32,0],J["e"+n],1,0,k||ME);M(gS(r*W,14,10),c,[0,-.58,0],J["e"+n],1,0,k||ME)}},
     wraps(c){for(const n of["L","R"])for(let i=0;i<4;i++)M(gC(.1*W,.092*W,.06,12),c,[0,-.12-i*.11,0],J["e"+n],0,0,CL)},
@@ -280,21 +287,22 @@ const CH=[
   c:0x9a3cff,sig:"Schwarzes Loch",fin:"Schwarze Sonne",st:[5,3,3],acc(H){H.crown(0xffc21a);H.cape(0x15131a,1.7,1.1,0x8a1a3a);H.pads(0x5a2ea6,.24,0xffc21a);H.plate(0x5a2ea6);H.collar(0x15131a);H.belt(0xffc21a,0xff2a4a);H.scythe("L")}},
  {id:"magus",n:"Mathemagus",ti:"Herr der Zahlen",d:"Der Endgegner. Kennt jede Formel und fürchtet nur eines: die richtige Antwort.",q:"Zeig mir dein Ergebnis … wenn du dich traust!",noEars:1,skin:0x1a1626,hair:["bald",0],eye:0x3dffd0,face:{glow:0x3dffd0,mask:0x1a1626},top:0x2a5f96,belly:0x163450,pants:0x163450,glove:0x163450,sleeve:"long",wide:1,b:{w:1.05,h:1.14},
   c:0x3dffd0,sig:"Zahlenhagel",fin:"Division durch Null",st:[4,4,4],acc(H){H.hood(0x2a5f96);H.horns(0xffc21a,.5,.75);H.formulaStaff("L",0x3dffd0);H.cape(0x163450,1.7,1.05,0x0f8f7a);H.pads(0xffc21a,.2);H.belt(0xffc21a,0x3dffd0);H.skirt(0x2a5f96,.8);H.orbit(0x3dffd0)}},
- {id:"mimi",n:"Mimi Tus",ti:"Der Liebeskranke",d:"Kämpft wie nach drei Tellern Zuckerwatte. Weint bei jedem Liebesfilm und bei jedem Treffer.",q:"Ich mach das nur aus Liebe … *schnief*",skin:0xf2c9a0,hair:["short",0xf5d76e],eye:0x3a7ad6,top:0xff7aa8,belly:0xff7aa8,pants:0x3a3a4a,boots:0xf4f0e6,sleeve:"long",
+ {id:"mimi",n:"Mimi Tus",ti:"Der Liebeskranke",d:"Kämpft wie nach drei Tellern Zuckerwatte. Weint bei jedem Liebesfilm und bei jedem Treffer.",q:"Ich mach das nur aus Liebe … *schnief*",skin:0xf2c9a0,hair:["bald",0xf5d76e],eye:0x3a7ad6,top:0x1c1a22,belly:0x1c1a22,pants:0x3a3a4a,boots:0xf4f0e6,sleeve:"long",
   c:0xff5ca8,sig:"Herzensbrecher",fin:"Liebeskummer",st:[3,3,4],acc(H){const J=H.J;
-   /* schwarzes Basecap mit Schirm nach vorn, blonde Strähnen schauen darunter hervor */
-   const cp=M(geo("bcap",()=>new THREE.SphereGeometry(.345,24,14,0,6.2832,0,1.25)),0x15131a,[0,.42,-.03],J.hd,1,0,"cloth");cp.rotation.x=-.3;cp.scale.set(1.03,1,1.05);
-   /* blonde Strähnen an den Seiten und hinten, unter dem Cap */
-   const BL=0xf5d76e;for(const s of[-1,1]){for(let i=0;i<3;i++){const t=M(gB(.09,.26-i*.04,.12),BL,[s*(.3-i*.02),.24-i*.03,.05-i*.12],J.hd,1,0,"hair");t.rotation.z=s*.25}}
-   for(let i=-2;i<=2;i++){const t=M(gB(.13,.24,.08),BL,[i*.11,.22,-.3],J.hd,1,0,"hair");t.rotation.x=.25}
-   for(let i=-2;i<=2;i++){const t=M(gK(.07,.2,5),BL,[i*.09,.37,.28],J.hd,1,0,"hair");t.rotation.x=2.6}
+   /* blonde Haare: Hinterkopf und Strähnen liegen eng am Kopf und enden unter der Kappe */
+   const BL=0xf5d76e,ST=[[0,-.3],[.03,-.24],[.055,-.12],[.06,-.02],[.04,.03],[0,.05]];
+   M(geo("mimiback",()=>new THREE.SphereGeometry(.318,32,18,Math.PI*1.05,Math.PI*.9,.55,1.45)),BL,[0,.3,0],J.hd,1,0,"hair");
+   for(const s of[-1,1]){const m=M(gL(ST,12),BL,[s*.285,.27,.06],J.hd,1,0,"hair");m.scale.set(1,1.05,.5);m.rotation.z=s*.08;const n=M(gL(ST,12),BL,[s*.27,.25,-.1],J.hd,1,0,"hair");n.scale.set(1.1,.9,.55);n.rotation.z=s*.18}
+   for(let i=-2;i<=2;i++){const a=i*.2,m=M(gL(ST,10),BL,[Math.sin(a)*.3,.43-Math.abs(i)*.01,Math.cos(a)*.29],J.hd,1,0,"hair");m.scale.set(.9,.48,.4);m.rotation.set(.3,a,-i*.1)}
+   /* schwarzes Basecap, deckt den Kopf oben ganz ab */
+   const cp=M(geo("bcap2",()=>new THREE.SphereGeometry(.352,28,16,0,6.2832,0,1.3)),0x15131a,[0,.42,-.02],J.hd,1,0,"cloth");cp.rotation.x=-.3;cp.scale.set(1.04,1,1.06);
    const br=M(gC(.29,.3,.04,22),0x15131a,[0,.52,.28],J.hd,1,0,"cloth");br.scale.set(1,1,.85);br.rotation.x=.18;
    const ch=M(heartGeo(),0xff5ca8,[0,.66,.25],J.hd,0,0x8a1a4a);ch.scale.setScalar(.16);ch.rotation.x=-.5;
    /* Hoodie: Kapuze hinten am Nacken, Kordeln, Bauchtasche, Herz auf der Brust */
-   const hd=M(gT(.2,.1,8,18),0xff7aa8,[0,.6,-.13],J.ch,1,0,"cloth");hd.rotation.x=1.25;
+   const hd=M(gT(.2,.1,8,18),0x1c1a22,[0,.6,-.13],J.ch,1,0,"cloth");hd.rotation.x=1.25;
    for(const s of[-1,1]){const k=M(gC(.018,.018,.22,6),0xf4f0e6,[s*.08,.47,.23],J.ch,0);k.rotation.x=-.15}
-   M(gB(.36,.15,.05),0xe0608c,[0,.12,.235],J.ch,1);
-   const hh=M(heartGeo(),0xffffff,[.12,.36,.25],J.ch,0,0x553040);hh.scale.setScalar(.14)}},
+   M(gB(.36,.15,.05),0x2a2830,[0,.12,.235],J.ch,1);
+   const hh=M(heartGeo(),0xff4fa0,[0,.34,.262],J.ch,1,0x2a0614);hh.scale.set(.3,.3,.12)}},
 ];
 /* Körperformen: h Grösse, w Breite, sh Schultern, bel Bauch, arm Armdicke, leg Beinlänge, hd Kopf (1 = normal) */
 const BODY={raiko:{h:1,leg:1.08,sh:.94},akane:{h:.94,leg:1.05,sh:.94},rokka:{h:.86,w:1.18,bel:1.5,leg:.82,hd:1.06},zeno:{h:1.12,w:.88,leg:1.12,sh:.9},
@@ -302,7 +310,7 @@ const BODY={raiko:{h:1,leg:1.08,sh:.94},akane:{h:.94,leg:1.05,sh:.94},rokka:{h:.
  shade:{h:1.05,w:.86,leg:1.14,arm:.86},mika:{h:.84,leg:.92,hd:1.1},drako:{h:1.07,sh:1.2,arm:1.14},oni:{h:1.15,w:1.28,sh:1.25,bel:1.3,arm:1.3,hd:.92},
  seraph:{h:1.12,leg:1.1,sh:1.02},kaiser:{h:1.18,sh:1.22},magus:{h:1.04,bel:1.25,sh:.88},mimi:{h:.86,w:1.06,bel:1.2,hd:1.1}};
 for(const c of CH){const B=BODY[c.id];if(B)c.b=Object.assign({},c.b,B.w?{w:B.w}:{},B.h?{h:B.h}:{})}
-function bodyShape(f){const B=BODY[f.ch.id];if(!B)return;const J=f.J,lat=g=>g.children.filter(m=>m.isMesh&&m.geometry.type=="LatheGeometry");
+function bodyShape(f){const B=BODY[f.ch.id];if(!B)return;const J=f.J,lat=g=>g.children.filter(m=>m.isMesh&&(m.geometry.type=="LatheGeometry"||m.userData.torso));
   if(B.hd)J.hd.scale.multiplyScalar(B.hd);
   if(B.sh){lat(J.ch).forEach(m=>m.scale.x*=B.sh);for(const n of["L","R"])J["a"+n].position.x*=B.sh}
   if(B.bel){lat(J.sp).forEach(m=>{m.scale.x*=B.bel;m.scale.z*=B.bel});lat(J.hp).forEach(m=>{m.scale.x*=1+(B.bel-1)*.5;m.scale.z*=1+(B.bel-1)*.6})}
