@@ -12,7 +12,10 @@ function mergeG(parts){const P=[],N=[],U=[];for(const{g,m}of parts){const ng=g.i
 class Batch{constructor(){this.c={}}
   add(g,col,pos,scl,rot,o={}){const k=col+"|"+(o.kind||"")+"|"+(o.e||0)+"|"+(o.ol===0?0:1)+"|"+(o.basic?1:0);(this.c[k]=this.c[k]||{col,o,parts:[]}).parts.push({g,m:new THREE.Matrix4().compose(XP.p.set(...pos),XP.q.setFromEuler(XP.e.set(...(rot||[0,0,0]))),XP.s.set(...(typeof scl=="number"?[scl,scl,scl]:scl||[1,1,1])))})}
   flush(par=stage){for(const k in this.c){const{col,o,parts}=this.c[k],g=mergeG(parts);const m=new THREE.Mesh(g,o.basic?bmat(col):mat(col,o.e||0,o.kind));m.castShadow=!o.basic&&!o.noshadow;m.receiveShadow=!o.basic;if(o.ol!==0&&!o.basic)m.add(new THREE.Mesh(g,OL));par.add(m)}this.c={}}}
-const ICO=r=>geo("ico"+r,()=>new THREE.IcosahedronGeometry(r,1));
+/* Kugelwolken: auf „Hoch“ rund, sonst gröber (weniger Dreiecke für Handys) */
+const ICO=r=>{const d=QL>1?1:0;return geo("ico"+r+"_"+d,()=>new THREE.IcosahedronGeometry(r,d))};
+/* flaches Herz (wenige Dreiecke) für Streu und Wimpel */
+const HEART2=()=>geo("heart2",()=>{const h=new THREE.Shape();h.moveTo(0,-.5);h.bezierCurveTo(-.2,-.3,-.55,-.1,-.5,.18);h.bezierCurveTo(-.45,.45,-.1,.5,0,.25);h.bezierCurveTo(.1,.5,.45,.45,.5,.18);h.bezierCurveTo(.55,-.1,.2,-.3,0,-.5);return new THREE.ShapeGeometry(h,6)});
 const nQ=n=>Math.max(1,Math.round(n*(QL==0?.45:QL==1?.75:1)));
 /* gebogene, sich verjüngende Röhre (Stamm, Ast, Seil, Kabel) */
 function xTube(pts,r0,r1,c,o={}){const crv=new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p)));const N=o.n||24,R=o.r||8,g=new THREE.TubeGeometry(crv,N,1,R,false),P=g.attributes.position;
@@ -38,7 +41,7 @@ function xLantern(x,y,z,c=0xe8401e,glow=0x7a1606,s=1){const g=new THREE.Group();
 function xBunting(x0,x1,y,z,sag,cols,shape="tri"){const pts=sagPts(x0,x1,y,z,sag,24);xTube(pts,.022,.022,0x2a2028,{ol:0,n:40,r:5,kind:"cloth"});const B=new Batch(),n=Math.round(Math.abs(x1-x0)/.7);
   const tri=geo("tri",()=>{const s=new THREE.Shape();s.moveTo(-.22,0);s.lineTo(.22,0);s.lineTo(0,-.42);s.lineTo(-.22,0);return new THREE.ShapeGeometry(s)});
   for(let i=1;i<n;i++){const t=i/n,px=lerp(x0,x1,t),py=y-sag*Math.sin(t*Math.PI);const c=cols[i%cols.length];
-    if(shape=="heart")B.add(heartGeo(),c,[px,py-.24,z],.36,[0,0,Math.PI],{ol:0});else if(shape=="card")B.add(gB(.34,.48,.01),c,[px,py-.26,z],1,[0,0,rnd(-.15,.15)],{ol:0});else B.add(tri,c,[px,py,z],1,[0,0,0],{ol:0,kind:"cloth"})}
+    if(shape=="heart")B.add(HEART2(),c,[px,py-.24,z],.5,[0,0,Math.PI],{ol:0,kind:"cloth"});else if(shape=="card")B.add(gB(.34,.48,.01),c,[px,py-.26,z],1,[0,0,rnd(-.15,.15)],{ol:0});else B.add(tri,c,[px,py,z],1,[0,0,0],{ol:0,kind:"cloth"})}
   B.flush()}
 /* Lichterkette mit kleinen leuchtenden Kugeln */
 function xFairy(x0,x1,y,z,sag,cols){xTube(sagPts(x0,x1,y,z,sag,24),.015,.015,0x1a1820,{ol:0,n:40,r:4});const B=new Batch(),n=Math.round(Math.abs(x1-x0)/.55);
@@ -60,7 +63,7 @@ function xScatter(n,cols,shape="petal",o={}){const B=new Batch(),x0=o.x0!=null?o
     else if(shape=="pebble")B.add(ICO(.5),c,[x,y,z],[rnd(.08,.16),rnd(.04,.08),rnd(.08,.16)],[0,r,0],{ol:0,kind:"stone"});
     else if(shape=="ember")B.add(ICO(.5),c,[x,y+.02,z],rnd(.05,.1),[r,r,0],{basic:1});
     else if(shape=="confetti")B.add(gB(.09,.004,.05),c,[x,y,z],1,[0,r,0],{ol:0,noshadow:1});
-    else if(shape=="heart")B.add(heartGeo(),c,[x,y,z],rnd(.12,.18),[-Math.PI/2,0,r],{ol:0,noshadow:1});
+    else if(shape=="heart")B.add(HEART2(),c,[x,y,z],rnd(.18,.26),[-Math.PI/2,0,r],{ol:0,noshadow:1});
     else if(shape=="snow")B.add(ICO(.5),c,[x,y,z],[rnd(.12,.3),rnd(.03,.06),rnd(.12,.3)],[0,r,0],{ol:0,noshadow:1});
     else if(shape=="paper")B.add(gB(.2,.004,.26),c,[x,y,z],1,[0,r,0],{ol:0,noshadow:1});
     else if(shape=="coin")B.add(gC(.07,.07,.02,12),c,[x,y,z],1,[rnd(-.2,.2),r,0],{ol:0,kind:"metal"});
@@ -185,5 +188,5 @@ const ARPLUS={
     xTree(-12,-6.5,1,{lean:-1});xTree(12.5,-6.8,1,{lean:1});
     xShafts([[-5,-6,2.6,.14],[4,-6,2.6,.14]],0xffd0e8);xMist([[-14,1,.45],[-24,2.4,.4]],"255,210,230");xScatter(90,[0xff5ca8,0xff8ac8,0xff3b5c],"heart");xScatter(60,[0xffb0cf,0xffffff])},
 };
-function arenaPlus(si){PLUS.length=0;const f=ARPLUS[STG[si].en];if(!f)return;const s0=SEGM;SEGM=QL>0?1.6:1;try{f()}catch(e){console.warn("arenaPlus",e)}finally{SEGM=s0}}
+function arenaPlus(si){PLUS.length=0;const f=ARPLUS[STG[si].en];if(!f)return;const s0=SEGM;SEGM=1;try{f()}catch(e){console.warn("arenaPlus",e)}finally{SEGM=s0}}
 function plusStep(dt,T){for(const f of PLUS)f(dt,T)}
